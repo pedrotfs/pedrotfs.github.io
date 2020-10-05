@@ -1,0 +1,53 @@
+@media only screen and (max-width: 1200px) {
+    
+}
+
+/*tablets em modo retrato*/
+@media only screen and (max-width: 1023px) {
+    
+}
+
+/*small phones to small tablets*/
+@media only screen and (max-width: 767px) {
+
+    .sticky .main-navigation li {
+        color: #555555;
+        margin-left: 5px;
+        
+    }
+
+    .main-navigation li {
+        margin-left: 5px;
+        display: block;
+    }
+
+    .main-navigation li a:link, .main-navigation li a:visited {
+        display: block;
+        border:0;
+        padding: 10px 0;
+        font-size: 100%;
+    }
+
+    .mobile-nav-icon {
+        display: inline-block;
+        margin-top: 15px;
+    }
+
+    .main-navigation {
+        float: left;
+        margin-top: 35px;
+        margin-left: 25px;
+        display: none;
+
+    }
+
+    .sticky .mobile-nav-icon i {
+        color: #555555;
+    }
+    
+}
+
+/*iphone 4 e 5*/
+@media only screen and (max-width: 480px) {
+    
+}
