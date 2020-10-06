@@ -12,7 +12,7 @@ $(document).ready(() => {
             $("nav").removeClass("sticky")
         }
     }, {
-        offset:"150px;"
+        offset:"120px;"
     })
     
     $(".js--nav-icon").click(() => {

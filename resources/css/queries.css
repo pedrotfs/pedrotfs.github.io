@@ -139,6 +139,48 @@
 
     .about__contents {
         margin-left: 100px;
+        font-size: 90%;
+    }
+
+    .section__skills {
+        font-size: 90%;
+    }
+
+    .section__contact {
+        font-size: 90%;
+    }
+
+    footer {
+        font-size: 90%;
+    }
+
+    .section__experience {
+        padding-bottom: 0px;
+    }
+
+    .section__experience--company {
+        padding-bottom: 0px;
+        font-size: 100%;
+    }
+
+    .section__experience--keyrus-tl {
+        padding-bottom: 10px;
+    }
+
+    .section__experience--keyrus {
+        padding-bottom: 10px;
+    }
+
+    .section__experience--rdi {
+        padding-bottom: 10px;
+    }
+
+    .section__experience--maps {
+        padding-bottom: 10px;
+    }
+
+    .section__experience--unesp {
+        padding-bottom: 10px;
     }
     
 }
