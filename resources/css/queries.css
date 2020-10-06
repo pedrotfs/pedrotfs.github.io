@@ -127,31 +127,21 @@
 
     .about__portrait--header {
         font-size: 100%;
-        margin-left:180px;
+        text-align: center;
+    }
+
+    .about__portrait {
+        text-align: center;
     }
 
     .about__portrait img {
         width: 40%;
         height: 40%;
-        margin-left: 220px;
-        margin-right: auto;
+        margin-right: 40px;
     }
 
     .about__contents {
-        margin-left: 100px;
-        font-size: 90%;
-    }
-
-    .section__skills {
-        font-size: 90%;
-    }
-
-    .section__contact {
-        font-size: 90%;
-    }
-
-    footer {
-        font-size: 90%;
+        margin-left: 40px;
     }
 
     .section__experience {
@@ -160,7 +150,6 @@
 
     .section__experience--company {
         padding-bottom: 0px;
-        font-size: 100%;
     }
 
     .section__experience--keyrus-tl {
