@@ -118,7 +118,7 @@
     .hero-text-box {
         margin-left: 400px;
         margin-right: 60px;
-        font-size: 20%;
+        font-size: 25%;
     }
 
     .col {
@@ -151,6 +151,7 @@
     .section__experience--company {
         padding-bottom: 0px;
         margin-bottom: 10px;
+        font-weight: 300;
     }
 
     .section__experience--keyrus-tl {
@@ -175,6 +176,7 @@
 
     section {
         font-size: 60%;
+        font-weight: 300;
     }
     
 }
