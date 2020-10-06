@@ -118,7 +118,7 @@
     .hero-text-box {
         margin-left: 220px;
         margin-right: 60px;
-        font-size: 50%;
+        font-size: 20%;
     }
 
     .col {
@@ -173,7 +173,7 @@
     }
 
     section {
-        font-size: 80%;
+        font-size: 60%;
     }
     
 }
