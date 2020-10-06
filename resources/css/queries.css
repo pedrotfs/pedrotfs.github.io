@@ -150,26 +150,27 @@
 
     .section__experience--company {
         padding-bottom: 0px;
+        margin-bottom: 10px;
     }
 
     .section__experience--keyrus-tl {
-        padding-bottom: 10px;
+        padding-bottom: 20px;
     }
 
     .section__experience--keyrus {
-        padding-bottom: 10px;
+        padding-bottom: 20px;
     }
 
     .section__experience--rdi {
-        padding-bottom: 10px;
+        padding-bottom: 20px;
     }
 
     .section__experience--maps {
-        padding-bottom: 10px;
+        padding-bottom: 20px;
     }
 
     .section__experience--unesp {
-        padding-bottom: 10px;
+        padding-bottom: 20px;
     }
 
     section {
