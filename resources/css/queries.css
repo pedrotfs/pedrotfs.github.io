@@ -141,17 +141,19 @@
     }
 
     .about__contents {
-        margin-left: 40px;
+        margin-left: 10px;
     }
 
     .section__experience {
         padding-bottom: 0px;
+        font-weight: bold;
+        font-size: 110%;
     }
 
     .section__experience--company {
         padding-bottom: 0px;
         margin-bottom: 10px;
-        font-weight: 300;
+        
     }
 
     .section__experience--keyrus-tl {
