@@ -171,6 +171,10 @@
     .section__experience--unesp {
         padding-bottom: 10px;
     }
+
+    section {
+        font-size: 80%;
+    }
     
 }
 
