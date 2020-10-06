@@ -1,10 +1,80 @@
 @media only screen and (max-width: 1200px) {
-    
+    .mobile-nav-icon {
+        display: none;
+    }
+
+    .main-navigation {    
+        display: inline-block;
+    }
+
+    .hero-text-box {
+        padding-left: 70px;
+        font-size: 80%;
+    }
 }
 
 /*tablets em modo retrato*/
 @media only screen and (max-width: 1023px) {
-    
+    .main-navigation {        
+        display: none;
+
+    }
+
+    .mobile-nav-icon {
+        display: inline-block;
+    }
+
+    .hero-text-box {
+        margin-left: 160px;
+        margin-right: 60px;
+        font-size: 70%;
+    }
+
+    .about__portrait--header {
+        font-size: 80%;
+        margin-left:20px;
+    }
+
+    .about__portrait img {
+        width: 60%;
+        height: 60%;
+        margin-left: 40px;
+        margin-right: auto;
+    }
+
+    .about__contents {
+        font-size: 80%;
+    }
+
+    .section__experience {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+
+    .section__experience--company {
+        font-size: 80%;
+    }
+
+    .section__experience--keyrus-tl {
+        padding-bottom: 65px;
+    }
+
+    .section__experience--maps {
+        padding-bottom: 35px;
+    }
+
+    .section__skills {
+        font-size: 80%;
+        padding-left: 20px;
+    }
+
+    .section__contact {
+        font-size: 80%;
+    }
+
+    footer {
+        font-size: 70%;
+    }
 }
 
 /*small phones to small tablets*/
@@ -43,6 +113,32 @@
 
     .sticky .mobile-nav-icon i {
         color: #555555;
+    }
+
+    .hero-text-box {
+        margin-left: 220px;
+        margin-right: 60px;
+        font-size: 50%;
+    }
+
+    .col {
+        width: 100%;
+    }   
+
+    .about__portrait--header {
+        font-size: 100%;
+        margin-left:180px;
+    }
+
+    .about__portrait img {
+        width: 40%;
+        height: 40%;
+        margin-left: 220px;
+        margin-right: auto;
+    }
+
+    .about__contents {
+        margin-left: 100px;
     }
     
 }

@@ -5,14 +5,14 @@ $(document).ready(() => {
     })
 
     /* sticky navigation */
-    $(".js--section-features").waypoint((direction) => {
+    $(".js-about").waypoint((direction) => {
         if(direction == "down") {
             $("nav").addClass("sticky")
         } else {
             $("nav").removeClass("sticky")
         }
     }, {
-        offset:"60px;"
+        offset:"150px;"
     })
     
     $(".js--nav-icon").click(() => {
