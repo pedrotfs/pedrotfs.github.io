@@ -229,13 +229,22 @@ header {
     border-radius: 10px;
 }
 
+.section__experience--genesis {
+    background-image: linear-gradient(rgba(251,251,251, 0.95), rgba(251,251,251, 0.95)), url(../img/genesis.png);
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    float: left;
+    padding-bottom: 32px;
+}
+
 .section__experience--veloe {
     background-image: linear-gradient(rgba(251,251,251, 0.95), rgba(251,251,251, 0.95)), url(../img/veloe.png);
     background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
-    float: left;
-    padding-bottom: 182px;
+    float: right;
+    padding-bottom: 32px;
 }
 
 .section__experience--veloe-us {
@@ -243,7 +252,7 @@ header {
     background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
-    float: left;
+    float: right;
     padding-bottom: 182px;
 }
 
@@ -252,8 +261,7 @@ header {
     background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
-    float: right;
-    
+    float: left;
 }
 
 .section__experience--keyrus {
@@ -261,7 +269,8 @@ header {
     background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
-    float: left;    
+    float: right;
+    padding-bottom: 182px;
 }
 
 .section__experience--keyrus-us {
@@ -269,8 +278,8 @@ header {
     background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
-    float: left;    
-    
+    float: right;    
+    padding-bottom: 162px;
 }
 
 .section__experience--rdi {
@@ -278,8 +287,8 @@ header {
     background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
-    float: right;
-    padding-bottom: 86px;
+    float: left;
+    padding-bottom: 56px;
 }
 
 .section__experience--rdi-us {
@@ -287,8 +296,8 @@ header {
     background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
-    float: right;
-    padding-bottom: 86px;
+    float: left;
+    padding-bottom: 56px;
 }
 
 .section__experience--maps {
@@ -296,7 +305,7 @@ header {
     background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
-    float: left;    
+    float: right;    
 }
 
 .section__experience--unesp {
@@ -304,7 +313,7 @@ header {
     background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
-    float: right;
+    float: left;
     padding-bottom: 164px;
 }
 
@@ -313,7 +322,7 @@ header {
     background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
-    float: right;
+    float: left;
     padding-bottom: 186px;
 }
 
