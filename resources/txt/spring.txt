@@ -1,0 +1,571 @@
+JAVA SPRING HIBERNATE - what a dumb course, you are an idiot!
+**************************
+
+singleton bean: em memória divididos por todos que chamam ele (escopo padrão) melhor uso para stateless bean
+prototype: bean novo pra cada request
+request: por request web
+session: um bean por sessão
+global session: um bean por sessão global
+
+container started -> bean instantiated -> dependencies injected -> internal spring processing -> custom init method -> use bean -> container shutdown -> custom destroy -> end
+
+propriedade init-method="method" chama metodo method na inicialização do bean
+propriedade destroy-method="method" chama metodo method na inicialização do bean. não chamado em beans de escopo prototype
+
+xml -> xml component scan -> no xml component scam (menos moderno para mais moderno)
+
+**************************
+ANNOTATIONS
+**************************
+
+spring scaneia classes para anotações especiais de componente e registra os beans no container
+@Component("beanID")
+<context:component-scan base-package="package" />
+
+default bean id é nome geral de instancia ex ClassInstance -> default bean id : classInstance
+se as duas primeiras letras forem maiusculas, spring usa o nome com maiusculo mesmo
+
+autowiring: spring scaneia @Components e injeta beans ->@autowired usado no construtor ou no setter
+se uma dependencia tiver multiplas implementações usar @Qualifier("beanID") para resolver o autowiring
+@autowired funciona pra qualquer método não só setters nem contrutores. funciona também com atributos, até privados
+
+se usar @qualifier no construtor, tem que usar antes de cada argumento.
+
+usar @value("${propriedade}") para injetar valor de property file injetado no contexto do spring por notação no spring
+<context:property-placeholder location="classpath:sport.properties"/> 
+
+@Scope("singleton")
+
+**************************
+NO ANNOTATIONS NO XML
+**************************
+
+precisa de uma classe anotada com @Configuration e @ComponentScan("pacote") (opcional)
+e depois new AnnotationConfigApplicationContext(ClasseComNotacaoConfig.class)
+e aí por fim recupera o bean do context
+
+pra expor um bean na classe com a @Configuration, anotar um metodo com @Bean e dar o nome do bean pára o metodo. retornar um new ClasseDoBean() dele.
+dependencias injetadas devem ser passadas chamando o método e não a instancia.
+
+para usar propriedade de arquivo properties, usar @PropertySource("classpath:path.to.properties.file.properties") na classe com @Configuration
+
+**************************
+SPRING MVC (HYBRIS USA ISSO)
+**************************
+
+browser -> dispatch servlet -> front controller -> model -> controller -> model -> view
+
+controller -> business logic. handle request, deal with data, place data in model
+model -> contem dados, guarda recupera dados e poe no model
+view -> pode usar um monte de coisa, mais comum é jstl e jsp
+
+@Controller extende @Component, sendo pego no component scan
+${param.parameter_name} recupera parametro no front end do form que redirecionou pra pagina?
+request.getParameter("parameterName") pega parametro no back end
+
+Model model inicialmente é vazio.
+atributos HttpServletRequest request(form data) e Model model(container para dados) podem ser inseridos como parametros nos controller
+atributos do model estão em mapa
+
+@RequestParam -> lê parametro do request e amarra ao nome da variavel passada
+@RequestMapping pode ser concatenado. ex @RequestParam("/coisa") na classe do controller mais @RequestParam("/boa") no metodo é chamado por coisa/boa
+
+<%@ taglib prefix="form" 
+
+<form:form action="action" modelAttribute="modelFromSpringMVC" >
+<form:input path="AttributeOfModelFromSpringMVC" />
+
+se o path tiver valor, o form é auto-populado. 
+ao submeter o form, spring chama os setters dos atributos
+
+@ModelAttribute converte o parametro do request
+
+<form:select path="country"> tem que ter no model, melhor usar com mapa?
+<form:option value="bra" name="brazil" > 
+com mapa, usar form:options items=${caminho.mapa}
+
+<form:radiobutton path="atributo" value="valor" /> usa o setter do atributo referido
+pode usar mapa com esse tb
+
+<form:checkbox path="atributo" value="valor" /> usa o setter do atributo referido
+usa array por aceitar multiplos valores - usar jstl foreach nesses casos
+
+validations @NotNull(message=""); @Size(min=1, message="") em cima de atributo
+<form:errors path="attr" cssClass="class" />
+validation usa @Valid e bindingResult que tem hasErrors()
+BindingResult tem poderes de model e httpservletRequest
+BindingResult deve ser colocado no metodo de controller IMEDIATAMENTE DEPOIS DE Model
+
+@Valid executa regras que estão nos atributos da classe referida. @Valid Customer executa as validações setadas nos atributos de customer(dentro da classe customer)
+@InitBinder pre processa o request. chama metodo anotado com @InitBinder. pode tratar strings antes de validação
+
+@Min @Max valida range de numeros
+@Pattern(regexp="expressão regular") valida se um atributo encaixa em uma expressão regular
+setar mensagem de erro em properties: Exception(sem a palavra exception no fim).Classe.atributo = message
+
+criar validação: criar notação(@interface) e usar @constraint(validateBy = ClasseHelperCustomizadaComRegrasNegocio.class). essa classe implementa ConstraintValidator<Anotacao, String>
+
+@EnableWebMVC pra evitar xmls
+usar junto com @Configuration
+
+extender AbstractAnnotationConfigDispatcherServletInitializer e sobrescrever os metodos nescessarios. metodo getservletConfigClasses deve retornar classes marcadas como @Configuration.
+getServletMappings deve voltar o mapping das paginas ("/" como exemplo) 
+com config sem xml, usar InternalResourceViewResolver com os atributos prefix e suffix.
+
+
+**************************
+HIBERNATE
+**************************
+
+converte objetos java para tabelas de banco de dados.
+ao salvar, hibernate retorna pk
+
+Java -> Hibernate -> JDBC -> database
+
+duas abordagens: xml(legado) x anotações
+Anotações: mapear classe para tabela, mapear atributos para campos
+
+@Entity
+@Table(name="table")
+Class classe
+
+@Id //pk
+@GeneratedValue(strategy=GenerationType.SEQUENCE)
+@Column(name = "id")
+private int id
+
+@Temporal(TemporalType.DATE)    
+private Date dateOfBirth;
+
+@OneToOne(cascade=CascadeType.ALL)
+@JoinColumn(name = "instructor_detail_id")
+private instructorDetail instructorDetail
+
+@ManyToMany
+@JoinTable(
+	name ="course_student",
+	joinColumns=@JoinColumn(name="course_id"),
+	inverseJoinColumns=@JoinColumn(name="student_id")
+)
+
+se atributo e coluna tiverem mesmo nome, não precisa dar nome na notação column
+
+Hibernate é implementação de JPA
+
+sessionfactory le arquivo de configuração, cria sessão. criar uma vez só, é pesado.
+session é wrapper de conexão jdbc, usado pra salvar recuperar objetos, morre logo, criado pela factory
+
+SessionFactory factory = new Configuration().configure("hibernate.cfg.xml").addAnnotatedCLass(Student.class).buildSessionFactory();
+Session session = factory.getCurrentSession();
+session.beginTransaction();
+session.save(object);
+session.saveOrUpdate(object);
+session.delete(object);
+session.createQuery("from student s where s.lastname='Doe'").getResultList(); //nome da propriedade java, não coluna
+session.createQuery("update student set email='newemail@email.com'").executeUpdate(); //nome da propriedade java, não coluna
+session.createQuery("delete from student where email='newemail@email.com'").executeUpdate(); //nome da propriedade java, não coluna
+session.get(Class.class, object.getId())
+session.getTransaction().commit();
+factory.close();
+
+entity lifecycle - session method calls
+
+new/transient > se salvar vira persisted managed
+persisted/managed > se rollback vira new / transient / se commit fica detached da sessão do hibernate / se delete fica removed
+detached > se merge fica persisted managed
+removed > se commit fica transient / se rollback fica detached / se persist ou rollback fica persisted managed
+
+cascade types: operações de lifecycle. existe all
+
+@OneToOne(mappedBy="instructorDetail") para relações bidirecionais. tem que ser igual ao atributo na outra classe da relação
+para apagar um membro de uma ligação bidirecional onetoone que não seja contraint de pk do outro, setar null na entidade
+
+evitar casacade delete em onetomany bidirecional e manytomany
+
+fetch types (fetch = fetchType.LAZY)
+eager loading: carrega entidade e entidades aninhadas junto de uma vez. evita acesso continuo ao banco. mais pesado
+lazy loading: carrega as entidades aninhadas somente se requirido. exige conexão aberta com hibernate. se num tiver lança exceção
+maior parte do tempo é melhor ter lazy load por conta de performance.
+
+onetoone default: eager
+onetomany default: lazy
+maytoone default: eager
+manytomany default: lazy
+
+remover lazy: chamar getters antes de conexão fechar ou fazer hql antes de fechar a conexão, ou abrir conexão nova e usar hql
+
+manytomany - join table
+
+dao no hibernate: objeto que encapsula a sessionfactory e faz operações de banco de dados
+
+@Transactional automaticamente começa, faz rollback, commita e termina transactions do hibernate(aplicado no método de uma classe com @Repository)
+@Repository: herda de @Component, aplicado na classe
+
+DAO usar interfaces
+
+GET request data from source @GetMapping; dados vão na url
+POST submit data to source @PostMapping; dados vão no corpo do form dentro do request
+
+request mapping sem definição de mapping atende todas as requisições(get post put...)
+
+get 					x 			post
+debug							cant bookmark
+bookmark						no limit on data
+limit to data lenght			pode mandar binarios tb
+
+url no browser manda por get
+
+@Service indica serviço
+recomendado usar @Transactional no metodo do @Service
+
+hibernate requer construtor sem argumentos
+
+**************************
+SPRING AOP (aspect oriented)
+**************************
+
+aspect reuso em vários locais
+aplica em outras baseado em configuração
+
+codigo é definido em uma clase
+só aplica em regra de negócio.
+configuravel
+
+usos comuns: log, segurança, transações, auditoria, tratar exceção, gerencia de API e analise de uso de API
+
+modulos reusaveis, concentrados, sem mexer no codigo base, seletivo porém, dificulta legibilidade, pega na performance
+
+usar com moderação
+
+AOP vc AspectJ
+
+aspecto: codigo q faz alguma coisa pra todas as camadas
+advice: que ação que hora
+joint point: quando aplicar codigo
+pointcut: expressão que define se executa ou não
+
+before: advice executa antes do metodo
+after: execcuta depois sempre(tipo finally)
+after return: depois de dar certo
+after throwing: depois de dar exceção
+around: antes e depois de metodo. util pra cronometrar execuções, parar propagação de exceptions. usa procedingJoinPoint
+
+weaving conecta aspectos a objetos pra criar objeto com conselho / advice object
+
+aop é usado por tras dos panos no spring
+
+spring aop é mais simples, usa proxy pattern e pode migrar pra aspect J com @Aspect, mas só suporta joint point em metodos, só pode aplicar aspectos a beans criados pelo contexto do spirng app e sofre na perfomrance
+
+aspectj suporta todos joint points, funciona com qqr pojo, melhor na performance, porem compilar leva mais tempo e tem um passo a mais, e é complexo
+
+spring aop usa partes de aspect j
+evitar metoods longos e pesados e trabalhosos
+
+@EnableAspectJAutoProxy
+
+@Aspect //não extende @Component, então se usar notação pura sem xml, tem q por
+
+@Before("execution(public void caminho.qualificado.Classe.addAccount(parametros))")
+public void beforeAddAccountAdvice()
+{
+	
+}
+
+@Before("execution(* void caminho.qualificado.Classe.add*(parametros))") //qualquer metodo q comece com add e qualquer modificador de visibilidade
+@Before("execution(* void caminho.qualificado.*(parametros))") //qualquer metodo q comece com add e qualquer modificador de visibilidade de qualquer classe desse pacote
+@Before("execution(public * * add*(parametros))") qualquer metodo q comece com add //qualquer metodo q comece com add, qualquer tipo de retorno e qualquer classe
+@Before("execution(public * * add*())") qualquer metodo q comece com add //qualquer metodo q comece com add, qualquer tipo de retorno e qualquer classe SEM NENHUM PARAMETRO
+@Before("execution(public * * add*(*))") qualquer metodo q comece com add //qualquer metodo q comece com add, qualquer tipo de retorno e qualquer classe COM QUALQUER PARAMETRO
+@Before("execution(public * * add*(..))") qualquer metodo q comece com add //qualquer metodo q comece com add, qualquer tipo de retorno e qualquer classe COM QUAISQUER PARAMETROSSSS
+@Before("execution(public * * add*(caminho.qualificado.Classe))") qualquer metodo q comece com add //qualquer metodo q comece com add, qualquer tipo de retorno e qualquer classe COM PARAMETRO DE TIPO DEFINIDO
+para parametros: () match sem argumentos / (*) qualquer argumento de qualquer tipo/ (..) 0 ou mais argumentos de qualquer tipo
+
+@AfterReturning(pointcut="execution(* void caminho.qualificado.*(parametros))", returning="result")  //acessa retorno e nomeia ele como result. colocar o parametro depois de jointpoint.
+public void afterReturningAccounts(JoinPoint point, List<Account> result) {
+	...
+}
+
+@AfterThrowing(pointcut="execution(* void caminho.qualificado.*(parametros))", throwing="exception") //não para propagação da exceção para o chamador do metodo.
+public void afterThrowingAccount(JoinPoint point, Throwable exception) {
+	...
+}
+
+@Around("execution(* void caminho.qualificado.*(parametros))") 
+public void aroundAccount(ProceedingJoinPoint point) throws Throwable {
+	...
+	Object result = point.proceeed(); // chama o método que deveria ser chamado mesmo
+	...
+}
+
+pointcut: criar advice (o que tá entre parenteses na notação @Before) pra evitar ctrl c ctrl v pra vários pontos
+
+@Pointcut("execution(* void caminho.qualificado.*(parametros))")
+private void forCaminhoQualificado() {} // pode ter qualquer nome, e o nome do metodo vira o nome do pointcut, quase como uma variavel
+
+@Before("forDaoPackage()") //referencia pointcut, e ai só precisa alterar em um local
+public void beforeAdd() {
+	....
+}
+
+combinar pointcut: usando expressões &&, || e !
+@Before("expressionOne() || expressionTwo()")
+
+@Order(1) // garante ordem de execução de aspectos. prioridade do mais baixo pro mais alto
+public class Aspecto { //permite numeros negativos, numeros de Integer.MIN_VALUE até Integer.MAX_VALUE. não precisa ser consecutivo
+...
+
+usar uma classe para isolar os pointcuts para que classes com aspectos usem
+usar uma classe por aspecto
+
+para acessar parametros do metodo: (MethodSignature) 
+@Before("...")
+public void beforeBlablas(JointPoint point) {
+	(MethodSignature) point.getSignature();
+	Object[] args = point.getArgs();
+	...
+}
+
+parametros JointPoint podem ser adicionados nos aspectos igual request, model e etc do spring mvc
+@After não tem acesso a exceção. roda ANTES de afterthrowing e afterreturning
+
+maven private repos: artifactory, nexus...
+
+**************************
+SPRING SECURITY
+**************************
+
+servlet filters: pre processing / post processing / route requests
+Java config (@Configuration) ou spring xml config
+
+authentication: jdbc, memoria, ldap, customizado ...
+
+Versão de spring core e security são descasadas. tem que procurar se elas são compativeis entre sí, o que não é garantido.
+
+mvn: spring-security-web, spring-security-config, spring-security-taglibs
+
+Criar spring security initializer, spring security configuration e depois adicionar usuarios, senhas e roles
+AbstractSecurityWebApplicationInitializer: registra os arquivos do spring security. codigo de segurança inicializa container do servlet. registra os filters
+
+para configuration, extender WebSecurityConfiguerAdapter com notações de classe @Configuration e @EnableWebSecurity. sobrescrever metodo configure com autenticações e tipo.
+para pagina custom, customizar http.authorizeRequests().anyRequest().authenticated().and().formLogin().loginPage("/caminho").loginProccessingUrl("/caminho").permitAll().and().logout().permitAll();
+
+http.authorizeRequests().antMatchers("/caminho/**").hasRole("role_name").and().formLogin().loginPage("/caminho").loginProccessingUrl("/caminho").permitAll().and().logout().permitAll().and().logout().permitAll().and().exceptionHandling().accessDeniedPage("/access-denied");
+
+
+para processar login, mandar requisição POST para controller.
+usar <form:form> para usar defesas otb do spring
+
+campos procurados: com names username e password
+
+context Root: caiminho base da aplicação. mesma coisa q context path. ${pageContext.request.contextPath} acesso ao context path
+erro no form de login: no jstl tá em ${param.error != null}
+
+para fazer logout: redirecionar por post para /logout. se ${param.logout != null} é logout.
+
+spring security protege contra ataques de cross site request alguma coisa. colocar tokens em todos os form html.
+usa o sync token pattern(cada request inlcui um cookie de sessão e um token gerado aleatoreamente - spring verifica token por filter antes de efetuar processamentos)
+não usar proteção csrf se client não for navegador
+usar POST ao invés de GET para usar proteção CSRF. <form:form> automaticamente gera e adiciona o token
+
+para form normal, colocar num campo hidden com nome ${_csrf.parameterName} e value ${_csrf.token}
+
+spring security usa tags customizadas jsp para acessar user id e role
+user id front: <security:authentication property="principal.username" />
+role front: <security:authentication property="principal.authorities" />
+
+<security:authorize access="hasRole('ADMIN')" > </security:authorize>
+
+suporte a banco de dados otb: seguir convenção de schema do spring security
+schema default: users(username, password, enabled) e authorities(username,. authority)
+{noop}senha: guarda senha em texto puro
+{bcrypt}senha: encritpa senha usando bcrypt
+
+tabela authorities usa role com prefixo ROLE_ exemplo ROLE_admin
+
+@PropertySource("classpath:file.properties")
+
+usa um objeto securityDataSource aí na classe extendendo websecurityconfigureradapter, no metodo configure, usar auth.jdbcAuthentication().dataSource(dataSource) passando o objeto criado.
+
+bcrypt: one way encrypt hash, adiciona lixo na senha pra dificultar o descobrimento, suporte contra força bruta. tem q ter pelo menos 68 caracteres de espaço no banco
+
+**************************
+SPRING REST
+**************************
+REST represtantational state transfer -> leve
+independe de linguagem
+xml, json
+
+json <-> pojo : data binding, serialization, mapping, mashalling...
+
+spring usa jackson (jackson-databind)
+jackson suporta xml e json
+jackson usa getters e setters
+em objetos aninhados, ele usa os getters e setters do objeto aninhado
+
+mapper.enable(SerializationFeature.IDENT_OUTPUT) pretty printing
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+
+POST: cria entidade
+GET: recupera entidades
+PUT: atualiza entidade
+DELETE: apaga
+
+http request:
+-requestline - server protocol e status
+-header variables - metadata da resposta
+-message body - conteudo da resposta em MIME (Multiporpose Internet Mail Extension - text/html, text/plain, application/json...)
+
+status codes:
+100-199 - info
+200-299 - sucesso
+300-399 - redirect
+400-499 - erro client
+500-599 - erro server
+
+@RestController extends @Controller
+
+MVN: spring-webmvc, jackson-databind, javax.servlet-api
+
+path variable:
+GET /api/students/{studentId}
+@PathVariable int studentId -> diz que student vem como variavel no path da chamada
+
+@PostConstruct - chama apenas uma vez
+
+@ExceptionHandler -> retorna ResponseEntity (wrapper de resposta http)
+ResponseEntity<ClasseResposta> handleException( ClassOfTheException e)
+
+@ControllerAdvice: pre e pos processa requests. bom pra tratamento global de exceção. (classe)
+
+convenção: /api/nome_da_entidade_plural ex> /api/customers
+não incluir ações no endpoint. usar http methods para isso
+
+@EnableTransactionalManagement -> hibernate?
+
+@RequestBody: amarra pojo a um parametro de metodo.
+
+setar Id para zero: forçar hibernate a inserir novo valor
+
+ao mandar json para controller rest spring: usar header content-type: application/json
+
+**************************
+SPRING BOOT
+**************************
+
+préconfigura.
+vem com server standalone próprio
+
+é deployavel para servidor exterior
+
+@RestController
+
+usa standard maven directory structure
+maven wrapper files: não precisa de maven
+mvnw: se num tem versão correta, instala automaticamente
+
+@SpringBootApplication: classe principal do spring boot > @EnableAutoConfiguration, @ComponentScan, @configuration
+
+colocar classe principal de aplicação no pacote raiz dos outros pacotes
+
+local padrão de properties: application.properties
+para ler properties, usar notação @Value("${propriedade}") em um atributo
+
+por padrão, recursos estaticos são lidos da pasta static. (imagens, html, css, ...)
+
+NÃO USAR src/main/webapp SE FOR EMPACOTAR EM JAR pq só é usado em WAR.
+
+templates da pasta templates(thymeleaf, mustache, ...)
+
+spring boot starters: grupo de dependencias compativeis entre si. dependencia de maven ou gradl. tem +30
+starter parent: tem os defaults do maven.
+
+spring-boot-devtools: dependencia que reinicia sistema em caso de alteração
+
+spring-boot-starter-actuator: dependencia que adiciona endpoints rest de monitoria e gerencia de aplicação(actuator/health, actuator/info)
+- health: mostra se tá de pé
+- info: informações. pego de application.properties começando por info: info.appName = appname
+- auditevents
+- beans: todos os beans marcados como @Component
+- mappings: all request mappings
+- threaddump: informações de threads
+
+só health e info expostos por padrão. para expor todos, usar propriedade management.endpoints.web.exposure.include=* no application.properties
+management.endpoints.web.exposure.exclude=health,info #bloqueia endpoints do actuator
+management.endpoints.web.base-path=/caminho # caminho base do actuator
+
+spring starter security: default user é user. para sobrescrever, usar no application.properties spring.security.user.name e spring.security.user.password
+dá pra customizar usando coisas basicas de spring security, usando os dataSource e bla bla bla
+
+rodar da linha de comando: java -jar ou mvnw spring-boot:run
+mvn package cria jar na pasta target
+
+propriedades do spring boot agrupadas em: core, web, security, data, actuator, integration, devtools e testing
+
+exemplos:
+logging.level.caminho.pacote=INFO #nivel de log por pacote
+logging.file=file.txt #determina arquivo de log
+
+server.port=8080
+server.servlet.context-path=/caminho
+server.servlet.session.timeout=15m
+
+spring.datasource.url=jdbc:mysql://localhost:3306/ecommerce
+spring.datasource.username=scott
+spring.datasource.password=tiger
+
+colocar conexão no application.properties
+spring boot cria automaticamente DataSource e EntityManager(JPA) e aí injeta eles nos daos
+
+EntityManager é similar ao SessionFactory do hibernate, e serve para wrapper da session do hibernate
+
+@Repository usar em daos
+
+entityManager.unwrap(Session.class)
+
+JPA session.save entityManager.persist
+
+**interface JpaRepository atraves de pk e tipo faz crud. basta extender inferface. não precisa implementar
+metodo custom segue padrão meio legivel
+ex: public List<Employee> findAllByOrderByLastNameAsc(); //findAllBy atributos orderBy atributos
+
+spring data rest: crud de rest em cima dos resultados de JpaRepository e usa plural simples. Employee -> employees
+ para usar spring data rest é necessario entidade, repositorio jpa e dependencia spring-boot-starter-data-rest
+
+@RepositoryRestResource(path="members")
+public interface EmployeeRepository extends JpaRepository<Employee, Integer>
+
+Paginação: default 20
+/employees?page=1
+
+propriedades em application.properties: spring.data.rest.*
+
+sorting
+/employees?sort=lastName,firstName,asc
+
+THYMELEAF: java template engine -> gera hmtl views para apps.
+cria html através de expressões thymeleaf que acessa java, beans, etc
+processado no server
+usa um model
+similar a jsp, mas jsp depende de web, e thymeleaf pode ser usado fora de ambiente web(email, csv, pdf...)
+spring-boot-starter-thymeleaf
+controller funciona igual spring mvc
+src/main/resources/templates
+.html para template web
+
+ordem de busca de recursos estaticos(js, css, html, imagem...)
+/meta-inf/resources
+/resources
+/static
+/public
+
+prefixo th nos htmls th:each th:text ...
+da pra por css do bootstrap. procurar get started do bootstrap e usar metatags e link no header
+
+th:action="@{/}" manda form pra algum lugar
+th:object = "${objeto}" referencia atributo do model da pagina
+th:field amarra campo do form para atributo de um model
+
+ex
+<form action="#" th:action="@{/employee/save}" th:object="${employee}" method="POST" />
+usar input hidden th:field="{*id}" para update de entidades

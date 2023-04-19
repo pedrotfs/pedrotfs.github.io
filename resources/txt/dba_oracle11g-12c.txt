@@ -1,0 +1,407 @@
+ORACLE 11g/12c
+
+OLTP: online transaction processing
+Dados atuais, atualizados constantemente, alto nível de detalhe, operações do dia a dia, normalizado.
+
+OLAP: online analytical processing
+dados históricos, não tão atualizados, resumidos, reportes e dashboards para tomadas de decisão, não normalizado.
+
+11g - g -> GRID (cluster)
+multiplos srrvers de database: real application clusters (RAC)
+
+multiplos discos de replica: automatic storage management(ASM)
+replicas iguais, distribuidas, performance
+
+12c - c -> cloud
+multi tenant - um banco de dados mestre (Container database) e filhos (plug-able databases)
+um database plugable pode ser transferido entre container databases
+
+data block: unidade minima de armazenagem (default: 8192 bytes (8kb) no oracle 11g)
+
+armazenado em discos etc processado em ram
+todas as mudanças são armazenadas em logs
+
+undo: desfaz. oracle guarda dado anterior caso de rollback no undo.
+para insert, undo faz delete, update, update reverso, delete, insert
+
+redo: refaz
+
+instance vs db
+
+instance: background process e area de memória compartilhada. todo banco em execução é associado a pelo menos uma instancia. (escalabilidade)
+database: arquivos fisicos com informações do banco.
+
+ARQUITETURA DE PROCESSOS
+
+processo de usuário -> listener -> processo de servidor
+
+processos de background: opcionais e requeridos.
+
+-database writter (requerido): escreve os buffers modificados em arquivos de dados. DB_WRITER_PROCESSESS configura adicionais em caso de escritas largas.
+escreve quando não tem um buffer limpo reusavel ou quando a escrita avança um checkpoint(determinado pelo buffer modificado mais antigo)
+
+-log writter (requerido): escreve redo log buffer para arquivo redo log no disco
+escreve quando processo de usuário comita transação, buffer de redo está 1/3 cheio, antes de escrita do db writer ou a cada 3 segundos.
+
+-checkpoint (required): sincroniza blocos em memória modificados com os arquivos em disco e atualiza arquivo de controle com o checkpoint mais recente.
+mantém consistencia e possibilita recuperação mais rápida. ocorre em mudança de arquivo de redo, numero de segundos definidos em LOG_CHECKOUT_TIMEOUT,
+atinge tamanho LOG_CHECKPOINT_INTERVAL * tamanho de bloco IO do sistema operacional, comando alter system switch logfile e comando alter system checkpoint
+
+-system monitor process (SMON) (required) - faz recuperação no start up, limpa segmentos temporários não usados
+
+-process monitor (PMON) (required) - recupera processos falhos (limpa buffer de cache e libera recursos usados pelo processo)
+monitora sessões não alteradas, reinicia processos parados, registra serviços de banco nos listeners de rede
+
+-recoverer (required) - só usado em bancos distribuidos. automaticamente conecta com bancos com transações em status não conclusivos e resolve elas.
+limpa linhas que correspondem a transações duvidosas.
+
+-archiver (optional) - copia logs de redo para armazenamento depois de mudança de log(log switch)
+transmite dados de transações para locais esperando. só roda em modo archivelog - LOG_ARCHIVE_MAX_PROCESS configura quantos tem desses.
+
+DATABASE MEMORY ARCHITECTURE
+
+PGA - private? program global area, SGA - shared global area
+pga só é visivel ao server e server process onde o programa tá.
+
+database buffer cache - cópias de data blocks lidos dos arquivos fisicos. divididos por usuarios concorrentes, definido por DB_BLOCK_BUFFERS, DB_BLOCK_SIZE, blocos mais recentes usados
+shared pool - contem library cache, q contem coisas tipo plano de execução, codigo parseado etc.
+    data dictionary cache: definições e privilegioes de tabelas e colunas.
+    SHARED_POOL_SIZE
+    results cache - armazena resultados de queries, e aumenta performance.
+
+redo log buffer - buffer circular que tem as mudanças feitas no banco. usadas para redo.
+
+large pool - memória opcional para alocaçõs de memória de sessão, processos de i/o, operações de backup e restauração, operações de queries paralelas, operações avançadas de alocação de   
+    memória para armazenamento de tabelas
+    definidos por LARGE_POOL_SIZE
+
+java pool - armazena coisas de java
+streams pool - armazena coisas de oracle streams
+
+keep buffer pool - copias de data blocks lidos de arquivos, dividido por usuarios concorrentes, guarda data blocks mais recentes.
+    dados acessados frequentemente podem ser fixados no keep buffer pool. performatico.
+
+recycle buffer pool - armazena tabelas grandes e pouco acessadas. como são pouco acessados, seriam removidas de um cache comum. DB_RECYCLE_CACHE_SIZE
+
+nk Buffer cache - armazena data blocks que tem tamanho diferente do default. DB_NK_CACHE_SIZE
+
+PGA - região privada de memoria do programa. cada server process tem pga proprio. acesso é exclusivo para q o server é apenas lido pelo oracle. não disponivel para dev do programa.
+    pga é alocado quando processo é criado e desalocado no fim do processo.
+
+dedicated vs shared servers
+
+-dedicado: 1 client  - 1 processo
+-compartilhado: clients - dispatcher process - request response queues - processos
+shared servers não são tão usados atualmente. por conta de memória e processamentos mais baratos. dedicado é mais performatico.
+no shared server, PGA fica dentro da SGA, mas segregado. na PGA fica apenas area para stacks de dados
+
+ORACLE INSTALLATION
+
+Parameter files: parametros de inicialização do banco de dados
+pfile - velho
+spfile (server parameter file) - novo e recomendado. editado usando comando alter system
+
+sql > show parameter spfile
+
+criar banco de forma manual: criar pastas DB_NAME e dentro dela pastas> data redo control log arch diag fra
+    criar o parameter file initDB_NAME.ora com conteudo
+    db_name = DB_NAME
+    memory_target=500mb
+    control_files='/caminho/arquivo.ctl','/caminho2/arquivo2.ctl'
+    diagnostic_dest='/caminho/DB_NAME/diag'
+    compatible=11.2.0
+
+    rodar comando para criar database, referenciando redo, undo, logfile ......
+
+select name from v$database; -> mostra nome dos bancos de dados. v$ -> meta variavel.
+
+criar banco de dados por dbca: tem que criar os diretorios igual acima.
+    comando dbca -> gui.
+
+*fra(fast recovery area)
+
+DATABASE STARTUP STEPS
+
+steps: subir instancia, montar database, abrir database (shutdown -> no mount -> mount -> open)
+
+-no mount: le parameter file do local default ou local especificado, aloca memória para SGA, inicia os processos de background(cria instancia sem bd associados)
+-mount: associa instancia com db, abre control_files para tentar abrir data files e redo(nesse passo db tá fechado e só dba acessa). usado para manutenção.
+-open: tenta abrir data files. se não tá presente é preciso recuperar. gatante consistência. se crash, recupera na proxima inicialização. no shutdown normal, a memória é salva em disco.
+
+comandos exemplo. >startup >startup nomount >startup mount >alter database mount >alter database open
+
+SHUTDOWN METHODS
+
+shutdown phases: 
+    close database: escreve sga para disco, atualiza headers de arquivos e fecha os data files online e redo log. db permanece mounted
+    dismount: dismount db e desassocia da instancia. fecha control_files. instância permanece na memória.
+    shutdown: desaloca sga e encerra processo background. se não for feito, pode dar erro na proxima inicialização. para resolver, forçar inicialização da instância.
+
+formas de shutdown:
+    immediate: encerra statements e disconecta usuários, transações ativas são terminadas e tudo não comitado sofre rollback. oracle executa checkpoint e fecha datafiles online.
+    transactional: impede novas transações, mas espera as transações em andamento terminar. oracle executa checkpoint e fecha datafiles online.
+    normal: espera usuarios conectados desconectarem. oracle executa checkpoint e fecha datafiles online.
+    abort: fecha sem executar checkpoint. mais rápido, mas requer recuperação de instância na próxima inicialização.
+
+TABLESPACE MANAGEMENT
+
+Database -> table space -> segment -> extent -> data blocks (maior é grupo do menor) (representação lógica)
+tablespace -> datafiles (representação fisica)
+
+Tablespace organiza datafiles. armazena todos os objetos de banco (tabelas, indices ...)
+tablespace pode ter vários datafiles, mas precisa por pelo menos 1 datafile
+datafiles tem 1 tablespace. tablespace tem vários datafile
+
+datablock é o menor bloco do oracle. contem headers, table directory, row directory e row data
+
+tablespace types:
+    permanent: permanent data, tipo dado de tabela, indices...
+    undo: dados para desfazer operações, rollback de transações, manter consistência.
+    temporary: dados temporários, tipo durante queries
+default tablespaces
+    system: gerencia o db. tabelas admnistrativas. restrito. não pode renomear ou dropar. nem pode ficar offline
+    sysaux: mandatório desde oracle 10. auxiliar ao de cima. mesmas propriedades do acima
+    temp: dados temporários.
+    undotbs1: desfazer operações.
+    users: dados de usuários
+    example: exemplos de schemas
+
+Tablespace online x offline
+    on: executando, pode ser usado. default
+    off: não pode ser usado. operações de manutenção.
+
+create tablespace tbs1 datafile 'pathToFile/file.dbf' size 50m autoextend on next 512k maxsize 250m; (comando para criar tablespace)
+alter tablespace .... tambem funciona
+para mudar tamanho
+alter database datafile 'pathtofile/file.dbf' resize 100m;
+
+executar script: @/caminho/script.sql
+drop tablespace tbs1 including contents and datafiles; (apaga tudo)
+alter tablespace tbs1 rename to tbs2; (renomeia)
+alter tablespace tbs2 offline; (coloca no modo offline)
+para renomear datafile, tem que renomear o arquivo fisico tb.
+
+blocksize default: 8kb
+razões para aumentar tamanho: indices, tabelas grandes, blobs, linhas largas, ou tablespace temporário para ordenação.
+
+verificar blocksize: show parameter db_block_size;
+alterar blocksize: na criação do tablespace, usar blocksize 16k; por exemplo
+se block size não estiver configurado, usar > alter system set db_16k_cache_size=60m scope=both;
+
+uma query pode usar multiplos tablespaces temporários.
+select* from database_properties where property_name like '%TABLESPACE%'
+
+dictionary managed tablespace são deprecados no oracle 11g
+default é locally managed
+
+locally é mais rápido, não aloca redo/undo, alocação é simplificado.
+usar no comando de criação do tablespace> extent management dictionary OU> extent management local autoallocate; (ou o tamanho da alocação)
+
+UNDO MANAGEMENT
+
+copia de cada transação que muda o banco. usado para rollback, consistencia de leitura, flashback(retornar o banco a um estado anterior), recuperação de transações com falha
+undo permanece até usuario commitar, efetuar rollback, executar outro DDL, sessão do usuario encerrar anormalmente(resultando em rollback) e sessão terminar normal(commit)
+*DDL - create, drop, alter, rename
+
+armazenado num tablespace ou segmento de undo. 1 desses ativo por instancia. de posse de usuário sys
+
+snapshot too old error: falta de espaço no undo tablespace ou segment. não tem consistência. tem q esperar abrir o espaço para ter consistência.
+
+auto undo management: default desde oracle 11 UNDO_MANAGEMENT = auto / manual
+    armazena no tablespace do sistema se num tem undo definido
+    gestão da retenção é muito eficiente.
+
+alter system set UNDO_RETENTION = 1800 (segundos de retenção); é desejavel manter informação do undo o maior tempo possível. para apoiar queries demoradas.
+configurar quando undo tem autoextend habilitado, para garantir retenção do undo
+alter system undotbs1 retention guarantee; --noguarantee -> se tiver cheio o undo, para de aceitar novas entradas até caber
+
+REDO MANAGEMENT
+
+util em recuperação de falhas. se não tiver redo, db não funciona. solução é múltiplas réplicas em vários grupos
+
+USER MANAGEMENT
+
+organiza quem é dono de objetos do banco e quem pode acessar o que
+Cada conta de usuario do db tem username unico, metodo de autenticação, tablespace default, tablespace temporário, perfil do usuário, grupo inicial, e status de conta.
+
+schema é coleção de bancos de dados que são de um usuário de banco de dados e tem mesmo nome que a conta do usuário (username não tem caracteres especiais, começa com letra e tem 30 bytes no máximo.)
+
+método de verificação default é password
+status de conta é open, logged ou expired
+
+contas admin default
+    sys: usado por dba, tem todos os privilégios
+    system: similar a sys, mas não pode fazer backup, recovery e upgrades. tentar usar mais essa que sys
+    dbsnmp: enterprise manager, monitoria e gerenciamento de database.
+    sysman: enterprise manager, tarefas administrativas
+
+criação de user: create user john profile default indentified by passwordOfUser default tablespace USERS temporary tablespace TMP account unlock. (password expire expira senha toda vez)
+grant connect to john
+grant resource to john
+
+PRIVILEGES
+
+direito de executar comandos SQL ou acessar objeto de outro usuário
+
+grant <system_privilege> to <grantee_clause> [with admin option]
+grant create table to john with admin option;
+grant select any table to john; (any atravessa barreira de schema)
+grant create table to john with grant option; (permite que usuário conceda privilégio a outros)
+
+revoke remove privilegio
+revoke de privilegio criado com admin privilege não remove privilegio recebido por usuario com o admin privilege removido
+revoke de privilegio criado com grant remove
+
+select * from session_privs: faz select de privilégios
+
+ROLES
+
+roles = grupo de privilegios
+role pode ser composta de outras roles
+
+PROFILE
+
+cada usuário pode ter só um profile, e default é DEFAULT.
+profiles limitam acesso a recursos do banco de dados. (processamento, disco, tempo de conexão, tempo inativo, sessões concorrentes e SGA privado)
+
+create profile PROFILE_NAME limit sessions_per_user 2 idle_time 5 connect_time 10;
+pode ser usado para gerenciar passwords
+
+ORACLE NETWORKING
+
+oracle net: serviço no client e servidor(listener). um listener pode atender multiplos clientes e instancias
+listener estabelece conexão cliente servidor. a sessão resultante é gerenciada pelo server, não pelo listener. aí num precisa do oracle net.
+
+listener.ora tnsnames.ora sqlnet.ora
+listener.ora: todos parametros de configuração de servidor.
+listener control utility - fazz várias coisas do listener
+
+connection string> <username>/<password>@<hostname>:<listener port>/<service name>
+tnsnames.ora tem dados do cliente para conexão como por ex, string de conexão
+
+LINK
+
+linka dados de outros bancos de dados. conecta com nome configurado no tnsnames.ora
+pode ser privado
+
+DATA DICTIONARY
+
+tabelas e views com informações sobre o banco de dados
+tabelas basicas são de sys
+tabelas legiveis são feitas em cima dessas tabelas
+
+tem muita coisa, static views, dynamic views, global dynamic views, undocumented views.
+
+static view: privilegios, objectos, users etc... muda quando ddl é executado. começam com USER_ ALL_ e DBA_
+    USER_ mostra info de objetos do usuario atual.
+    ALL_ mostra objetos do user atual e objetos que user tem privilegio
+    DBA_ mostra todos os objetos
+
+dynamic performance views: continuamente atualizados. são as v$alguma coisa tipo v$parameter, v$log, v$database... info sobre sessão, database, transações, logs etc
+
+DIAGNOSTIC DATA
+
+dumps, logs, traces ...
+
+automatic diagnostic repository (ADR) armazena tudo de diagnostico. unificado para todas instancias e processos.
+prblem: critical error (ora-00600...)
+incident: ocorrencia de problema. id unico no adr
+incident package: coleção de dados sobre incidente. coletado em pacote por incident package service. pode editar o pacote, remover dados sensíveis, etc...
+
+BACKUP
+
+tipos:
+    fisico:
+        no archive: cold backup(offline database)
+        archive: cold backup e hot backup
+    logical:
+        dump
+
+whole db backup: todos data files e pelo menos 1 control file
+partial db backup: só as tablespaces requeridas, data files, control files
+incremental backup: 
+    só backup dos datablocks mudados desde o ultimo backup
+    geralmente mais rapido e menor
+    cada datablock tem um system change number. no backup esse numero é comparado ao system change number do checkpoint do backup incremental anterior.
+    dependendo da checkagem faz backup do bloco
+    primeiro backup é total para servir de modelo para comparação dos seguintes
+    level 0: backup completo
+    level 1:
+        diferential: faz backup só dos arquivos mudados desde o ultimo backup, seja ele level 0 ou 1. se precisar de recuperação, reaplicar os backups level 1 anteriores.
+            mais rapido de backup, mais lento de recovery. opção default
+        cumulative: faz backup de todos os arquivos mudados desde level 0, podendo fazer backup repetido dos level 1 anteriores. só reaplicar o ultimo level 1.
+            consome mais disco
+
+cold backup: encontrar arquivos data, control etc usando queries, shutdown sem ser abnormal, faz backup, restart, (consistente)
+cold backup in archive log mode: igual acima, mas copiar tambem os archive log files (redo, undo...) (inconsistente)
+
+hot backup:
+    db precisa estar em archiving mode
+    determinar local dos datafiles, control files etc usando queries
+    avaliar sequencia maxima do online redo log
+    entrar em modo backup
+    fazer backup dos data files usando utilidade de copia do s.o.
+    sair do modo backup
+    ativar um checkpoint
+    fazer backup do arquivo de controle
+    achar sequencia maxima do redo log online
+    backup dos logfiles entre backup e atual( não incluir atual)
+
+RMAN backup (Recovery MANager)
+
+target database. auto explicativo
+media manager: opcional, controla devices onde o backup é feito
+recovery catalog: atividades feitas pelo rman são armazenadas no control file do db alvo. opcional
+retention policy: quanto tempo um backup é guardado. 
+paralelism: backups em paralelo, se houver multiplas medias
+
+image copies: replicas do original, igual usar comando de copia. inclui blocos livres e corrompidos. é possível restaurar só arquivos necessários
+backup sets: coleção de arquvios binarios que contem data files, control files, parameter files ou archived log files.
+    sómente blocos usados. pode ser comprimidos. todo o backup precisa ser restaurado para poder acessar os arquivos
+
+MATERIALIZED VIEWS
+
+seguimento de uma tabela constantemente atualizado por uma query, seja local ou remota. pode ser computada, resumida, distribuida. antes eram snapshots
+replicam dados entre locais fisicos
+aumentam performance
+
+comando build? 
+clausulas:
+    immediate: populado imediatamente.
+    deferred: popula no primeiro request de refresh
+
+    tipos de refresh:
+        fast: se resultados não estiverem criados falha(exemplo, inserção de row nova)
+        complete: repopula por completo usando a query
+        force: tenta fast. se falhar, usa completa.
+
+    como ativar refresh:
+        on commit: commit que muda os dados em uma das tabelas que a view depende.
+        on demand: request manual ou agendado
+
+create materialized view sales_c_mv build immediate refresh force on commit as <query>
+create materialized view sales_c_mv build immediate refresh force on demand start with sysdate next sysdate + 7 as <query>
+create materialized view sales_c_mv build immediate refresh force on demand enable query rewrite as <query>
+execute DBMS_MVIEW.REFRESH('sales_d_mv') //refresh demand
+
+refresh fast: incremental, só pode ser criado de master table e master materialized tables.
+    materialized views baseadas em sinonimos ou só pode ter refresh completo, nem quando usa função analitica
+    precisa criar materialized view log.
+
+query rewrite: sobrescreve um comando sql para uma materialized view equivalente se presente.
+
+TABLE PARTITIONING
+
+ganho de performance já q lida com partição ao inves do banco todo
+ganho de performance de query
+ganho de performance em manutenção
+aumenta disponibilidade se indices são particionados também
+é transparente para aplicações que oonsumem o banco
+
+tipos de partição
+    Range: baseado em data ranges
+        create table sales1(...) partition by range (order_date) (partition sales_p21321 values less than ...)
+
+    List: baseado em uma lista de valores.
+    Hash: por hash
+    Composite: combinação das anteriores. cria subpartições

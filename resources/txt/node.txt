@@ -1,0 +1,1355 @@
+***************
+*****NODE JS***
+***************
+
+Comando node -v: mostra versão
+
+NODE - Javascript standalone - fora do browser - em um server.
+Construido no Motor de JS do chrome (v8 - open source do google - por sua vez construido em C++).
+
+fluxo de codigo > Chrome / Node -- Codigo JS -> V8 Engine (escrito em c++ **) -- resultados -> Chrome / Node
+
+**escrito em c++ permite que o código JS acesse sistemas de arquivos, etc...
+exemplo: localStorage.getItem(Chrome) ou fs.readFile(Node) -> chama função c++
+
+Objetos Browser: window, document
+Objetos Nodejs: process, global
+
+console.log não é parte do javascript
+
+NodeJs extende JS através de C++
+
+## VANTAGENS ##
+
+event driven, non blocking(enquanto aguarda resposta do SO pode fazer outras coisas - não para o navegador) i/o -> leve e eficiente
+NPM -> maior ecossistema de bibliotecas open source do mundo -> muita coisa pronta
+
+core node modules: incluso no node
+
+## MODULE SYSTEM ##
+
+console: global, não precisa importar
+
+Modulo file system: acessa OS, começa com fs (exemplo fs.writeFileSync)
+
+require("nome do modulo") ex const fs = require("fs") => tem que chamar uma const pra guardar o retorno de require senão tem que chamar require toda vez que usar a lib
+convenção: usar nome de variável igual ao nome do módulo
+
+const utils = require('./utils.js') importa arquivo local utils.js - ./ indica mesma pasta
+
+todos os arquivos tem próprio escopo. precisa exportar variáveis: module.exports = name (exporta variavel name. pode ser qqr coisa, objeto, array ...) 
+	-> objeto resultante de chamada ao require é exatamente o que é exportado
+
+exportar função: module.exports = nomeFuncao
+chamar funcao: const notes = require("./notes.js") ; notes() //chama função
+
+iniciar npm no projeto: na pasta raiz rodar comando: npm init -> colocar informações como nome de pacote -> cria package.json
+
+package.json : dependencias
+
+pacotes npm: npmjs.com
+
+instalar: npm install validator@10.8.0 (cria package-lock e pasta node_modules -> pode ser ignorada por repositório)
+package-lock: serve para agilizar execução de npm
+
+usar documentação dos modulos do npm
+
+node não suporta import ainda?
+
+node_modules: ele é gerado a partir dos packages json
+rodar npm install sem argumentos: procura no package e package-lock e instala as dependencias encontradas
+
+rodar npm install ao adquirir projeto é boa prática
+
+npm install é instalação local
+instalação global: npm install nodemon -g
+
+## FILE SYSTEM E COMMAND LINE ##
+
+parametros da linha de comando ficam em process
+process.argv -> array de parametros de entrada, 0 - local do node, 1 - arquivo rodado, 2 em diante - argumentos passados na execução do arquivo rodado
+dar preferencia a yargs
+
+Usando Json: JSON.stringify(variavel) retorna string do json / JSON.parse(jsonString) e retorna objeto Json
+persistir json: fs.writeFileSync("nomeArquivo", variavelJson)
+carregar json: fs.readFileSync("nomeArquivo") -> retorna buffer com dados binários. para string usar fs.readFileSync(...).toString()
+
+try catch funciona parecido com java
+
+em um array: 
+array.filter(function(note){ //filtra array e retorna um sub array dele que cumpra a condição da função
+	return note.title === title	
+})
+
+## ES6 ARROW FUNCTIONS ##
+
+parece lambda do java
+
+const square = (x) => {
+	return x * x
+}
+
+const square = (x) => x * x
+
+funções de flexa não tem escopo próprio
+quando for parte de um objeto, chamar assim: printGuestList() { console.log(this.name)} // esse enxerga o this
+
+foreach tem this próprio. para acessar o do objeto pai:
+const that = this (gambiarra)
+
+notes.forEach(note => printNote(note)) (for each em array)
+notes.find((note) => note.title === title) (busca elemento de array seguindo critério)
+
+instrução debugger: para o código se node for rodado com inspect ex>node inspect app.js  outro ex> node inspect-brk app.js
+	usar então chrome no endereço chrome://inspect, seção remote target, deve ter a execução do programa parado no break point clicar em inspect
+	comando restart recomeça o fluxo do programa (inspect)
+
+object property shorthand: quando variavel tem o mesmo nome de campo, ao invés de fazer name: name, só deixar name
+object destructuring: desmontar objeto para ao invés de acessar objeto.valor, usar valor. fazer const {attribute1:a1, attribute2:a2...} = object
+ extrai object.attribute1 para variável a1
+ se numa função tiver parametros, usar {atributo} no lugar do parametro deconstroi. ex: (error, response) => {...} //se response tiver um atributo body,
+ pode fazer (error, {body}) => {...}
+
+## ASYNCHRONOUS NODE JS ##
+
+setTimeout(() => {
+	//executa o que tá aqui depois do tempo setado como segundo parametro
+}, 2000) //milisegundos - set time out é do node, não do js. é rodado em c++ pelo node
+
+Callstack: provido pelo motor de js v8
+
+Chamadas do node vão para API do node.
+js é single thread, node é single thread para código mas usa outras threads na api para modulos em c++ (non blocking)
+
+main(): código em node single thread
+node api: em c++ e multi thread
+event loop: guarda resultados de chamadas assincronas a api de node. pode ser rodado junto com a main e inserida nela ou depois da main
+
+fluxo de execução: call stack -> node api -> event loop -> call stack.
+isso pode causar com que chamadas da api rodem depois do main()
+
+api de clima tempo: openweathermap
+- Example of API call:
+api.openweathermap.org/data/2.5/weather?q=London,uk&APPID=e038c191ace82028934d1f0f08627fff
+
+https://api.openweathermap.org/data/2.5/onecall?lat=51.5085&lon=-0.1257&appid={YOUR API KEY}
+https://api.openweathermap.org/data/2.5/weather?q={city name},{state},{country code}&appid={your api key}
+https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={your api key}
+
+Http Requests: npm module request
+
+request({url: url}, (error, response) => {
+    console.log(response)
+})
+
+API gratuida que converte endereço para lat long: www.mapbox.com
+forward geocoding: converte endereço para lat long
+
+/geocoding/v5/{endpoint}/{search_text}.json (endpoint: mapbox.places, search_text: cidade)
+
+# A basic forward geocoding request
+# Find Los Angeles
+
+$ curl "https://api.mapbox.com/geocoding/v5/mapbox.places/Los%20Angeles.json?access_token=pk.eyJ1IjoicGVkcm90ZnMiLCJhIjoiY2s4b3VhdmNmMDJpcDNlcDN2NWYzOXZkMCJ9.95rIcgrKw0QA-nmQlycB2g"
+
+callback function: função como argumento de outra função para ser chamada por ela. nem sempre assíncrona
+se retorno não é especificado, js retorna undefined.
+
+return não funciona com chamadas assincronas. usar callbacks
+
+encodeURIComponent(url) -> converte caracteres especiais (ex espaço para %20, ? para %3f)
+
+request sem a library request: core modules HTTP e HTTPS (http.request(options, callback)) => {response.on('data', (chunk)) responde.on('end')} request.end()
+	precisa somar os chunks e usar toString neles pois eles são binários.
+
+## WEB SERVERS ##
+
+Server: express
+require express é apenas uma função: const app = express()
+mapear endpoint: app.get("/app" (request, response) => {
+	...
+	response.send("test")
+	...
+})
+app.listen("3000", () => { //port number, função assíncrona. sobe servidor
+	console.log("starting server")
+}) 
+
+retornar html ou json: response.send
+
+console.log(_dirname_) e console.log(__filename) mostra pasta e arquivo em execução
+lembrete: main é rodada dentro de um wrapper, que tem __dirname e __filename
+
+path é core module. 
+
+app.use(express.static(path.join(__dirname, "../public"))) -> importa conteudo estático na pasta e subpastas passadas
+
+handlebars: renderiza páginas dinamicas e cria templates reutilizaveis
+handlebars para express: hbs
+
+app.set("view engine", "hbs") // indica ao express que o view engine é o hbs
+pasta para hbs: (root)/views, extensão hbs
+
+app.get("", (req, res) => { // root
+    res.render("index", {   // arquivo index.hbs na pasta views. Segundo parâmetro age como um model de página, recebendo valores do backend
+        title: "WEATHER APPLICATION",
+        name: "Pedro Silva"
+    })
+})
+
+no front:
+<h1>
+    {{title}}
+</h1>
+
+customizar local e nome da pasta views: app.set("views", path.join(__dirname, "../templates")) mudou para pasta templates
+
+require("hbs") ... hbs.registerPartials(path.join(__dirname, "../templates/partials")) -> pedaços de páginas reusáveis
+	chamando um pedaço reusavel: {{>header}} onde header é o nome de um arquivo hbs na pasta registrada como partials (acima)
+
+nodemon src/app.js -e js,hbs // faz nodemon vigiar arquivos js e hbs (-e extensão)
+partials aceitam os parâmetros passados para o template pai. ou seja {{title}} passado no render chega até o partial
+
+tratar 404: último app.get antes de app.listen
+app.get("*", (req,res)=> { //match com tudo que não tiver casos antes
+
+padding x margin: padding é espaço interno, margin é espaço externo ao container
+
+querystring: request.query -> json com as variáveis passadas na url
+cannot set headers after they are sent:quando o server tenta responder mais de uma vez(response.send duas vezes é o mais comum)
+
+default parameters> const greet = (name="User", age) {... //valor default para name é user, se parâmetro não for passado é usado o valor default
+destruturar undefined dá erro.
+valor default para objetos deestruturados> const transaction = {type, {label, stock} = {}} => {... //faz com que o objeto seja iniciado vazio, acessar label e stock retornam undefined, mas destrutura funciona.
+pode combinar os dois: const transaction = {type, {label = "label", stock=0} = {}} => {...
+
+fetch: não é parte de node nem de js, mas de browsers modernos
+fetch("http://localhost:3000/weather").then((response) => {
+ordem do script no hmtl importa. se referenciar conteudo do body no head, estará null
+
+forms fazem reload da página -> event.preventDefault() previne o recarregamento da página
+weatherForm.addEventListener("submit", (event) => {
+    event.preventDefault()    
+    console.log("capturing submit")
+})
+
+id de tags são únicos
+
+## DEPLOYMENT ##
+
+Heroku: deploy node to production
+heroku login
+
+transferir código do github para heroku: SSH
+pasta ssh: ~/.ssh
+ls -a -l ~/.ssh
+ssh-keygen -t rsa -b 4096 -C "pedrotfs@gmail.com"
+eval "$(ssh-agent -s)"
+ss-add ~/.ssh/id_rsa
+
+chave ssh no github -> profile -> settings -> ssh and gpd keys
+ssh -T git@github.com - testa conexão com chave ssh
+heroku keys:add
+heroku create pedrotfs-weather-application
+
+para heroku funcionar, no package.json, informar em scripts (equivalente a npm run script ex npm run start)
+"scripts": {
+    "start": "node src/app.js"
+  },
+no heroku a porta vem do ambiente, que o node vê como process.env.PORT
+para usar isso e local, const port = process.env.PORT || 3000
+no heroku, não usar links absolutos (tipo localhost): fetch("http://localhost:3000/weather?address=" + ... -> "/weather?address=" + ...
+no heroku, vc tem que dar push no repositório deles
+git remote
+git push heroku master
+
+EVITAR USAR MODULOS GLOBAIS, como nodemon. usar tudo como dependência local para que processos sejam instalados com o comando npm install
+no package.json:
+"devDependecies": {
+	"nodemon":"^1.2.0"
+}
+Usando o devdependency não instala em produção
+
+## MONGODB AND PROMISES ##
+
+driver: npm install mongodb
+
+const mongo = require("mongodb")
+const mongoClient = mongo.MongoClient
+
+const connectionURL = "mongodb://127.0.0.1:27017"
+const databaseName = "task-manager"
+
+mongoClient.connect(connectionURL, {useNewUrlParser: true})... (SAMPLE)
+
+result.ops de callback de insert: mostra operações realizadas
+
+propriedade mongodb.ObjectID é função que gera o próximo ObjectId do mongo -> Object id contem os 4 primeiros bytes contando os segundos desde unix time(algo perto de 1970)
+	acessível via id.getTimestamp() no node
+
+no mongo, _id é binário, pois ocupa metade do espaço de uma string.
+ao buscar por id, chamar função ObjectID e buscar chamando new
+	>_id: new ObjectID("6536c6365a353de")
+
+node tem construtores
+
+retorno de find é cursor(ponteiro), não todos os dados. usar toArray() para pegar os dados do cursor
+db.collection("users").find({age: 27}).toArray((error, users) => { ... })
+
+Promises: evolui callbacks para aumentar a legibilidade
+	benefícios: legibilidade, só pode chamar um resultado uma vez(se chamar resolve, não pode chamar de novo nem chamar reject)
+	fluxo: promise -- pending -> fulfilled / rejected
+
+para atualizar, usar updateMany ou updateOne, update é deprecado.
+
+db.collection(..).updateOne({........}).then((result) => {}).catch((error) => {})
+
+## REST APIS AND MONGOOSE ##
+
+Mongoose faz validações para que o desenvolvedor não precise.
+No mongoose por alguma razão, nome do model e da constante que chamam o model devem começar por maiusculo. mongoose torna model minusculo e plural antes de criar a coleção
+Validação é middleware, chamado num hook pre("save") em cada schema
+validator required está por default em todos os schemas
+mongoose só tem validações básicas, mas permite que elas seham extendidas
+
+const User = mongoose.model("User", {
+    name: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    email: {
+        type: String,
+        required:true,
+        trim: true,
+        lowercase: true,
+        validate(value) {
+            if(!validator.isEmail(value)) {
+                throw new Error("Invalid email")
+            }
+        }
+    },
+    age: {
+        type: Number,
+        default: 18,
+        validate(value) {
+            if(value < 18) {
+                throw new Error("Age must be higher than 18")
+            }
+        }
+    },
+    password: {
+        type: String,
+        minlength: 6,
+        trim: true,
+        required: true,
+        validate(value) {
+            if(value.includes("password")) {
+                throw new Error("contains password")
+            }
+        }
+    }
+})
+
+combinar mongoose com npm validator
+
+schemaType é objeto de configuração do mongoose.
+tipos: String, Number, Date, Buffer(ex, guardar imagens de perfil), Boolean, Mixed, ObjectId, Array, Decimal128, Map
+
+app.use(express.json()) -> automaticamente converte jsons recebidos no request
+
+httpstatuses.com
+
+res.status(400).send(e) //em apis, setar status antes de mandar resposta
+200 é default para sucesso
+201 - criado
+400 - bad request
+
+request.params tem os parametros do request
+
+promise chaining: function(args).then((result) => {...}).then((result2) => {...}).catch((e) => {...})
+Mongoose: count é deprecado, usar countDocuments
+
+async/await: ferramentas para trabalhar com promises
+async functions sempre retornam promises
+operador await é usado com promise
+
+const add = async (a, b) => {...}
+...
+const sum = await add(1,99)
+
+usando await dá pra diminuir encadeamento de then() das promises.
+await também permite que os resultados de promises sejam acessíveis no mesmo escopo
+se uma das promises usadas com await é rejeitada, chama reject() e cai no catch, o resultado todo cai no catch
+
+propriedades que não estão no model do mongoose são ignoradas por default.
+Object.keys(req.body): chaves dos valores do json enviados pela requisição
+
+array.every((update) => {return allowedUpdates.includes(update)}) //every volta falso se algum dos integrantes do array retornar falso a callback
+
+## AUTHENTICATION AND SECURITY ##
+
+hash password: bcryptjs npm module
+
+const password = "red1234!"
+const hashPass = await bcrypt.hash(password, 8)
+const match = bcrypt.compare("password", hashPass) //boolean
+
+middleware: funções antes ou depois de eventos, como validate do mongoose. por exemplo, converter um password para hash antes de salvar no banco
+mongose converte model para schema via middleware
+schema.pre e post (before e after) -> userScheme.pre("save", async function (next) { //save é evento. next é o usuário a ser salvo. não pode ser arrow function
+	const user = this //precisa disso por alguma razão
+	...
+	next() //se não chamar, o middleware empaca o programa tudo, ou seja, tem que chamar
+}
+
+algumas queries do mongoose pulam o middleware, por exemplo, findbyIdandUpdate, então separar em findbyId e updatebyId
+
+userScheme.static pode ser chamado depois ex userScheme.static.findByCredentials.function e funciona igual static do java, é pertencente ao tipo.
+userScheme.methods cria método de instancia, precisa obter a instancia primeiro, como por exemplo, invocar new
+
+json web tokens(JWT): tokens
+
+const token = jwt.sign({ _id: "sdasddd32131231"}, "secret", {expiresIn: "7 days"}) //gera tpken
+jwt.verify(token, "secret") //verifica token, mesmo secret da criação do token
+
+token tem 3 partes separados por . header: informações sobre token e algoritmo que gera, payload que tem os dados, e por fim assinatura, verifica o token(valida?)
+token cria dado que é verificavel por assinatura
+token é tudo em base 64 (base64decode.org decodifica, para debug)
+
+retornar o token no login e sign up.
+
+Sem middleware: request -> route handler
+Com middleware: request -> hook -> route handler
+
+registrar função middleware no express: app.use((req, res, next) => {...}) //req e res são igual route handlers, next:
+req.method (post, get...) req.path (/users/...)
+
+adicionar middleware no express: router.get("/users", auth, async (req, res) => {... //middleware é segundo argumento, no caso auth é uma função. vem antes do handler
+
+passar o token no header do request Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1ZWE1ZDA4NzdjYWU5MTFhZTM2MjNlY2MiLCJpYXQiOjE1ODc5OTk5MjZ9.S8CNC7dcEu6hvwF0-jWx-nGnkixb1LJVMYJF43eZK9c
+
+sample de auth
+const token = req.header("Authorization").replace("Bearer ", "")
+const decode = jwt.verify(token, "secret")
+const user = await User.findOne({_id: decode._id, "tokens.token": token})
+if(!user) {
+    throw new Error()
+}
+req.user = user
+next()
+
+postman: variavel de ambiente: {{variavel}}
+postman: setar token em variavel de ambiente automaticamente
+	no request, aba tests, usar o código
+
+if (pm.response.code === 200) { //numero da resposta, ajustar de acordo com o request
+    pm.environment.set("token", pm.response.json().token) //token é a variavel de ambiente
+}
+
+userScheme.methods.toJSON = function() { //sobrescreve método toJSON nativo(?) NAO PODE SER ASYNC
+    const user = this
+    const userObject = user.toObject() // remove informações do mongoose
+
+    delete userObject.password
+    delete userObject.token
+
+    return userObject
+} // método customiza o retorno da conversão do objeto para json, pois res.send chama stringfy implicito, e stringfy chama toJSON implicito. e esse toJSON pode ser sobrescrito, como acontece aqui
+
+NO CASO DESSES DOIS A ORDEM IMPORTA. SE FOR AO CONTRARIO, TUDO QUE CAIR DEPOIS DO users/ É ID, INCLUSIVE O me.
+router.delete("/users/me", auth, async(req, res) => {
+router.delete("/users/:id", auth, async(req, res) => {
+ 
+campo ref num model mongoose: referência outro model (exatamente como ele é exportado/ declarado)
+owner: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true,
+    ref:"User" //referência outro model, exatamente como foi exportado
+}
+
+para usar o ref de forma rápida: task tem owner user>
+task = await findById("wjkdhsakjdh")
+await task.populate().execPopulate() //converte refs nos documentos inteiros
+
+virtual properties: relação entre entidades. não armazenado no banco, apenas usado por mongoose
+userScheme.virtual("tasks", {
+    ref:"Task",
+    localField: "_id", //caḿpo próprio
+    foreignField: "owner" //campo no outro documento
+
+})
+
+usar virtual field:
+await user.populate().execPopulate()
+console.log(user.tasks)
+
+## SORTING, PAGINATION, FILTERING ##
+
+await req.user.populate({ //customizando o populate é possível filtrar, paginar e ordenar usando o objeto match
+            path: "tasks", //caminho da relação no banco
+            match: {
+                attribute: attribute,
+                options: {
+                	limit: 5, //(page size)
+                	skip: 0, //current page -1
+                	sort :{
+                		attribute: 1 (1 asc, -1 desc)
+                	}
+                }
+            }
+}).execPopulate()
+
+## FILE UPLOADS ##
+Multer: npm module para upload de arquivos e multiplas partes
+
+upload no postman: endpoint post, aba body -> form data -> key = upload //valor de upload.single("upload")
+															value: mudar de text para file
+
+const multer = require("multer")
+const upload = multer({
+	dest: "avatars", //pasta destino, removendo isso ele não salva e dá acesso dentro do método que chama o middleware
+    limits: {
+        fileSize: 1000000 //1 mb
+    },
+    fileFilter(req, file, callback) {
+        if(!file.originalname.endsWith("pdf")) { //filtra pdfs
+            return callback(new Error("file extension not accepted"))
+        }
+        callback(undefined, true)
+    }
+})
+app.post("/upload", upload.single("upload"), (req, res) { //usado como middleware, igual o auth
+	res.send()
+}
+
+callback(new Error("file extension not accepted")) erro no upload
+callback(undefined, true) sem erro, upload aceito
+callback(undefined, false) sem erro, upload rejeitado
+
+\.(doc|docx)$ -> regex para ver se termina por doc ou docx
+request.file.buffer => binário do arquivo passado
+salvar imagem no mongo pelo mongoose: type: Buffer
+
+renderizar binário no navegador: <img src="data:image/jpg;base64, DADOS_BINARIOS_COPIADOS_DO_VALOR_DO_MONGO" >
+ex
+<img src="data:image/jpg;base64,/9j/4AAQSkZJRgABAQAASABIAAD/4QCMRXhpZgAATU0....">
+res.set("Content-Type","image/jpg") //indica tipo de resposta. express sabe converter alguns sozinho, como application/json - torna um binário uma url pra tag img
+
+sharp é assincrono, converte imagens e redimensiona
+
+## EMAILS WITH SENDGRID ##
+
+sendgrid: serviço e modulo npm
+
+environment variables: modulo npm env-cmd
+"dev": "env-cmd -f ./config/dev.env nodemon src/index.js" (package.json)
+
+banco em prod: mongo atlas
+no atlas: ip 0.0.0.0/0 whitelista todos os ips
+criar uma senha do mongodb
+usar compass?
+
+conexão remota ao atlas pelo compass: usar opção srv record ()
+
+variaveis de ambiente no heroku: heroku config:set TOKEN_SECRET=secret (unset TOKEN_SECRET)
+ver variaveis de ambiente no heroku: heroku config
+
+## UNIT TESTS ##
+
+Jest e Mocha - frameworks de testes mais usados
+
+Jest - zero config framework
+Jest reconhece arquivos nomeados com .test, ex math.test.js
+
+test("hello", () => {
+  ...  
+})
+
+jest vem com ferramentas de assert
+test("calculate", () => {
+    const total = calculateTip(100, 4)
+    expect(total).toBe(104) //existem vários toBe, como toBeNull, toContain...
+})
+
+//package.json
+"scripts": {
+    "test": "jest --watch" //similar ao nodemon, reexecuta quando detecta mudança
+  },
+
+testar async functions: 
+test("hello", (done) => { //pode ser qqr nome no parametro, não só done
+  ...  
+  done() //sinaliza que precisa rodar isso antes de terminar a função, esperando se for async
+})
+
+testar promise:
+test("hello", (done) => { //pode ser qqr nome no parametro, não só done
+  add(2,3).then((sum) => {
+  	expect(sum).toBe(5)
+  	done()
+  }
+})
+
+testar async:
+test("hello", async () => { 
+  const sum = await add(3,5)
+  expect(sum).toBe(8)
+})
+
+variáveis de ambiente para jest para subir o server: criar env para testes para não usar o banco de produção de testes. (mudar nome na url de conexão com mongo resolve isso já)
+o default do jest é teste de javascript. para mudar, no package.json, criar objeto jest: {"testEnvironment":"node"}
+
+testar express: npm module supertest
+super test não precisa subir o server (chamada para app.listen)
+
+por conta disso, criar o app num arquivo (de preferencia app.js) e exportar ele para um outro arquivo subir (por exemplo, index.js): aí vc tem um app para o supertest usar
+banco de testes deve ser recriado a cada teste, senão pode dar erros com dados já executados
+
+setup/teardown
+beforeEach(() => { //antes de cada teste do arquivo
+afterEach(() => { //depois de cada teste do arquivo
+
+teste com autenticação: await request(app).get("/users/me").set("Authorization", "Bearer " + userOne.tokens[0].token).send().expect(200)
+
+expect(user).not.toBeNull() //assert not null
+
+expect(response.body).toMatchObject({ //ve se objeto retornado é do "tipo" esperado
+        user: {
+            name:"pedro",
+            email:"pedro@pedro.com"
+        },
+        token: user.tokens[0].token
+    })
+
+Mock library: dentro de pasta contendo testes, criar pasta __mocks__ . dentro dessa pasta, criar pastas(se tiver escopo tipo @sendgrid/mail mail é o escopo) / arquivos js para o nome dos modules que quer mockar
+toBe usa operador === que vê se é o mesmo na memória objetos vazios iguais  podem não ser os mesmos na memória
+toEqual usa operador == que vê se os atributos são iguais, não endereço de memória
+
+evitar concorrencia no banco usando testes: (package.json) "test": "env-cmd -f ./config/test.env jest --detectOpenHandles --runInBand"
+
+(DOCKER) ao dockerizar uma imagem com variaveis de ambiente, passar o arquivo com elas ao invés de passar variavel a variavel
+
+## SOCKETS ##
+
+relembrar app.use(express.static(publicDir)) //pasta de arquivos estáticos como html
+
+protocolo websocket: full duplex (comunicação bidirecional entre cliente servidor) -> difere de request http pois só cliente inicia comunicação
+comunicação persistente
+
+biblioteca socket.io
+
+const express = require("express")
+const path = require("path")
+const port = process.env.PORT || 3000
+const http = require("http")
+const socketio = require("socket.io")
+...
+const server = http.createServer(app)
+const io = socketio(server)
+...
+
+server.listen(port, () => { //necessário para usar sockets
+
+no html, 
+<script src="/socket.io/socket.io.js"></script> //script do socket client
+<script src="/js/chat.js"></script> //script seu próprio que por ser chamado depois de socket.io.js, tem acesso a funções dele
+no chat.js,
+io()
+
+transferir dados entre servidor e clientes por socket: eventos (nome, conteudo)
+server: (arquivo node js)
+...
+let count = 0
+
+io.on("connection", (socket) => { //socket contem informação da conexão recém feita
+    console.log("new connection")
+    socket.emit("countUpdated", count) //manda eventos para clientes. eventos: nome, valor que aparece para cliente
+
+    socket.on("increment", () => { //increment é enviado do client
+        count++;
+        //socket.emit("countUpdated", count) //devolve valor incrementado para client em particular
+        io.emit("countUpdated", count) // manda para todas as conexões
+    })
+})
+...
+
+client: (arquivo javascript do client que roda no navegador)
+...
+const socket = io()
+
+socket.on("countUpdated", (count) => {
+    console.log("the count has been updated to " + count)
+})
+
+document.querySelector("#increment").addEventListener("click", () => {
+    console.log("click event on increment button")
+    socket.emit("increment") // evnia para o server
+})
+...
+NOME DOS EVENTOS TEM QUE SER IGUAL.
+
+socket.broadcast.emit("welcomeMessageEvent", "new User joins") // manda mensagem pra todo mundo menos usuário atual
+
+io.on("connection", (socket) => { //socket contem informação da conexão recém feita
+    ...
+    socket.on("disconnect", () => { //captura desconexão de usuário
+        io.emit("welcomeMessageEvent", "user disconnect") // manda para todas as conexões
+    })
+})
+
+event acks: opcionais, call back como argumento.
+ socket.emit("message", message, (error) => {  //ack client js
+    $button.removeAttribute("disabled")
+    $input.value = ""
+    $input.focus()
+    if(error) {
+        return console.log(error)
+    } else {
+        console.log("message delivery confirmation")
+    }
+})
+
+socket.on("message", (message, callback) => { //callback é para ack, node js server
+        const badwords = new Filter()
+        if(badwords.isProfane(message)) {
+            return callback("Don't use curse words or profanity")
+        }
+        io.emit("message", message) // manda para todas as conexões
+        callback()
+    })
+
+propriedade innerHTML define ou obtém a sintaxe HTML ou XML descrevendo os elementos descendentes.
+document.querySelector("#messageTemplate") -> find by id
+$messages.insertAdjacentHTML("beforeend", Mustache.render(messageTemplate))
+
+renderizar dinamico usando javascript: usar templates diferentes para tags diferentes
+no html
+<div id="messages"></div>
+...
+ <script id="messageTemplate" type="text/html">
+    <div>
+        <p> {{message}} </p>
+    </div>
+</script>
+
+<script id="messageLocationTemplate" type="text/html">
+    <div>
+        <p> <a href={{message}}>LOCATION</a> </p>
+    </div>
+</script>
+
+no javascript
+...
+const $messages = document.querySelector("#messages")
+
+const messageTemplate = document.querySelector("#messageTemplate").innerHTML
+const messageLocationTemplate = document.querySelector("#messageLocationTemplate").innerHTML
+
+socket.on("message", (message) => {
+    console.log(message)
+    $messages.insertAdjacentHTML("beforeend", Mustache.render(messageTemplate, {
+        message:message
+    }))
+})
+
+socket.on("sendLocationMessageEvent", (message) => {
+    console.log(message)
+    $messages.insertAdjacentHTML("beforeend", Mustache.render(messageLocationTemplate, {
+        message:message
+    }))
+})
+...
+
+const date = new Date()
+date.toString()
+date.getDate() //dia do mes
+date.getTime() //timestamp
+
+biblioteca javascript moment: converte momentos em datas
+moment(message.createdAt).format("hh:mm:ss") //createdAt é um timestamp
+rooms:
+
+const {username, room} = Qs.parse(location.search, {ignoreQueryPrefix: true}) //ignora ? em queries de busca
+ex: http://localhost:3000/chat.html?username=321323&room=111 ignora o ? e desconstroi resultado em username e room
+
+socket.broadcast.to(room).emit("message", generateMessage(username + " entrou na sala.")) // to(room) é apenas para a sala em questão e room é a string que representa a sala
+//variantes aceitos com io.emit e socket.broadcast.emit para limitar a sala
+
+const {error, user} = addUser({id: socket.id, username, room}) //socket.id é o id unico de conexão
+no mustache
+{{#users}} //abre array
+<li>{{username}}</li>
+{{/users}} //fecha array
+
+
+--------------------_SAMPLES_-------------------------------------------
+
+const fs = require("fs")
+
+fs.writeFileSync("notes.txt", "testing node fs.")
+fs.appendFileSync("notes.txt", "\nappending.")
+
+--------------------
+
+//imports
+const notes = require("./notes.js")
+const validator = require("validator")
+const chalk = require("chalk")
+
+const email = "pedrotfs@gmail.com"
+const url = "www.pedro.com"
+
+console.log(notes())
+console.log("is " + email + " an email? " + validator.isEmail(email))
+console.log("is " + url + " an url? " + validator.isURL(url))
+console.log(chalk.green("HAPPY ") + chalk.red("BIRTHDAY ") + chalk.keyword("orange")("!!!!!"))
+console.log(chalk.green("HAPPY ") + chalk.red("BIRTHDAY ") + chalk.keyword("orange")("!!!!!"))
+const chalkstuff = chalk.italic(chalk.bgCyan(chalk.bold("PEDRO SILVA")));
+console.log(chalk.underline.inverse(chalkstuff))
+
+---------------------------------------
+
+const fs = require("fs")
+const json = JSON.parse(fs.readFileSync("1.json").toString())
+json.name = "pedro"
+json.age = 34
+
+fs.writeFileSync("1.json", JSON.stringify(json))
+
+--------------------------------------------
+
+const key = "e038c191ace82028934d1f0f08627fff"
+
+const request = require("request")
+const lat = "-23.5489"
+const long = "-46.6388"
+
+const url = "https://api.openweathermap.org/data/2.5/onecall?lat=" + lat + "&lon=" + long + "&appid={" + key + "}"
+
+request({url: url}, (error, response) => {
+    const data = JSON.parse(response.body)
+    console.log(response)
+})
+
+--------------------------------------------------------
+
+const mongo = require("mongodb")
+const mongoClient = mongo.MongoClient
+
+const connectionURL = "mongodb://127.0.0.1:27017"
+const databaseName = "task-manager"
+
+mongoClient.connect(connectionURL, {useNewUrlParser: true}, (error, client) => {
+    if(error) {
+        return console.log("error connecting to database")
+    }
+    console.log("connection estabilished")
+    const db = client.db(databaseName)    
+    db.collection("testCollection2").insertMany([{
+        task:"task1",
+        done:true
+    },{
+        task:"task2",
+        done:false
+    }
+    ]
+    , (error, result) => {
+        if(error) {
+            return console.log("error inserting document.")
+        }
+        console.log(result.ops)
+    })
+})
+
+----------------------------------------
+const doWorkPromise = new Promise((resolve, reject) => {
+	setTimeOut(() => {
+		resolve([1, 4, 7])
+		reject("error") // não é chamado, pois chama só um deles uma vez
+	}, 2000)
+})
+doWorkPromise.then((result) => { //chamado quando resolve roda
+	console.log("success!", result)
+}).catch((error) => { //chamado quando reject roda
+	
+})
+
+------------------------------------------------------------------
+const mongoose = require("mongoose")
+
+const connectionURL = "mongodb://127.0.0.1:27017/task-manager-api"
+
+mongoose.connect(connectionURL, {
+    useNewUrlParser: true,
+    useCreateIndex: true
+})
+
+const User = mongoose.model("User", {
+    name: {
+        type: String
+    },
+    age: {
+        type: Number
+    }
+})
+
+const me = new User({
+    name:"Pedro",
+    age:34
+})
+
+me.save().then(() => {
+    console.log(me)
+}).catch((error) => {
+    console.log("error", error)
+})
+
+-------------------------------------------- sendgrid
+
+const sgMail = require("@sendgrid/mail")
+
+const sendgridAPIKey = "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"
+
+sgMail.setApiKey(sendgridAPIKey)
+
+sgMail.send({
+    to:"pedrotfs@gmail.com",
+    from: "pedrotfs@gmail.com",
+    subject: "test",
+    text: "please stay safe"
+})
+
+-----------------------------config/dev.env
+PORT=3000
+MAINTENANCE=false
+SENDGRID_API_KEY=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
+CONNECTION_URL=mongodb://127.0.0.1:27017/task-manager-api
+TOKEN_SECRET=secret
+
+---------------------------------test without tools
+const calculateTip = (total, percent) => {
+    const tip = total * percent/100
+    return total + tip
+}
+
+test("calculate", () => {
+    const total = calculateTip(100, 4)
+    if(total !== 104) {
+        throw new Error("total should be 104 was" + total)
+    }
+
+})
+
+------------------------------ test with express example
+const request = require("supertest")
+const app = require("../src/app")
+const User = require("../src/models/user")
+const {userOne, userOneId, setupDB} = require("./fixtures/db")
+
+beforeEach(setupDB)
+
+test("create", async () => {
+    const response = await request(app).post("/users").send({
+        name: "pedro",
+        email: "pedro@pedro.com",
+        password: "123456"
+    }).expect(201)
+    const user = await User.findById(response.body.user._id)
+    expect(user).not.toBeNull()
+    expect(response.body).toMatchObject({
+        user: {
+            name:"pedro",
+            email:"pedro@pedro.com"
+        },
+        token: user.tokens[0].token
+    })
+    expect(user.password).not.toBe("123456") //not plain text
+})
+
+test("update", async () => {
+    const response = await request(app).patch("/users/me").set("Authorization", "Bearer " + userOne.tokens[0].token).send({
+        name: "pedro2",
+        email: "pedro2@pedro.com",
+        password: "1234567"
+    }).expect(201)
+    const user = await User.findById(userOneId)
+    expect(user).not.toBeNull()
+    expect(user.name).toBe("pedro2")
+    expect(user.email).toBe("pedro2@pedro.com")
+    expect(user.password).not.toBe("1234567") //not plain text
+})
+
+test("update fail", async () => {
+    const response = await request(app).patch("/users/me").set("Authorization", "Bearer " + userOne.tokens[0].token).send({
+        name: "pedro2",
+        email: "pedro2",
+        password: "1234567"
+    }).expect(400)  
+})
+
+test("login", async () => {
+    const response = await request(app).post("/users/login").send({
+        email : userOne.email, 
+        password: userOne.password
+    }).expect(200)
+    const user = await User.findById(response.body.user._id)
+    expect(user).not.toBeNull()
+    expect(response.body.token).toBe(user.tokens[1].token)
+})
+
+test("fail login", async () => {
+    await request(app).post("/users/login").send({
+        email : userOne.email, 
+        password: "123457"
+    }).expect(500)
+})
+
+test("auth-profile", async () => {
+    await request(app).get("/users/me").set("Authorization", "Bearer " + userOne.tokens[0].token).send().expect(200)
+})
+
+test("auth-profile fail", async () => {
+    await request(app).get("/users/me").send().expect(401)
+})
+
+test("auth-delete", async () => {
+    await request(app).delete("/users/me").set("Authorization", "Bearer " + userOne.tokens[0].token).send().expect(200)
+    const user = await User.findById(userOne._id)
+    expect(user).toBeNull()
+})
+
+test("auth-delete fail", async () => {
+    await request(app).delete("/users/me").send().expect(401)
+})
+
+test("upload picture", async () => {
+    await request(app).post("/users/me/avatar").set("Authorization", "Bearer " + userOne.tokens[0].token)
+    .attach("avatar","./tests/fixtures/profile-pic.jpg")
+    .expect(200)
+    const user = await User.findById(userOneId)
+    expect(user.avatar).toEqual(expect.any(Buffer))
+})
+
+-----------------------mongoose model example
+const mongoose = require("mongoose")
+const validator = require("validator")
+const bcryptjs = require("bcryptjs")
+const jwt = require("jsonwebtoken")
+const Task = require("./task")
+
+const userScheme = new mongoose.Schema({
+    name: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    email: {
+        type: String,
+        unique: true,
+        required: true,
+        trim: true,
+        lowercase: true,
+        validate(value) {
+            if(!validator.isEmail(value)) {
+                throw new Error("Invalid email")
+            }
+        }
+    },
+    age: {
+        type: Number,
+        default: 18,
+        validate(value) {
+            if(value < 18) {
+                throw new Error("Age must be higher than 18")
+            }
+        }
+    },
+    password: {
+        type: String,
+        minlength: 6,
+        trim: true,
+        required: true,
+        validate(value) {
+            if(value.toLowerCase().includes("password")) {
+                throw new Error("contains password")
+            }
+        }
+    },
+    tokens: [{
+        token: {
+            type: String,
+            required: true
+        }
+    }],
+    avatar: {
+        type: Buffer //blob?
+    }
+},  {
+    timestamps: true //ativa timestamps para criação e atualização
+})
+
+userScheme.virtual("tasks", {
+    ref:"Task",
+    localField: "_id",
+    foreignField: "owner"
+})
+
+userScheme.statics.findByCredentials = async (email, password) => {
+    const user = await User.findOne({email: email})
+    if(!user) {
+        throw new Error("unable to login (1)")
+    }    
+    const match = await bcryptjs.compare(password, user.password)
+    if(!match) {
+        throw new Error("unable to login (2)")
+    }
+    return user
+}
+
+userScheme.methods.generateAuthToken = async function() {
+    const user = this
+    const token = jwt.sign({_id: user._id.toString()}, process.env.TOKEN_SECRET)     
+    user.tokens = user.tokens.concat({token: token})
+    await user.save()
+    return token
+}
+
+userScheme.methods.toJSON = function() {
+    const user = this
+    const userObject = user.toObject() // remove informações do mongoose
+
+    delete userObject.password
+    delete userObject.tokens
+    delete userObject.avatar // polui muito o json. já é fornecido via url pelo express
+
+    return userObject
+}
+
+userScheme.pre("save", async function (next) {
+    const user = this
+    if(user.isModified("password")) {
+        user.password = await bcryptjs.hash(user.password, 8)
+    }
+    next()
+})
+
+userScheme.pre("remove", async function (next) {
+    const user = this
+    await Task.deleteMany({owner: user._id})
+    next()
+})
+
+const User = mongoose.model("User", userScheme)
+
+module.exports = User
+
+----------------------------------------------------user express router example
+const express = require("express")
+const multer = require("multer")
+const sharp = require("sharp")
+
+const auth = require("./../middleware/auth")
+const User = require("./../models/user")
+const { sendWelcome } = require("../emails/account")
+const { sendGoodbye } = require("../emails/account")
+
+const router = new express.Router()
+const upload = multer({
+    limits: {
+        fileSize: 1000000 //1 mb
+    },
+    fileFilter(req, file, callback) {
+        if(!file.originalname.match(/\.(jpg|jpeg|png)$/)) { //filtra por formatos
+            return callback(new Error("file extension not accepted"))
+        }
+        callback(undefined, true)
+    }
+})
+
+router.post("/users", async (req, res) => {
+    const user = new User(req.body)
+    try {
+        await user.save()
+        sendWelcome(user.email, user.name) //assincrono, não precisa ser esperado
+        const token = await user.generateAuthToken()
+        res.status(201).send({user, token})
+    } catch(e) {
+        res.status(400).send(e)
+    }
+})
+
+router.post("/users/login", async (req, res) => {
+    try {
+        console.log(req.body)
+        const user = await User.findByCredentials(req.body.email, req.body.password)
+        console.log(user)
+        const token = await user.generateAuthToken()
+        res.send({user, token})
+    } catch(e) {
+        res.status(500).send()
+    }
+})
+
+router.post("/users/logout", auth, async(req, res) => {
+    try {
+        req.user.tokens = req.user.tokens.filter((token) => {
+            return token.token !== req.token
+        })
+        await req.user.save()
+        res.send(req.token)
+    } catch(e) {
+        res.status(500).send()
+    }
+})
+
+router.post("/users/logout/all", auth, async(req, res) => {
+    try {
+        const revoked = req.user.tokens
+        req.user.tokens = []
+        await req.user.save()
+        res.send(revoked)
+    } catch(e) {
+        res.status(500).send()
+    }
+})
+
+router.post("/users/me/avatar", auth, upload.single("avatar"), async (req, res) => { //autentica primeiro depois envia foto
+    const buffer = await sharp(req.file.buffer).png().resize({width: 250, height: 250}).toBuffer() //converte para png e redimensiona
+    req.user.avatar = buffer
+    await req.user.save()
+    res.send()
+}, (error, req, res, next) => { //error handler -> PRECISA TER ESSA ASSINATURA
+    res.status(400).send({error: error.message})
+})
+
+router.get("/users", auth, async (req, res) => {
+    try {
+        const users = await User.find({})
+        res.send(users)
+    } catch(e) {
+        res.status(500).send()
+    }
+    
+})
+
+router.get("/users/me", auth, async (req, res) => {
+    res.send(req.user)
+})
+
+router.get("/users/:id", auth, async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id)
+        if(!user) {
+            return res.status(404).send()
+        }
+        res.send(user)
+    } catch(e) {
+        res.status(500).send()
+    }
+})
+
+router.get("/users/:id/avatar", async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id)
+        if(!user || !user.avatar) {
+            throw new Error()
+        }
+        res.set("Content-Type","image/png") //indica tipo de resposta. express sabe converter alguns sozinho, como application/json
+        res.send(user.avatar)
+    } catch(e) {
+        res.status(404).send()
+    }
+})
+
+router.patch("/users/me", auth, async (req, res) => {
+    const updates = Object.keys(req.body)
+    try {
+        const user = req.user
+        updates.forEach((update) => { user[update] = req.body[update] })
+        await user.save()
+        res.status(201).send(user)
+    } catch(e) {
+        res.status(400).send()
+    }
+})
+
+router.patch("/users/:id", auth, async (req, res) => {
+    const updates = Object.keys(req.body)
+    try {
+        const user = await User.findById(req.params.id) //new retorna o usuário pós alteração
+        updates.forEach((update) => { user[update] = req.body[update] })
+        await user.save()
+        if(!user) {
+            return res.status(404).send()
+        }
+        res.status(201).send(user)
+    } catch(e) {
+        res.status(400).send()
+    }
+})
+
+router.delete("/users/me", auth, async(req, res) => {
+    console.log("1")
+    try {
+        console.log(req.user)
+        await req.user.remove()
+        sendGoodbye(req.user.email, req.user.name)
+        res.send(req.user)
+    } catch(e) {
+        res.status(400).send()
+    }
+})
+
+router.delete("/users/me", auth, async(req, res) => {
+    try {
+        await User.findByIdAndDelete(req.user._id)
+        sendGoodbye(user.email, user.name)
+        res.send(user)
+    } catch(e) {
+        res.status(400).send()
+    }
+})
+
+router.delete("/users/:id", auth, async(req, res) => {
+    try {
+        const user = await User.findByIdAndDelete(req.params.id)
+        if(!user) {
+            return res.status(404).send()
+        }
+        res.send(user)
+    } catch(e) {
+        res.status(400).send()
+    }
+})
+
+router.delete("/users/me/avatar", auth, async (req, res) => { //autentica primeiro depois envia foto
+    req.user.avatar = undefined
+    await req.user.save()
+    res.send()
+})
+
+module.exports = router
+
+---------------------NPM-MODULES--------------------------------------------------
+validator: valida de tudo
+chalk: escreve colorido e com tamanhos diferentes no console
+nodemon: reinicia app se detecta mudanças - recomendado usar global, deployar como local, instalar como dev dependency
+yargs: parse de argumentos da linha de comando. precisa chamar yargs.parse senão num faz nada(ou console log yarg.argv)
+request: requisições http
+express: server
+path: mexe com caminhos relativos de arquivos
+handlebars: renderiza páginas dinamicas e cria templates reutilizaveis
+hbs: handlebars para express
+mongodb: driver pra mongo
+mongoose: suporte ao mongodb, com validação e outras coisas
+bcryptjs - encripta coisas em hashes, como passwords
+jsonwebtoken - tokens de sessão
+multer - multi part files upload
+sharp - crop, redimensiona, converte imagens
+@sendgrid - manda emails. registrar no site
+env-cmd: carrega variaveis de ambiente de arquivo, instalar como dev dependency
+jest: testes unitários, instalar como dev dependency
+supertest: testes unitários para express
+socket.io: sockets
+bad-words: contem palavrões para serem filtrados

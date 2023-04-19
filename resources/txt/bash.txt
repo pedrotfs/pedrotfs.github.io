@@ -1,0 +1,553 @@
+Bash
+
+echo $SHELL - ve se tá rodando o shell por default
+
+Shell - interpreta comandos e passa para OS - mais conveniente para dar comandos
+Bash - shell mais popular (Bourne again shell) - comum, rapido, cheio de features
+Script - séries de comando para ser lido pelo shell - executados 1 a 1 na linha de comando - leva a automação
+
+rodar script - caminho do script. ex ./script.sh ou ./pasta/script.sh
+
+comandos:
+
+	file - descreve o tipo de arquivo
+	echo - imprime (ex - echo "String")
+	exit - comando de encerrar script. (ex - exit 0) / não obrigatório, se ausente, o codigo do ultimo comando rodado é devolvido
+	chmod - permissões (ex - chmod +x script.sh - privilégio de execução)
+
+Componentes do Bash
+	
+	hashbang - shbang - #!/bin/bash (indica qual interpretador será usado) / pode ser usado para python?
+	Comandos
+	Exit - (pode dar codigos de erro, entre 0 ou 255. 0 costuma ser sucesso, demais são erros. 1 é o erro mais genérico)
+
+Outros componentes
+
+	comentários - ignorados pelo shell, igual comentário de programas - #
+
+Permissões
+	
+	scripts recem criados não vem com permissões de execução - comando ll mostra
+	drwxr-xr-x
+		primeiro d indica diretorio, se for - é arquivo
+		tres primeiros são permissões do dono
+			r - read
+			w - write
+			x - execute
+		o segundo trio representa permissão do grupo do dono
+		o terceiro representa demais usuários
+
+	chmod 744 script
+		primeiro numero - dono
+		segundo numero - grupo?
+		terceiro numero - restante?
+
+		0 - sem permissão nenhuma (000)
+		1 - execução (001)
+		2 - escrita (010)
+		4 - leitura (100)
+
+		octais são a soma dos privilégios (ex 7: 1 + 2 + 4 [111])
+
+Path
+
+	variavel que diz ao shell onde tem executaveis: PATH
+	arquivo que contem o path: .profile
+		export PATH="$PATH:$HOME/dev/bash" - adiciona seu path ao final, é lido quando o shell inicia - source ~/.profile rele o .profile
+
+Variaveis e Shell Expansions
+	
+	parameter: entidade q guarda valores
+		variaveis - valores podem ser mudados de forma manual (tb tem tipo posicionais e especiais)
+			
+			criar: student="sarah" (sem espaços depois do igual, se tiver espaço bash acha q é comando)
+			usar: echo "Hello ${student}" ou echo "Hello $student" - para usos mais complexos, usa {}
+
+			costuma dar nome em caixa baixa, pois variaveis do shell tão todas maiusculas, p não confundir
+
+			Shell variables: tb conhecido por environment variables (ambiente) - criados pelo shell
+				podem ser mudadas pelo usuário
+				Bourne Shell variables (10 no total)
+				Bash Shell variables (em torno de 95 no total)
+
+
+				PATH: lista de diretorios com executaveis
+				HOME: caminho absoluto para o home do usuario
+				USER: nome do usuário atual
+				HOSTNAME: nome do computador
+				HOSTTYPE: tipo do arquitetura do processador (ex: x86_64)
+				PS1: prompt string one - tipo c:\> ou :$
+				PWD: print work directory - pasta atual
+				OLDPWD: pasta anterior
+
+		mudar case de valor de variaveis: echo ${student,} (formata primeira letra minuscula - preserva variavel)
+			tudo: echo ${student,,}
+			primeira letra maiscula: echo ${USER^}
+			tudo maiusculo: echo ${USER^^}
+
+		ver tamanho: echo ${#student}
+
+		substring: ${student:Inicio_substring:tamanho_substring} (ex: ${student:1:2}) - começa no zero - sem parametro de tamanho vai até o fim, se parametro for vazio, bash supõe zero
+			pode ser com length negativo: ${student: -1:2} - precisa do espaço vazio antes do '-', (-1 é fim -1) (só anda p frente, não p trás)
+
+	Command substituion: pega o retorno do comando - comando é rodado em um subshell
+		$(comando) : (ex: tar -cf "$currentdir/my_backup_$(date +%d-%m-%Y_%H-%M-%S).tar" $currentdir 2>/dev/null)
+
+	Arithmetic Expansion: $((expressão)) ex( echo $(( 4 + 2 )) )
+		potencia: **
+		modulo(resto): %
+		só numeros inteiros, se precisar de decimal usar comando bc
+
+	Comando bc: basic calculator
+		echo "scale=2; 5/2" | bc
+
+	Tilde Expansion: ~ - home do usuario atual
+		~student: home do user student
+		~root: home do root
+		~+: PWD
+		~-: OLD_PWD
+
+		(cd ~- funciona e volta p pasta anterior)
+
+	Brace Expansion: usa {} para expandir 2 tipos de litras, string lists (meses, usernames, etc) e range lists (sequencias q seguem padrão, A - Z ou 1 - 100)
+
+		range tem menos flexibilidade, mas é mais fácil usar
+
+		String list: echo {a,18,z,barry,42} -> imprime eles - não pode ter espaço ou o shell acha que é comando
+		Range list: echo {1..10} -> imprime 1 até 10, não pode ter espaço também - funciona com comandos, tipo gerar várias pastas ao mesmo tempo: mkdir month{01..12}
+			echo {1..1000..3} -> imprime um até 1000, mas a cada 3
+			echo month{01..12} -> imprime month01, month02...month12
+			touch file{01..31}.txt -> arquivos file01.txt ... file31.txt são criados
+
+Bash Command Line Processing
+
+	*Quoting (escape) : remover significado de caracteres especiais para que eles possam ser lidos de forma literal
+		\ - remove significado do caracter em seguida - ex: echo john \& jane
+		'' (aspas simples) - remove de todos os caracteres dentro - ex: echo 'c:\pedro'
+		"" (aspas duplas) - remove de todos os caracteres dentro menos $ e ` (craze) - mais flexivel
+
+	5 passos
+
+	1 - Tokenisation: quebra a entrada em seq. de caracteres q são uma unica unidade executavel pelo shell (palavras[não contem meta caracter não escapado] ou operadores[contem meta caracter não escapado])
+		
+		meta caracteres são como pontuações (|, &, ;, () <>, espaço, tab etc)
+		2 tipos de operadores: controle (|, &, ; \n, etc) e redirecionais (>, <, &>, etc) - todos feitos de meta caracteres, e só são operadores se não são escapados (ex: \&)
+		ex: echo $name > out.txt - 3 palavras (echo, $name, out.txt) e um operador ( > )
+
+
+	2 - Command Identification: quebra comandos em simples(comandos e argumentos terminados por operador de controle, tipo nova linha) ou compound (if, for, while, etc)
+		terminados por operador de controle - primeiro nome é interpretado como comando, e outras palavras são interpretadas como argumento até próximo operador de controle
+
+	3 - Expansões
+        4 estagios - brace, (parameter, arithmetic, command, tilde), word splitting, globbing - expansões anteriores são feitos antes dos posteriores
+            etapas do mesmo passo na ordem que aparecem
+            
+            Word splitting: separa resultado de expressão unquoted (parameter & arithmetic expansions, command susbtitution) em palavras separadas
+                separado por caracteres no $IFS (internal field separator - valor pode ser mudado) - espaço, \t, \n
+                se quiser q o output de uma expansão seja uma unica palavra, coloca a expressão a expandir dentro de aspas duplas
+            
+            Globbing: só executa em palavras, não operadores
+                        procura caracteres especiais unquoted (*,?,{) - patterns - ex: ls *.pdf - * vira muitas palavras
+                            * pode ser vazio
+                        ? - qqr um caracter unico
+                        [] - ls file[ab].txt - qqr arquivo q tem um a ou b q termina em .txt e começa em file       
+
+	4 - Quote Removal: remove quotes
+	    tipos de quotes: \, '', ""
+	    no unquote, é removido todos quotes que não resultam de uma expansão
+	    
+	5 - Redirection - direcionar entradas e saidas
+	    streams:
+    	    0 - input - input alternativo a argumentos de linha de comando
+	        1 - output - saida de sucesso
+    	    2 - error - erros de comando
+    	ex: cat - espera texto ou arquivo
+    	ex: echo "this" > out.txt redireciona de console para arquivo
+    	
+    	> - redireciona output
+    	2> - redireciona output de erro
+    	&> - redireciona output e output de erro
+    	
+    	uma seta > sobrescreve ao chamar
+    	duas setas >> concatena ao anterior
+
+	depois disso tudo, bash executa o que sobra na linha de comando
+
+
+Request for User Input
+
+    Positional Parameters: cada argumento a um comando recebe um numero de posição, de forma a se referir a eles em um script
+        $1, $2, $3, ... -> parametros posicionais - não é possivel setar essas variaveis de forma manual - para maiores de 10, precisa por em {} senão ele interpreta o 1 primeiro
+        valor padrão numérico: echo $((${2:-0)) // se parametro em posicao 2 não tiver valor, assumir 0
+        
+    Special Parameters: valor calculado baseado no script em execução. não podem ser mudados "na mão"
+        $# : numero de parametros posicionais
+        $0 : no terminal, mostra qual shell tá rodando. no script, mostra o nome do script
+        $@ : todas as variaveis posicionais separadas pelos separadores padrão
+        $* : igual acima
+        "$@":todas as variaveis posicionais separadas pelos separadores padrão mas em aspas duplas, não sofrendo expansão
+        "$*":igual acima mas coloca primeiro caracter do IFS para separar as variaveis. pode ser combinado com mudar o IFS p virgula por ex.
+        
+    Read Command: espera input e grava em uma variavel ($REPLY por padrão)
+        read input1 input2: grava nas variaveis input1 e input2 o resultado, separado por IFS
+        read -N 4 -s -t 5 -p "frase" name : mostra string e espera input, grava na variavel name, -t é timeout em segundos. -s esconde o input digitado. -N é numero de caracteres na variavel
+    
+    Select Command: menu de opções (default $RESPONSE) - fica em loop se não tiver o break
+        select day in mon tue wed thu fri sat sun; do
+        echo "day: $day"
+        break
+        done
+        
+        variavel PS3 - prompt do comando select
+
+Logica
+
+    Lists: encadear comandos para execução - 1 ou mais comandos
+        List operators: cria lista de comandos.
+            & - ; - && - ||
+            & - manda p background, assincrono
+            ; - comandos em sequencia, espera terminar p continuar
+            && - and - só roda segundo se primeiro for bem sucedido (exit code 0)
+            || - or - só roda segundo se primeiro der erro
+    
+    Test commands: compara informações, se sucesso retorna exit status 0. se falso, retorna 1 (sim, é invertido mesmo)
+        testes dentro de colchetes, e tem q ser separado por espaço do colchete. ex: [ $variavel -eq $variavel2 ]
+            
+            [ 2 -eq 2 ] ; echo $? (operador $? é o resultado do ultimo comando rodado, seja ele teste ou etc aqui no caso, resultado do teste)
+            -gt, -lt, -geq, -leq (maior, menor, mair ou igual, menor ou igual)
+            
+            [[ $a = $b ]] ; echo $? -> testa igualdade entre strings
+            != diferente
+            -z -> testa string vazia ou nula [[ -z $c ]]
+            -n -> oposto, vê se string não é vazia nem nula
+            
+            [[ -e today.txt ]] ; echo $? -> ve se arquivo existe
+            -f - testa se é arquivo regular 
+            -d - testa se é diretório
+            -x - testa se arquivo existe e tem permissão de execução
+            -r -w -nt ...
+
+    if statement
+        palavras reservadas if e fi
+        checa exit status, se 0 roda, senão não (invertido mesmo)
+        if [teste]; then ... fi -> ; indica fim da condição de teste
+        elif: else if, faz outro teste, sintaxe igual do if
+        identar é boa prática
+        
+        && - and e || - or -> ex: if [ $a = $b ] && [ $a = $c ] ; then
+        
+    case statement
+        começa com case e termina com esac - é um globbing
+        case "$number" in [0-9]) echo "single digit";;
+
+        
+Processing Options & Reading Files
+
+    comando cal - mostra calendário. cal -A 5 mostra 5 meses
+    
+
+    While loops: while [ $num -gt 10 ]; do ... done
+    
+    getopts : obtem parametros que o comando aceita - pega uma opção por vêz. para processar tudo, usar como condição do while
+        ex: getopts "fc" (opções f e c)
+        ex: getopts "f:c:" opt (opções f e c aceitam parametros e salva na variavel opt)
+        $OPTARG : é o valor do argumento da opção (ex: cal -A 5 , $OPTARG é 5)
+    
+    read while loops: usam read como teste, normalmente usado para iterar conteudo de arquivo por aquivo
+        while read line; do ... done < "$1" (guarda linha do arquivo passado como parametro na variavel line)
+        erro comum: redirecionar variavel q recebe o resultado do read while (while read line << $1; ERRADO)
+        
+        process substitution: done < <(ls $HOME) - pega resultado do comando e passa para o while
+        
+    Indexed arrays: numbers=(1 2 3 4)
+        se fizer echo $numbers volta só o primeiro elemento -> p acessar usando indice ${numbers[3]} (começa do zero)
+            ${numbers[@]} - mostra todos
+            ${!numbers[@]} - mostra todos os indices
+            ${numbers[@]:1:2} - mostra do elemento 2 ao 3
+            numbers+=(5) : adiciona no fim valor 5
+            unset numbers[2] - remove elemento na posição 3 e deixa posição vaga, não rearranja (array tradicional, não arraylist)
+
+    read array: readarray -t days < days.txt - variavel day vira um array com os conteudos do arquivo (linha a linha, até o \n) (-t tira tabs e \n)
+        readarray -t files files < <(ls ~/) - cria array com os resultados de ls
+        
+    for: itera array
+        for element in array ; do ... done
+        
+www.shellshock.net - utilitário de sintaxe
+
+Crons e Anacrons
+    
+    at command: não é padrão, tem q ser instalado. daemon (faz coisas no background). roda no sh, não no bash
+        at 9:30 04/04/2023 am -> abre prompt onde comandos serão agrupados e rodados no horário e data. 
+        at -l : jobs que tão agendados
+        at -r <ID> - remove agendamento
+        at 10:05am -f script.sh - agenda script script.sh para rodar. script se indicado pela #/bin/bash roda com bash
+        at now + 5 minutes : roda daqui o tempo estipulado
+        
+        só roda se pc tá ligado, se tá desligado não roda. mais adequado para servers
+        não dá p fazer recorrencias, como todo dia 1 ou toda segunda
+
+    cron: daemon service
+        cada usuário tem uma tabela (crontab) - crontab -e edita a crontab do usuário. é um arquivo texto qualquer, mas comando reinicia assim q acaba a edição
+        cada linha é um "job" no formato: minuto hora dia-do-mes mes dia-da-semana comando (separados por espaços) (horas são de 0 a 23) (meses/dia semana podem ser numeros ou 3 letras em ingles maiusculas)
+        * - todos (ex: todos minutos, todos dias do mes, etc) 
+        ex: * * * * * ~/dev/bash/script.sh
+        
+        pode ter varios valores separados por virgula, e range separado por hifen
+        
+        /etc/crontab - crontab global, onde alem de tudo pode por qual usuário roda. tem acesso root. tem q reiniciar o serviço do cron quando edita esse
+        só roda se pc tá ligado, se tá desligado não roda. mais adequado para servers
+        */5 - a cada 5
+        15/5 - a cada 5 começando de 15
+        
+        crontab.guru - site utilitário
+        
+        cron directories: diretorios que vc poe scripts para rodar com certa frequencia
+            ls /etc | grep cron -> cron.d .daily ...hourly ...monthly ...weekly - tudo visivel no crontab -e
+            
+    anacron: cron que consegue recuperar jobs onde a maquina tava desligada.
+        /etc/anacrontab - root
+        variaveis parametrizadas podem ser mudadas (ex de sh p bash - num precisa se script tiver linha shbang)
+        @monthly - uma vez por mes independente do numero de dias
+        não roda em minutos e dias como cron, o mais frequente é em dias
+        tem delay em minutos, para anacron esperar para rodar
+        se perder 4 jobs e ligar, anacron só roda um
+        /var/spool/anacron - pasta com jobs ids q anacron usa p saber quando rodou por ultimo
+        
+
+Remote Servers
+
+    ssh: secure shell
+        ssh root@endereco
+    scp: copia segura por ssh
+    
+        
+-----------------------------
+samples
+-----------------------------
+
+
+#!/bin/bash
+
+# Author: Ziyad Yehia
+# Created: 7th July 2020
+# Last Modified: 7th July 2020
+
+# Description:
+# Creates a backup in the current directory of
+# all files in the home directory
+
+echo "Hello there, ${USER^}"
+echo "I will now back up your home directory, $HOME"
+
+currentdir=$(pwd)
+
+echo "I will create save the backup file in $currentdir"
+
+tar -cf "$currentdir/my_backup_$(date +%d-%m-%Y_%H-%M-%S).tar" $HOME 2>/dev/null
+
+echo "Backup completed successfully"
+
+exit 0
+
+-----------------------------------------------------------------
+#!/bin/bash
+student="sarah"
+echo "hello ${student}"
+-----------------------------------------------------------------
+#!/bin/bash
+
+time=$(date +%d-%m-%Y___%H:%M:%S)
+
+echo "Hello $USER, the time is $time"
+
+exit 0
+-----------------------------------------------------------------
+#!/bin/bash
+x=4
+y=2
+echo $(( $x + $y))
+-----------------------------------------------------------------
+#!/bin/bash
+#positional
+echo "parameter 1 - $1"
+echo "parameter 2 - $2"
+echo "parameter 3 - $3"
+-----------------------------------------------------------------
+#!bin/bash
+#calculadora
+echo $(( $@ ))
+-----------------------------------------------------------------
+#!/bin/bash
+#grava entradas num csv
+
+read -p "What is your first name?: " firstname
+read -p "What is your last name?: " lastname
+read -N 4 -p "What is your extension? (must be 4 digits): " ext
+echo # for formatting
+read -N 4 -s -p "What access code would you like to use when dialling in (must be 4 digits)?: " access
+echo # for formatting
+echo "$firstname,$lastname,$ext,$access" >> extensions.csv
+-----------------------------------------------------------------
+#!/bin/bash
+#dá permissão para pasta passada por argumento se ela não tiver e tira se tiver
+
+encrypt=`stat --format '%a' ${1}`
+chmod 777 "${1}"
+list=$(find $1)
+if [ $encrypt == '777' ]; then
+    echo "removing permissions for ${1} and contents."
+    for file in $list
+    do
+        if [[ $file != $1 ]]; then
+            chmod 000 $file
+        fi
+    done
+    chmod 000 "$1"
+else
+    echo "giving permissions on ${1} and contentes"
+    for file in $list
+    do
+        if [[ $file != $1 ]]; then
+            chmod 777 $file
+        fi
+    done
+
+fi
+
+echo "done."
+
+exit 0
+-----------------------------------------------------------------
+#!/bin/bash
+#lista linha a linha do arquivo passado
+
+while read line; do    
+    echo $line
+done < "$1"
+-----------------------------------------------------------------
+#!/bin/bash
+#lista linha a linha do resultado de ls $HOME
+
+while read line; do    
+    echo $line
+done < <(ls $HOME)
+-----------------------------------------------------------------
+#!/bin/bash
+#Author: pedrotfs
+#created date: 28/03/2023
+#last modified date: 28/03/2023
+#description: run a folder and asks if each file should be deleted, should said file had not been modified in 1 day or more
+#instructions: run the scripts and follow the prompts 
+
+read -p "enter folder to clean cruft: " currentdir
+echo $currentdir
+list=$(find $currentdir -maxdepth 1 -mtime 0)
+echo listing
+echo $list
+for file in $list
+do
+    if [[ $file != $currentdir ]]; then
+        rm -i $file
+    fi
+done
+echo "done."
+
+exit 0
+-----------------------------------------------------------------
+#!/bin/bash
+#Author: pedrotfs
+#created date: 28/03/2023
+#last modified date: 28/03/2023
+#description: run a folder and for each file, move it to a subfolder according to its extension. checks if folder does not exist and crete it if so.
+#instructions: run the scripts and follow the prompts 
+
+#/home/pedro/dev/bash/testarea/
+
+read -p "enter folder to organize contents in subfolder: " currentdir
+list=$(find $currentdir -maxdepth 1)
+for file in $list
+do
+    basefilename=${file%.*}
+    fileext=${file#$basefilename.}
+
+    case "$fileext" in 
+
+        "jpg" | "jpeg" | "png")
+         if ! [[ -d $currentdir/images ]] ; then
+            echo creating images folder.
+            mkdir $currentdir/images
+         fi
+         echo moving $file to images folder
+         mv $file ${currentdir}images/
+         ;;
+
+         "doc" | "docx" | "txt" | "pdf")
+         if ! [[ -d $currentdir/documents ]] ; then
+            echo creating documents folder.
+            mkdir $currentdir/documents
+         fi
+         echo moving $file to documents folder
+         mv $file ${currentdir}documents/
+         ;;
+
+         "xls" | "xlsx" | "csv")
+         if ! [[ -d $currentdir/spreadsheets ]] ; then
+            echo creating spreadsheets folder.
+            mkdir $currentdir/spreadsheets
+         fi
+         echo moving $file to spreadsheets folder
+         mv $file ${currentdir}spreadsheets/
+         ;;
+
+         "sh")
+         if ! [[ -d $currentdir/scripts ]] ; then
+            echo creating scripts folder.
+            mkdir $currentdir/scripts
+         fi
+         echo moving $file to scripts folder
+         mv $file ${currentdir}scripts/
+         ;;
+
+         "zip" | "tar" | "gz" | "tar.gz" | "tar.bz2" | "bz2")
+         if ! [[ -d $currentdir/archives ]] ; then
+            echo creating archives folder.
+            mkdir $currentdir/archives
+         fi
+         echo moving $file to archives folder
+         mv $file ${currentdir}archives/
+         ;;
+
+         "ppt" | "pptx")
+         if ! [[ -d $currentdir/presentations ]] ; then
+            echo creating presentations folder.
+            mkdir $currentdir/presentations
+         fi
+         echo moving $file to presentations folder
+         mv $file ${currentdir}presentations/
+         ;;
+
+         "mp3")
+         if ! [[ -d $currentdir/audio ]] ; then
+            echo creating audio folder.
+            mkdir $currentdir/audio
+         fi
+         echo moving $file to audio folder
+         mv $file ${currentdir}audio/
+         ;;
+
+         "mp4")
+         if ! [[ -d $currentdir/video ]] ; then
+            echo creating video folder.
+            mkdir $currentdir/video
+         fi
+         echo moving $file to video folder
+         mv $file ${currentdir}video/
+         ;;
+         
+         
+    esac
+done
+echo "done."
+
+exit 0

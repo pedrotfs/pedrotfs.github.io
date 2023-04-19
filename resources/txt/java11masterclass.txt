@@ -1,0 +1,1166 @@
+JAVA 11 MASTER CLASS
+
+[] Section 3 - First Steps
+
+===========================================
+
+*19-Introduction
+main - entry point
+
+*20-hello world
+	keywords - case sensitive
+
+	para definir classe: modificador de acesso optativo, class nome da classe, abre fecha chaves
+
+	metodos - funções... main é o ponto de entrada, especial, toda execução precisa começar por um main
+
+	main: public static void main()	com argumentos: main(String[] args)
+	void: sem retorno
+	statement: comando completo executavel
+
+*23-Variables
+	guardadas na ram.
+	tipadas
+	precisa de tipo, nome, pode ter valor inicial
+		int number = 7; (declaration statement) - inicializar é opcional mas tem q ter valor p usar
+	expressão: construct que é resolvido em um único "valor"
+
+*25-Primitives
+	tipos mais basicos
+	são 8 (int, short, long, boolean, byte, float, double, char)
+	pacotes: como se fossem pastas, nomes logicos revertidos
+
+	determinar alcance da primitiva int: Integer.MIN_VALUE ou MAX_VALUE;
+
+	Integer é wrapper da primitiva int
+
+	os 8 primitivos tem Wrappers
+	String + numero vira string
+
+	Overflow/Underflow é quando o numero extravaza o limite e vai pro limite oposto: ex int 
+	Min: -2147483648 Max: 2147483647
+	Bust max(max + 1): -2147483648
+
+	usar o tipo apropriado para armazenar o valor
+	pode usar underscore para legibilidade ex: int i = 2_147_483_647; (java7+)
+	tipos menores podem ser mais performaticos / mais rapidos de acessar
+	é possível armazenar tipos mais curtos em mais longos (int i = Short.MAX_VALUE)
+
+		Byte: -128 <> 127 (ocupa 8 bits - width de 8)
+		Short: -32768 <> 32767 (ocupa 16 bits - width de 16)
+		int: -2147483648 <> 2147483647 (ocupa 32 bits - width de 32)
+		long: -9223372036854775808 <> 9223372036854775807 (ocupa 64 bits - width de 64)
+		float: 1.4E-45 <> 4028235E38 (32 bits)
+		double: 4.9E-324 <> 1.7976931348623157E308 (64 bits)
+
+	long pode ser definido com l no final, ex: 100l ou 100L, preferir o maiusculo pela legibilidade
+		se não por a letra, o java trata como int
+		ex: long bigValue = 2147483650 dá erro pq é tratado como int, se por o L no final fica válido
+
+	atentar para tratamento padrão para int...as vezes é preciso de cast para java entender que não é int
+	
+	float - 32 bits. precisão "simples / unica"
+	double - 64 bits - precisão dupla
+
+	para pontos flutuantes, o padrão é tratado como double
+
+	int i = 5/2 considera só a parte inteira, dando 2
+
+	dias de hj funcionalidade é integrada em processadores, e double é mais recomendado
+	double tb aceita _ para legibilidade
+
+	char só armazena 1 caracter - usos pode ser armazenar ultima tecla - ocupa 16 bits ( 2bytes) pois armazena caracteres unicode, por isso num é 1 byte ou 8 bits
+		unicode é um produto cartesiano entre os 2 bites
+		char unicodeChar = \'u0044
+
+	booleano: true ou false. 1 bit
+
+	String é uma classe, não primitivo, mas tem favoritismo p ser facil de usar - sequencia de caracteres, numero de chars limitado ou por memória ou por max int (2.14B)
+	+ concatena string
+	Strings são imutaveis - cada mudança gera uma nova string com o resultado - concatenação é ineficiente, melhor usar um buffer (stringbuilder)
+
+*33-operators
+operandos: valores, variaveis usadas em computações
+operadores: simbolos que performam operações em um, dois ou tres operandos e retornam resultado (1 + 2; i + j; i * Integer.MAX_VALUE)
+expressão: combinação de variaveis, literais, retorno de metodos e operadores
+
+operadores:
+	= - assignment operator, atribui valores
+	+ - soma operandos
+	- - subtrai operandos
+	* - multiplica
+	/ - divide
+	% - resto da divisão
+	// - comentários - ignorado, ajuda programadores e pode comentar códigos
+	++ - incrementa variavel em uma unidade
+	-- - decrementa
+	+= - abrevia soma (ex: i = i + 4 ; i +=4) - possivel com os outros aritmeticos
+	== - equals to - compara operandos e retorna um boleano se sim
+	!= - negação do igual, retorna verdadeiro se não são iguais
+	! - operador de negação - nega um boleano, retornando o oposto
+	> - maior que - retorna verdadeiro se operando esq é maior q dir.
+	>= - maior igual
+	< - menor que
+	<= - menor igual
+	&& - and (e) - avalia se os operandos são verdadeiros, se ambos são, retorna verdadeiro, senão falso - short circuit - avalia o primeiro, se ele for falso, não avalia o segundo
+	& - and (e) mas de bits
+	|| - ou (or) - avalia operandos, se um ou mais for verdadeiro , retorna verdadeiro. se não, ambos falsos, retorna falso - short circuit - avalia o primeiro, se verdadeiro, não avalia o segundo
+	| - or / ou, mas de bits
+	? - operador ternario - isCar ? true : false; - se condição(primeiro operando) for verdadeira, retorna segundo operando, senão retorna terceiro - usar parenteses para legibilidade
+
+and e or operam em booleanos
+
+precedencia: (maioria esq p direita, menos ternário)
+	15: () (parenteses) / [] (array subscript) / member selection?
+	14: ++ / -- (incrementos e decrementos postumos) (unarios)
+	13: ++ / -- (incrementos e decrementos previos) / + / - / ! / ~ (bits complementares) / cast de tipo ---- tudo unário menos o cast
+	12: * / divisão / %
+	11: adição e subtração
+	10: << (bitwise left signed) / >> (bitwise right signed) / <<< (bitwise left unsigned) / bitwise right unsigned?
+	9: < / <= / > / >= / instanceof
+	8: == / !=
+	7: & (bitwise and)
+	6: ^ (bitwise or exclusive)
+	5: | (bitwise or inclusive)
+	4: && (and lógico)
+	3: || (ou lógico)
+	2: ? : (ternário) - da direita p esquerda
+	1: = / += / -= / *= / /= / %=
+
+
+bloco de codigo - entre {} - delimita escopo, usado tambem em comandos como if, for etc
+
+*35 if them else - lógica condicional
+if(expressão que resulta em boleano) {
+	statements
+} else { //se resultar falso
+	statements
+}
+
+if((exp1) && (exp2)) //parentes aumentam legibilidade e afetam precedencia
+
+else executa caso condição do if seja falsa. else pode conter um if aninhado (testar multiplas condições, "tipo" um switch)
+
+atentar a presença de chaves e código válido
+	if(isAlien);
+		print("notAlien")
+esse código acima é válido, mas despreza a execução do if
+if, diferentemente de c, só lida com booleanos
+	if(1) dá erro
+	boolean isCar = false;
+	if(isCar = true) // vai dar true, pq tá atribuindo ao invés de comparar e resulta em boleano, sendo válido p if
+
+*44-keywords and expressions
+
+53 reserved words
+
+tipo de dado não faz parte da expressão
+if, for e afins não fazem parte da expressão
+parametros de metodos são expressões
+
+statement inclui tipo de dado, é um comando (assignment, etc, system.out...) - não precisa ser uma unica linha. podem ser vários por linha
+
+whitespace - separação de "objetos" de linguagem e legibilidade, compilador ignora excessos
+
+*48-metodos
+formados por statements
+um metodo tem que ser fora de outro, tem que ser dentro de uma classe
+
+void - sem retorno. tipo do metodo é o que volta dele. pode ser primitiva, classes, estruturas de dados, etc
+
+Iniciar array: Object array = new Object[] {};
+
+*58-method overloading
+
+não confundir com override
+mesmo nome com parametros diferentes - assinaturas precisam ser unicas
+
+*63-switch
+
+switch
+switch(value) {
+	case 1:
+		statement;
+		break;
+	default:
+		statement;
+
+switch executa todos os cases seguintes ao que caiu se não tiver break
+default executa se não acha nenhum case que responda
+é possivel encadear cases
+case 1: case 2: case 3: statement
+default não precisa de break, mas pode ter por legibilidade
+switch aceita byte short char int de primitivas
+
+for
+for(int i = 0; i < 10; i++)
+inicio, condição, incremento
+break mata o loop mais interno que ele encontra.
+se condição inicial for falsa, não executa nada, só executa se a condição for verdadeira em algum ponto
+
+while
+while(i < 5) {
+	sout
+}
+repete até condição enquanto condição for verdadeira
+condição do for é um while
+
+do while 
+do {
+	sout
+} while (i < 5)
+executa pelo menos uma vez - cuidado pois se nunca descumprir a condição fica loop infinito
+continue: ignora iteração e pula p próxima, se ultima sai do loop (loop mais proximo. por exemplo em 4 loops aninhados, se continue tá na 3, continua o 3 loop)
+break: interrompe loop mais próximo.
+é possivel usar labels de go to com break e continue, mas fica bem confuso
+
+reverter string tá no stringbuilder, não na string
+parsing strings -> wrapper.parse, ex Integer.parseInt(integerNumber)
+	parsing invalid values: exception
+
+Reading user input
+	Scanner (java.util)
+	Scanner scanner = new Scanner(System.in) // similar ao scanf?
+	String name = scanner.nextLine(); //instancia, não o estático
+	scanner.close() // fecha o scanner
+
+	se ler um int, ou numero, usar um scanner.nextLine() sem atribuir, pois ele entende o separador de linha como string (\n)
+	metodo hasNextInt checa o próximo mas não remove do stream/queue/ etc...parece com iterators
+
+	
+OOP - Classes / Constructors / Inheritance
+
+classes - projeto de objeto com atributos e comportamentos
+	Recomendado nome com primeira maiuscula
+	public class Car - statement q define a classe
+	tem campos/atributos/variavel membra (atributos) e metodos (comportamentos), ambos precedidos por modificador de visibilidade (sem modificador é modificador package private)
+	this - referencia classe em execução, this.field é o campo da classe em execução
+
+	classes não inicializadas dão erro de compilação. inicializar com nulo da erro de execução
+	classe tem valor padrão como nulo
+	encapsulamento - impedir usuário de criar dados inconsistentes - programação defensiva
+
+	construtor - definir contrato inicial de objeto
+		sempre tem um construtor vazio que não faz nada por padrão se nenhum outro for definido.
+
+		public NomeClasse(parametros) {} //sem tipo de retorno, só modificador de acesso.
+			construtores privados impedem que classe seja instanciavel, logo só pode usar coisas estaticas. também impedem que se criem subclasses dela pois o super() se torna
+			inacessivel.
+
+		só são chamados uma vez, na criação do objeto
+		this() também chama construtor de acordo com a assinatura, somente em outros construtores. assim como super(), tem que ser a primeira linha
+		para construtores, é recomendado atribuir valores direto aos campos, não usar setter, pois setters podem ser não chamados, ou objeto pode não estar consistente pois está em criação.
+
+	Herança - ClasseFilha extends ClassePai
+
+		Se não tem construtor padrão sem argumentos vazio na classe pai, precisa do super p chamar o construtor pai - 1 linha
+		metodos publicos e protected são enxergados pelos filhos
+		toda classe extende objeto implicitamente
+		override - indica sobrescrita de superclasse
+		chamar super.metodo sem ser no construtor pode em qualquer linha - super força chamar do pai, sem modificador chama na propria classe, se num tiver, no pai.
+
+	Referencia vs Objeto vs Instancia vs Classe
+
+		Classe: planta de uma casa
+		Instancia: casa construida a partir da planta (classe) (criado por operador new)
+		Referencia: endereço, ponteiro para instancia. copiar referencia não cria cópia da instancia. (variavel que referncia objeto criado)
+		Objeto: conteudo para onde referencia aponta. pode ser a instancia, muitas vezes se misturam
+
+	this x super
+
+		super: acessar membros da classe pai - evita recursão, criando ponto inicial/final - super() chama construtor do pai, só em construtores - precisa ser primeiro statement em construtores
+		this: acessar membros da classe em questão - this() chama construtor sobrecarregado, só pode ser chamado em construtores
+		nenhum dos dois pode ser usado em "ÁREAS ESTÁTICAS"
+
+		javac coloca uma chamada para super() sem argumentos se não adicionamos (construtor padrão sem argumento de object)
+		classes abstratas também tem construtor, apesar de não poder serem instanciadas.
+		construtor pode chamar super() ou this(), nunca os dois aom mesmo tempo!
+
+	overriding x overload
+
+		overload: mesmo nome, diferente assinatura, diminui codigo duplicado - polimorfismo em tempo de compilação? - pode overload static e instance methods
+			em regra, na mesma classe, mas metodos podem ser sobrecarregados em subclasses - mesmo nome e mesmos parametros
+			pode ter tipos de retorno diferentes sem ser subclasse
+			pode ter modificador de acesso diferente
+			pode lançar exceções diferentes
+		overriding: classe filho com metodo igual (mesma assinatura) que o metodo pai, sobrescreve - polimorfismo em tempo de execução ? dynamic method dispatch
+			recomendado usar o override para que o compilador aponte erros (não obrigatório) - não pode sobrescrever metodos estáticos, só de instancia
+			pode ter retorno como subclasse do retorno da classe pai
+			modificador de acesso deve ser igual ou menos restritivo
+			só pode ter sobrescrita em classes filhas
+			exceções devem ser iguais e não mais amplas em termos de checked ???
+
+			construtores e metodos privados não podem ser sobrescritos
+			metodos com final não podem ser sobrescritos
+			super.metodo pode chamar a versão original e não a que sobrescreve
+
+	static vs instance methods
+		static:
+			palavra reservada static
+			não acessa metodos e variaveis de instancia diretamente
+			geralmente usados em operaçõesque não requerem nada da instancia (this) - se metodo não usar nada da instancia, bom candidato a ser static
+			usado como NomeClasse.metodo
+		instance
+			pertence a instancia (classe instanciada)
+			acessa metodos e variaveis estaticos e de instancia diretamente
+			usado como this.metodo ou classeInstanciada.metodo
+	static vs instance variables
+		static:
+			aka static member variables
+			toda instancia da classe tem a mesma referencia para variaveis estaticas (se uma variavel estatica tem um valor numa instancia, vai ter o mesmo em todas as outras)
+			não usa muito
+
+OOP - Composition / Encapsulation / Polymorphism
+
+classes - projeto de objeto com atributos e comportamentos
+	Recomendado nome com primeira maiuscula
+	public class Car - statement q define a classe
+	tem campos/atributos/variavel membra (atributos) e metodos (comportamentos), ambos precedidos por modificador de visibilidade (sem modificador é modificador package private)
+	this - referencia classe em execução, this.field é o campo da classe em execução
+
+	classes não inicializadas dão erro de compilação. inicializar com nulo da erro de execução
+	classe tem valor padrão como nulo
+	encapsulamento - impedir usuário de criar dados inconsistentes - programação defensiva
+
+	construtor - definir contrato inicial de objeto
+		sempre tem um construtor vazio que não faz nada por padrão se nenhum outro for definido.
+
+		public NomeClasse(parametros) {} //sem tipo de retorno, só modificador de acesso.
+			construtores privados impedem que classe seja instanciavel, logo só pode usar coisas estaticas. também impedem que se criem subclasses dela pois o super() se torna
+			inacessivel.
+
+		só são chamados uma vez, na criação do objeto
+		this() também chama construtor de acordo com a assinatura, somente em outros construtores. assim como super(), tem que ser a primeira linha
+		para construtores, é recomendado atribuir valores direto aos campos, não usar setter, pois setters podem ser não chamados, ou objeto pode não estar consistente pois está em criação.
+
+	Herança - ClasseFilha extends ClassePai
+
+		Se não tem construtor padrão sem argumentos vazio na classe pai, precisa do super p chamar o construtor pai - 1 linha
+		metodos publicos e protected são enxergados pelos filhos
+		toda classe extende objeto implicitamente
+		override - indica sobrescrita de superclasse
+		chamar super.metodo sem ser no construtor pode em qualquer linha - super força chamar do pai, sem modificador chama na propria classe, se num tiver, no pai.
+
+	Referencia vs Objeto vs Instancia vs Classe
+
+		Classe: planta de uma casa
+		Instancia: casa construida a partir da planta (classe) (criado por operador new)
+		Referencia: endereço, ponteiro para instancia. copiar referencia não cria cópia da instancia. (variavel que referncia objeto criado)
+		Objeto: conteudo para onde referencia aponta. pode ser a instancia, muitas vezes se misturam
+
+	this x super
+
+		super: acessar membros da classe pai - evita recursão, criando ponto inicial/final - super() chama construtor do pai, só em construtores - precisa ser primeiro statement em construtores
+		this: acessar membros da classe em questão - this() chama construtor sobrecarregado, só pode ser chamado em construtores
+		nenhum dos dois pode ser usado em "ÁREAS ESTÁTICAS"
+
+		javac coloca uma chamada para super() sem argumentos se não adicionamos (construtor padrão sem argumento de object)
+		classes abstratas também tem construtor, apesar de não poder serem instanciadas.
+		construtor pode chamar super() ou this(), nunca os dois aom mesmo tempo!
+
+	overriding x overload
+
+		overload: mesmo nome, diferente assinatura, diminui codigo duplicado - polimorfismo em tempo de compilação? - pode overload static e instance methods
+			em regra, na mesma classe, mas metodos podem ser sobrecarregados em subclasses - mesmo nome e mesmos parametros
+		overriding: classe filho com metodo igual (mesma assinatura) que o metodo pai, sobrescreve - polimorfismo em tempo de execução ? dynamic method dispatch
+			recomendado usar o override para que o compilador aponte erros (não obrigatório) - não pode sobrescrever metodos estáticos, só de instancia
+			pode ter retorno como subclasse do retorno da classe pai
+			modificador de acesso deve ser igual ou menos restritivo
+			só pode ter sobrescrita em classes filhas
+			construtores e metodos privados não podem ser sobrescritos
+			metodos com final não podem ser sobrescritos
+			super.metodo pode chamar a versão original e não a que sobrescreve
+
+	composition:
+		"has a" relationship ( herança é "is")
+		composição pode ser alternativa para herança pois java não aceita herança multipla
+		preferir composição a herança
+
+	encapsulamento:
+		atributos privados não acessiveis diretamente, só por metodo, sendo assim, validações podem ser feitas nos metodos (defensivo)
+		metodos mantem compatibilidade - isola funcionalidade
+
+	polimorfismo
+		comportamentos diferentes de acordo com a classe(interface?) que roda ele
+		classe pai / abstrata tenta chamar o metodo da instancia que ela de fato é
+			ex: Carro extends Veiculo, se num for o veiculo chamar um metodo que carro tenha, chama o do carro.
+				se fizer o cast chama o do veiculo?
+
+Arrays and lists
+	
+	sequencia de valores de mesmo tipo - primitivas e classes
+	declara como int[] variavel = {1,2,3} //só p inicialização, não vale sem ser assim
+	declara como int[] variavel = new int[10] //10 de tamanho
+	só tipa com classe, não primitiva (Integer ao inves de int)
+
+	começa no zero
+	array[0] = 1;
+	array tem length, assim como string ou size de lista
+	arrayoutofboundsexception quando acessa posição invalida
+
+	para strings, ele guarda só endereço da string, não aloca a string na lista
+
+Reference types (ponteiros, endereços em memória) X Value Types
+
+	primitivas são tipos de valor (copia valor ao atribuir em outra variavel)
+		se atribuir uma variavel em outra, e modificar uma delas, não muda a outra
+	classes e arrays são tipos de referência (não copia valor, aponta para valor)
+		se atribuir uma variavel em outra, e modificar uma delas, muda a outra
+		se não usar um new, não aloca memória, então atribuição aponta para outra
+		se chamar new para uma referencia em um outro metodo, a referencia do escopo do metodo aponta para a nova, mas a fora continua como a antiga
+
+	resize array: não é possivel sem criar um novo (em c dava p seguir usando as casas mesmo sem ter alocado, podendo corromper memória)
+
+ArrayList
+	tamanho e alocação são automaticos
+	array tem length (propriedade/atributo), lista tem size() (metodo)
+	copia de ArrayList: new ArrayList.addAll(oldArray) / new ArrayList<>(list) / clone()
+
+Autoboxing and Unboxing
+	usar o Wrapper para usar "classe de primitiva"
+	Integer.valueOf(1) -> retorna Integer com valor 1, autoboxing (de primitiva para classe, dentro do wrapper)
+	integerInstance.intValue() -> retorna primitva, unboxing (tira do wrapper/classe e pega a primitiva de dentro)
+	
+	Integer valor = 56; (funciona sem new pq java faz automaticamente um Integer.valueOf(56) em tempo de compilação)
+	int valor = IntegerValue (funciona pois java automaticamente converte p unboxing (Integer.intValue()))
+
+LinkedList
+	
+	recomendado para arrays maiores, onde inserir/remover no meio fica muito custoso
+	difere de array list em que cada elemento guarda um ponteiro pro próximo
+	funciona parecido com um iterator?
+	elementos de lista ligada que não são referidos por outros, ninguem aponta para, são removidos pelo garbage collector
+
+	inserir por indice funciona aqui tb
+
+	hasNext do iterator não avança o iterator
+
+	linked list tem anterior e posterior? (next e previous)
+
+Interfaces
+
+	contratos, comportamento comum por meio de assinatura de metodos e seus parametros - classe que implementa sempre tem que apresentar os comportamentos estipulados na interface
+		classes podem ser referenciadas por interface
+	interface tem metodos publicos apenas, pois privados e protegidos são implementados na propria classe e não na interface
+	public interface Interface1 {} -> public class Clazz implements Interface1
+
+	interfaces podem ser declaradas como tipo que a implementa -> Phone phone = new CellPhone() mas não podem ser instanciadas assim como classe abstrata
+	em java, classe só estende um pai (em c++ pode estender mtos), mas pode implementar mtas interfaces
+
+Inner Classes
+	
+	podem ser estaticas, não estaticas, locais e anonimas (sem nome)
+	static: estaticas, só acessadas pela classe de fora
+	não estaticas: atributos e metodos da instancia interna podem ser acesssados pela classe de fora
+	local: definidas dentro de um metodo, não podem ser acessadas fora, mas acessam a classe externa, não tem construtores explicitos
+	anonima: sem nome, declaração e instanciação ocorrem ao mesmo tempo, não tem construtores explicitos, uteis quando se usa uma vez só
+	desacopla o que do como
+	pode ter metodos padrão (default) e privados para evitar replicação de codigo nos metodos default
+	ujar para separar comportamentos
+	new em inner classe publica: theatrhe.new Seat()
+
+Classes Abstratas
+
+	não pode ser instanciada
+	keyword abstract
+	serve p ser herdada
+	pode ter metodos abstratos
+	metodos abstratos funcionam como metodos de interface sem comportamento padrão, eles podem não ser implementados se a classe q extende a classe originaria dos metodos abstrata tb seja abstrata
+	diferente de interfaces, pode ter campos e metodos com modificador de acesso.
+
+	usar quando evitaria mto codigo replicado, ou usar campos não estaticos e não finais
+	interaces são mais flexiveis e permitem substituição de componentes
+
+Generics
+
+	indica e enforça tipo a ser usado ( em listas, tuplas, mapas, etc) para evitar erros em tempo de execução, ou logicas de cast gigantes
+	previnir unchecked / unsafe operations
+	codigo sem generics roda para manter compatibilidade
+
+	tipo tem de ser classe / interface, não primitivo
+	interfaces também podem ser tipadas com generics - pode ter multiplos bounds de tipo, mas um deles só que pode ser classe, os outros são interfaces
+
+	declaração de classe que é tipada (T extendendo player é bounded type class?)
+		class Team<T extends Player> {
+			...
+			List<T> Member = new ArrayList<>();
+			...
+			public boolean addPlayer(T player) {
+			...
+			}
+		}
+		(T é tipo), força todo tipo de Team a ser pelo menos Player
+
+	multiple bound type: class Team<T extends Player & Coach & Manager> (Player é classe, Coach e Manager são interfaces - linha 480)
+
+
+Naming Conventions
+
+	legibilidade / manutenibilidade
+
+	pacotes - usar _ se tiver nome de palavra reservada, antes de numero e ao invés de -
+	classes: nomes, maiusculas (Camel cases)
+	interfaces: qualidades
+	metodos: verbos, primeira minuscula, camelCase
+	constantes: tudo maiusculo, separado por _ e modificado por final
+	variaveis, mixedCase, nome claro, primeira minuscula, não usa _
+	parametros de tipo - E - elemento / K - key / T - type / V - Value ...
+
+Pacotes
+	
+	* - wild card - importa todas as classes do pacote - só funciona para irmãos, não filhos !!!
+	feitos para usar classes diferentes com mesmo nome no mesmo projeto - diferenciar
+		possivel usar o nome qualificado inteiro para resolver ambiguidades (dois imports não dá pq confunde o compilador)
+	Java.lang - classes, ints, etc... feito automaticamente pela JVM
+
+Escopo
+	
+	escopo local/mais interno até o nivel que é chamado tem prioridade sobre escopos mais abrangentes
+		checa no bloco atual, se tá declarado, usa, se não, procura nos blocos que contem o atual, até achar. se não achar, erro de compilação
+
+	classe interna pode ser acessada por classe externa mesmo se coisas forem privadas, pq tão contidas na externa
+
+Modificadores de acesso
+
+	top level ou member level
+
+	não pode ter classe privada como classe "top level" (só claases interfaces e enums podem ser top level, o resto vai dentro)
+
+	publico: visivel p todo mundo
+	package private: visivel no pacote, sem palavra reservada
+	private: só visivel na classe onde é declarado
+	protected: só visivel no pacote, e em sub classes mesmo fora do pacote
+		todas as variaveis de interface são publicas estaticas e finais
+		todos os metodos de interface são publicos, mesmo sem modificadores de acesso
+
+Static
+
+	associado a classe e não a instancia, todas as instancias compartilham desse valor, só um lugar em memória.
+	main é estatico pq na execução num tem nenhuma classe rodando então usa o estatico p poder começar a construir - ponto de entrada - convenção é ter classe chamada main
+	dá erro se referenciar não estáticos em contexto estático pq não estáticos (de instancia) dependem de instancia para funcionar na mesma classe. em outra classe pode pois assume q a classe foi criada
+		estaticos podem ser acessados por não estaticos
+
+Final
+
+	só pode ter valor atribuido antes do fim do construtor ou na declaração (pode depender de calculos, acesso a banco, etc por isso clausula do construtor)
+	se a classe/metodos é final, não pode ser sobrescrito
+
+Static Initializer
+
+	equivalente a construtores
+	raro de usar
+
+	formato:
+		static {
+			//coisas aqui, como atribuir valor a variavel estatica final
+		}
+
+	quantos blocos quiser, chamados na ordem em que são dispostos na classe e antes de todos os blocos não estaticos, incluindo constrtuores
+
+Collections
+
+	Lists, trees, maps, sets, queue? bla bla bla que tudo herda de collection
+	não inclui arrays, mas tem atalhos para trabalhar com arrays
+
+Busca Binária
+
+	tem metodo em collections
+
+Collections lists methods
+
+	Collections.sort usa metodo efetivo qsort
+	new ArrayList<>(theathre.seats) faz copia rasa, se mudar um elemento em uma lista, muda nas duas, não clona todos os objetos
+	shuffle, reverse, min, max...
+
+Comparable e Comparator
+	
+	interface comparable é usado no sort, tem metodo compare
+
+Maps
+
+	Parte da collection mas não é collection
+	torna dictionary obsoleto
+	Map<String, String> map = new HashMap<>()
+	chave valor
+	null pode ser chave
+	para uma chave só pode ter um valor, sobrescrevendo ele em novas adições
+
+	retorno de map.put é o valor atual da chave que vai ser sobrescrito
+	metodo containsKey,
+	metodo putIfAbsent é útil em relação a threads
+
+	hash map não tem ordenação
+	map.remove("chave", "valor") - só remove se tem valor "valor" (se é o mesmo como passado como parametro)
+	map.replace("chave", "novo valor") - substitui, se não existe não adiciona
+	map.replace("chave", "valor", "novo valor") - substitui só se o valor for o especificado, se não existe não adiciona
+
+	é permitido, !!!mas não recomendado!!!, chaves mutáveis
+	mapas não podem ser chaves deles mesmos
+
+Imutaveis
+
+	não podem ser mudadas depois da criação
+	bom para aumentar encapsulamento / programação defensiva
+
+	tecnica defensiva - ao invés de retornar uma lista interna, retorna uma copia da lista
+		em regra, alem de usar final em campos, deixar eles só serem alterados no construtor
+	ao criar um objeto, num construtor, criar uma cópia p não deixar a referencia vazar p fora
+
+	não deixar a classe ser extendida (final class)
+	não deixar setters,
+	campos final e private
+
+Sets e Hash Sets e Equals e Hashcode
+
+	set não tem ordem, (caótico), e não aceita duplicadas
+	set não pode ser elemento dele mesmo
+	HashSet é um HashMap q só usa chaves, não valores
+
+	Sets são rapidos e suportam operações de conjuntos matematicos como união e intersecção(addAll e retainAll)
+	set guarda referencias (todas as coleções na verdade?)
+
+	referencia ocupa 4bytes - java 7+ usa ponteiros compridos q é menor q 4 bytes
+
+	criterio p evitar duplicadas é equals e hashcode - sempre que sobrescrever equals, tem q sobrescrever hashcode
+
+	hashcode determina qual "balde" do set o objeto cai. se hashcode é igual, não necessariamente objeto é igual? mas se objeto é equal, ele tem q ter o mesmo hashcode
+
+	equals sem override sobrecarrega equals herdado de objeto ao invés de sobrescrever e NUNCA é usado por coleções, notação override ajuda nisso causando erro em compilação (!!!)
+
+	Java String é final, não pode ser extendida
+
+	superclasse.equals(subclasse) retorna true, mas subclasse.equals(superclasse) retorna falso SE comparar classes. evitar escrever equals referente a subclasses
+
+	recomendado q todo mundo q implemente alguma interface de collection tenha dois construtores, um vazio e um q parte de outra collection
+
+	a.equals(b) implica em b.equals(a), senão equals tá quebrado
+
+Sorted Collections
+
+	LinkedHashMap, LinkedHashSet, Trees...
+
+	metodo getOrDefault p ver se tem no mapa ou retorna um padrão
+
+	UnmodifiableMap(collection, whatever) - wrapper da coleção para imutabilidade, retornando erro em tempo de compilação e retornando unsupported operation exception
+		coleção é não modificavel, items dela podem ser
+
+
+Java FX
+
+	apis para interface graficas - sucessor do swing
+	precisa do java fx sdk
+
+	precisa de modulo, project level, langiage level, no modulo require fxml, controls, open "package-name"
+
+	segue MVC
+
+	init roda primeiro, vazio por padrão, pode sobrescrever
+		start roda logo após e é abstrato
+
+	arquivo fxml é um xml q tem informações sobre a UI
+	cada stage precisa de uma scene (tipo teatro)
+
+	propriedades do arquivo fxml pode ser alteradas em execução via código
+
+	tem padding como <padding> e tem style como propriedade de tag estilo css
+	botões precisam de eventos para responder aos estados
+
+	titledpane é controle, não layout
+
+	bind de campo: notação @FXML
+
+	onKeyReleased="#onKeyReleased"
+
+	um metodo de evento pode ser usado como receptor de multiplos eventos (origem visto do actionEvent.getSource())
+
+	metodo @FXML initalize - chama na inicialização
+
+	thread UI escuta por eventos para mandar para o event dispatch
+
+	Runnable precisa ser invocado > new Thread(task).start()
+
+	é possivel usar css nisso
+
+Exceptions
+
+	paradigmas - easier to ask for forgivness than permission (lançar exceções), e look before you leap (programar defensivo, tipo null check)
+
+	try {
+		string.toUpper();
+	} catch (NullPointerException e) {
+		e.printStackTrace();
+	}
+
+	metodos podem especificar que lançam exceção com throws após assinatura.
+		exceções podem ser lançadas no código
+
+	interrompe o fluxo de programas, previne que o programa quebre.
+	pode escolher o tipo de exception, para ser mais especifico, e responde o que deu problema
+
+	Exception: subclasses de classe Exception que extende Throwable (construtor do trowable preenche a stack trace)
+		subclasses costumam ser simples, apenas para granularidade e verbosidade
+
+	Exceptions "sobem", metodos vão lançando essa exception até o programa quebrar ou ela ser tratada.
+
+	throw lança exceção para cima, o metodo que chamou o incidente que trate
+
+	try pode capturar multiplas exceções via multiplos catchs
+	} catch(Exeption) {
+		...
+	} catch(Exception) {
+		...
+	}
+
+	ou
+
+	catch(Exception | Exception2 e) {
+		...
+	}
+
+	Checked and Unchecked exceptions
+	Checked: não pode ser ignorada, precisa ser tratada para compilar -> podem ser catch ou throw
+	Unchecked: pode ser ignorada
+
+	bloco finally após catch é muito util para fechar streams, conexões, etc
+	finally sempre roda, mesmo sem cair no catch
+
+	try precisa ter catch ou finally, um dos dois, mas pode ter os dois. pode ter finally sem catch(?)
+
+	try with resources
+	try (FileWriter locfile = new FileWriter("file.txt")) {
+		....
+	}
+	scanner.close() fecha outros streams
+IO
+
+	FileWriter recebe file name, usa metodo write, e PRECISA ser fechado depois. se não fechar, pode corromper arquivo, manter arquivo preso ou ser vulnerabilidade
+
+	Buffered Reader: lê todo conteudo do arquivo e bufferiza - evita queda de desempenho escrevendo em arquivos em grandes lotes quando enche o buffer
+		new BufferedReader(new FileReader("file.txt"))
+	
+	Byte Streams - não precisa parsear, é possivel lidar com primitivas e strings
+		DataOutputStream data = new DataOutputStream(New BufferedOutputStream(new FileOutputStream("locations.txt"))) (tem pra leitura tudo igual usando o dataInputStream)
+		usar while (eof) onde eof é booleano que é atualizado quando o leitor lança EOFException
+
+	Serialization - ler objetos não de campo a campo, mas como uma unidade
+		interface Serializable - recomendado campo long serial version UID - privado. guia de versão de tradução para serializavel - se salva com um id e tenta recuperar com outro, num consegue
+			se mudar o objeto, mudar o serial uid
+		se tem uma classe interna q implementa serializable, a classe interna vai ser serializada também.
+		se uma classe é serializavel, subclasses devem ser serialiaveis, já que todos os campos devem ser serializaveis
+		objetos serializaveis são escritos e lidos via ObjectOutputStream e ObjectInputStream
+		se duas referencias identicas são salvas, só 1 fica salva, por conta do equals/hashcode
+
+
+	new RandomAccessFile("filename.dat", "rwd") //read write mode, cuidado com threads //não sequencial, caótico igual C
+		seek e getFilePointer para manipular o ponteiro que lê
+		não tem read e write para objects
+		não tem streams comuns - tem que escrever tipo a tipo
+		metodo writeUTF escreve tamanho da string primeiro depois string
+		
+	arquivo sequencial não precisa mexer ponteiro (seek), sequencial precisa
+
+	NIO
+
+		melhorias em IO, faz IO numa forma não blocking (N blocking IO), melhoras de performance pois num trava thread (porem pode ser mais lento)
+		-classes de filesystem e classes de que leem e escrevem dados
+		mais complexo
+		processo de dados em lotes
+
+		Path path = FileSystems.getDefault().getPath("path") 
+		Trabalha com Path, que deveria ser o sucessor de File
+		usa Files.newOutputStream ao inves de new FileOutputStream("locations.txt")
+		reading and write são sempre buffered, não precisa do buffer igual IO do java
+
+		channel: data source onde se le ou escreve - interface. file channel depende se foi criado de input de escrita ou leitura p escrever ou ler
+			FileChannel.open?
+			buffer do channel precisa de ter tamanho especificado - mas tem metodos novos metodos para ler linha -> 
+				Path datapath = FileSystems.getDefault().getPath("txt.txt");
+				List<String> lines = Files.readAllLines(datapath);
+
+		arquivos binários: ao invés de seek, vc mark o ponto e depois usa reset
+		é possível escrever com nio e ler com io e vice versa
+		flip muda buffer de escrita p leitura, mas apenas na capacidade/tamanho q foi escrito, p resetar, usar clear
+		leitura absoluta não muda posição do leitor do buffer, relativa muda
+
+		sempre lembrar de flip com nio
+
+		pipes: transfere dados entre threads, são de só um sentido ()
+			Pipe.SinkChannel sinkChannel = pipe.sink() abre sentido de escrita
+			sinkChannel.write(Buffer)
+
+			Pipe.SourceChannel sourceChannel = pipe.source() abre sentido de leitura
+			sourceChannel.read(buffer) lê do pipe
+
+		Path é comoi se fosse um arquivo(diretorios são arquivos tb), cada path é unico
+		delimitador
+			linux: /
+			windows: \
+
+		ao receber caminhos de usuarios, normalizar eles
+		Paths é melhor que File por conta de file não lançar mtas exceptions, nem exceptions claras (ex: File.delete)
+			File rename funciona diferente dependendo do OS, o que fere a portabilidade do Java
+			File não suporta link simbolicos, nem provem metadados, como dono, permissões, etc
+			File Não funciona com mtos arquivos
+
+		Files.exist("arquivo") //verifica existencia
+		Files.copy(sourceFile, copyFile, standardCopyOption.REPLACE_EXISTING) funciona com pasta tb, mas p copiar arquivos precisa ser outra coisa
+		Files.move
+
+		BasicFileAttributes attrs = Files.readAttributes(filepath, BasicFileAttributes.class) // atributos como data de criação, tamanhop, se é diretorio, etc
+
+		conteudos da pasta: try (DirectoryStream<Path> contents = Files.newDirectoryStream(directory)) ... for (Path file : contents) ...
+		conteudos da pasta: try (DirectoryStream<Path> contents = Files.newDirectoryStream(directory, "*.dat")) ... for (Path file : contents) ... //filtra com extensão .dat
+			tb é possivel usar com DirectoryStream.Filter<Path> //interface tipo comparator
+
+		files separator devem ser parametrizaveis pq muda de OS p OS File.separator tem o certo
+
+		Files.createTempFile("prefix", "suffix") - cria temporoario com um id unico no temp do OS
+		FileSystems.getDefault().getFileStores() -> lista de volumes de disco
+
+		Percorrer arvore de arquivos:
+			interface FileVisitor
+				metodos:
+					preVisitDirectory()
+					postVisitDirectory()
+					visitFile()
+					visitFileFailed()
+
+			deletar pasta só depois de deletar conteudo e descendentes
+
+		File.toPath()
+
+Concorrencia e Threads
+
+	processo: unidade de execução que tem seu proprio espaço na memória
+	cada processo/aplicação tem seu proprio espaço de memória, não conseguem um acessar do outro (heap)
+
+	thread: unidade de execução de dentro de um processo, cada processo tem pelo menos uma thread, a main
+		threads compartilha heap, e são menos custosas que um processo
+		threads tem stack, que é como uma heap particular de cada thread
+
+	motivos para usar:
+		- tasks longas, cada thread executa de forma linear e fica bloqueada (suspensa) esperando operações longas, como consulta a internet ou IO - mais evidente em UI
+		- apis podem exigir, muitas dessas vezes, é passado o código que vai rodar na thread, e não a thread em si
+
+	concorrencia não é multiplas threads rodando ao mesmo tempo necessáriamente, é multiplas threads/tasks possiveis de serem progredidas ao mesmo tempo
+		- uma task não precisa terminar antes da próxima começar
+
+		ex: aplicação baixa parte da imagem e desenha parte dela na tela, alternando os dois ao inves de ficar congelada baixando e desenhar tudo duma vez
+
+	threads são geridas por jvm e OS (agendamento de execução de threads), então resultado pode variar de maquina a maquina.
+
+	thread tem metodo run. uma forma é extender thread e sobrescrever o metodo run. (remover o super.run() pode ser valido) e invocar o método run
+		Thread t = new AnotherThread(); t.start(); //start inicia a thread
+	outra forma é classe anonima, mas é recomendado criar classe se for rodar o codigo muitas vezes.
+	new Thread() { public void run() { //statements }}.start();
+
+	ordem de threads é dificil de garantir
+	só é possivel iniciar uma instancia de thread por vez. se tá em execução, tem que instanciar e iniciar a outra instancia
+
+	Interface Runnable: implementar metodo run
+		Thread t = new Thread(new Runnable() {public void run() { //statements}}); /*que implementaRun*/  t.start();
+
+		mais conveniente usar classe anonima runnable, principalmente com lambda?
+
+		!!!!!! é recomendado chamar start ao invés de run pois executa na mesma thread se chamar run. start inicia outra thread !!!!!!!!
+
+	thread termina quando retorna ou termina metodo run
+
+	thread.sleep(3000) //milisegundos -> catch interruptedException
+		não é garantido que a thread vai dormir pelo tempo especificado por conta de interrupções
+
+	threads percebem que foram interrompidas por exception ou metodo interrupted que é boleano -> chamado metodo interrupt na instancia que vai ser interrompida?
+
+	interromper thread: com referencia a instancia da thread q deseja interromper, t.interrupt(); -> retornar (return) no catch de interruptedexception para encerrar a thread interrompida
+
+	join thread: quando agrupa uma thread com a segunda, a primeira espera a segunda terminar p continuar
+		t.join() .... catch(InterruptedException e)
+		se thread não encerrar nunca, passar timeout no join (milisegundos)
+
+	tem setPriority, mas é mais uma sugestão e não garante nada
+
+	Thread.currentThread()
+
+	quando threads trabalham com o mesmo objeto, elas dividem esse objeto, ou seja, não thread safe.
+		variavel de instancia é alocada na heap
+		variavel local é alocada na stack
+
+	sempre olhar em termos de statements e não de comandos (printl(thread.getname())) são vários statements
+		threads podem ser suspensas entre statements
+
+	controlar quando a thread pode alterar valor na heap -> synchronisation
+		quando um trecho de código/metodo  é synchronized, só uma thread pode executar ele por vez. as outras que querem executar isso são suspensas até a em vigor terminar/parar de executar
+		se uma classe tem 3 metodos sincronizados, só pode executar um deles por vez por uma só thread !!!!
+		boa pratica: manter as areas sincronizadas o menor/mais preciso possivel
+
+		não é possivel sincronizar construtores, pois só uma thread pode construir
+		só é possivel ter lock/monitor de objetos, não primitiva
+
+		bloco sincronizado:
+			synchronized (object) {
+				... //ter cuidado se o objeto tá na heap oun na stack, tem que usar o objeto na heap pois as threads tem q competir pelo lock. exceção é string pois fica na heap
+			}
+
+		critical resource: thread safe: todas as sessões criticas, onde pode ter interferencia de thread, foram sincronizadas
+
+		wait notify e notifyall só podem ser chamados dentro de codigo sincronizado (try com catch de InterrupedException)
+			wait: suspende a execução e solta os locks q possui até outra thread invoca uma notificação para parar de esperar
+			notify:  notifica thread suspensa para voltar a executar
+
+		deadlock: threads não conseguem liberar as locks e travam
+
+		é recomendado que wait seja chamado sempre dentro de um while(condicao) pois essa condição pode mudar e aí deixar inconsistente. o loop serve p reavaliar se a condição ainda é valida.
+		é recomendado usar notifyall a menos que o volume de thread parado pela mesma condição seja muito grande
+
+		sempre lembrar que uma linha só pode causar uma suspensão de thread (statements, chamar função, etc)
+
+		!!! operações atomicas (não podem ser interrompidas: 
+			ler/escrever variaveis de referencia ; ler/escrever primitivas sem ser long e double (por conta do tamanho de bytes) ; ler e escrever variaveis "volatile"
+
+		algumas coleções não são thread safe (arraylist, por exemplo)
+
+		problemas com bloco sincronizado
+			threads bloqueadas esperando para executar bloco sincronizado não podem ser interrompidas !
+			blocos sincronizados devem ser internos a um metodo
+			não dá p testar se o lock do objeto tá disponivel e não dá p dar timeout
+			não dá p garantir a ordem de thread obter o lock do objeto
+
+	Interface Lock no java concurrent util
+	
+	ReentrantLock: se classe tem lock do objeto, ao chegar no codigo sincronizado, pode executar
+		lock.lock(); operação sincronizada; lock.unlock();
+
+		ao usar lock, o usuario é responsavel por soltar o lock, não acontece automaticamente
+
+		se uma thread pega um lock 2x, ela tem q soltar 2x antes de outra thread poder executar
+
+	sempre manter seção critica dentro de try finally (lock fora do bloco try, e unlock no finally para garantir que solta o lock em casos de erros)
+
+	lock.trylock() //testa se o lock do objeto tá disponivel -> pode passar um timeout para interromper a thread q tem o lock
+
+	getqueuedlinks ? mostra quantas threads tão esperando o lock - a depender de jvm e quantas threads tão esperando o lock, thread pode encerrar ao invés de suspender
+
+	threadpool: criador de threads gerenciado que cuida de limitar, criar e manter ciclo de vida de threads
+		ExecutorService es = Executors.newFixedThreadPool(3) //3 threads
+
+		executorService.execute(t1);executorService.execute(t2);executorService.execute(t3);
+		precisa desligar o executorService depois de não usar mais: es.shutDown() // espera as threads terminarem e se desliga
+
+		submit recebe um callable q é quase um runnable e retorna informações de thread em background
+			Future<String> future = es.submit(new Callable<String() { @Override public String call() throws Exception { /*statements*/ } })
+			try { future.get() } catch (ExecutionException | InterruptedException e) {...} //thread q quer o resultado disso congela até ele ser submitado
+
+	arrayblockingqueue: FIFO mas threadsafe? precisa especificar tamanho (bound) .put(), .take(), .peek() /* topo da pilha */
+
+	se threads tentarem obter locks na mesma ordem, pode evitar deadlock. usar objetos de lock ao invés de blocos sincronizados tambem pode prevenir deadlocks
+	evitar deadlocks separando UI e regra de negócio, e passar informações via parametro ao invés de metodos ? : 
+
+	thread starvation: threads com mais prioridade podem rodar e pegar os locks/recursos e nunca liberar para a thread que está a mais tempo esperando
+		setar prioridades pode aumentar a chance de starvation -> tentar fazer execuções seguir fifo?
+
+	Fair Lock: fifo - Reentrant Lock é fair lock. (new ReentrantLock(true) mais especificamente - fairness é garantida apenas na obentção do lock, não na liberação)
+	Live Lock: similar ao deadlock, mas com threads ativas esperando outras
+
+	blocos sincronizados são mais performaticos que locks, mas mais dificeis de gerenciar
+
+	cada cpu tem um cache, que pode dar diferença entre caches e valor em memória
+
+	volatile: é escrito na memoria principal imediatamente após uma thread atualiza o valor no seu cache, e garante que valor obtido é o mais recente
+		comum com long e double, por conta do tamanho delas em bytes
+		volatile muitas vezes tem de ser usado com sincronização e locks
+
+	java.util.concurrent.atomic - classes que garantem atomicidade
+
+	lembrar que i++ é três operações, ler i, incrementar e escrever o valor novo
+
+	wait solta locks, o que pode fazer com que outra thread possa os obter de forma prematura
+
+Lambda
+
+	é possivel fazer tudo por classe anonima
+
+	metodo mais facil de lidar com interfaces que tem um método só (interface funcional) e são comum de usar com classes anonimas
+
+	por exemplo, interface runnable tem só método run : new Thread(() -> print("printing")).start();
+
+	3 partes: argumentos () , operador seta ->, corpo { print("message") }
+
+	compilador faz o match entre parametros e o metodo unico da interface
+
+	lambdas pequenos são o ideal
+
+	equals sempre tem implementação default, logo interface funcional é interface que TEM QUE IMPLEMENTAR apenas um metodo. metodos com implementação default não contam como metodos que precisam implementar.
+
+	lambda pode ser passado ao invés de classe anonima como parametro
+
+	compilador pode inferir tipos, e pode omitir os tipos
+
+	lambdas sem brackets inferem o retorno de interface (tipo retornar ponteiro p função em C)
+		com brackets multilinha tem q retornar
+
+	lambda não é uma classe, não cria uma classe anonima e tem mesmo escopo que um bloco aninhado de código
+
+	para lambda usar variaveis fora do escopo de codigo aninhado, variavel tem que ser final -> variavel não pertence a classe anonima então quando é usado, é usada uma cópia do valor no momento
+
+	com enhanced for ( for (String s : listOfStrings)), uma variavel nova é criada para cada instancia, e ela é final
+		effective final é quando a variavel não é declarada final, mas ainda assim o valor dela nunca muda
+
+	interface de coleção iterable: list.forEach(element -> element.doOperation())
+
+	java.util.function.consumer<?> - interface funcional (metodo accept, andThen tem implementação defaul)
+		forEach chama accept e é void -> consumer recebe um argumento e num retorna nada (iterator chama o metodo acept do consumer para cada objeto da lista)
+
+	interface predicate: retorna valor boleano- condição (?) - metodo test(predicate.test(object)) - expressão: e -> e.getInt() > 30 (lambda que casa com interface predicate)
+		é possivel encadear com and:
+			Predicate p1 = i -> i < 10;
+			Predicate p2 = i -> i < 5;
+			p1.and(p2).test(6);
+		tb tem or, negate, e equals	
+
+	supplier sempre retorna um valor e o metodo get recupera ele. tem que por tipo por generics. não aceita parametros, cria objetos
+		supplier pode ser passado como parametro
+		respeitar hierarquia de classe e subclasse com os tipos
+
+	interface function<TipoArgumento, TipoRetorno>: recebe um valor e devolve um valor - metodo interno da função é o apply
+		funções são uteis para usar como callbacks
+		é possivel encadear funções com andThen: Function<~> f = f1.andThen(f2); f.apply(...) --- elas tem que ter assinaturas compativeis, saida de um tem que ser o parametro de entrada de outra
+		unary: recebe e retorna valores do mesmo tipo
+
+		BiFunction<T1, T2, T3>
+
+
+	{} são sempre necessárias quando lambda tem o statement return
+
+	Streams: n.stream().map(String::toUpperCase).filter(s -> s.startsWith("G")).sorted().forEach(System.out::println) - nenhuma ou mais operações intermediarias e uma terminal
+		sequencia de elementos que suporta operações de agregar sequenciais e paralelas - conjunto de referencias de objetos - cada objeto da stream é um objeto da coleção, com ordem
+		quando stream for a fonte de lambdas, é sempre o primeiro metodo
+
+		streams não podem mudar a fonte, e o resultado só pode depender de operações do lambda, não de fora dele (stateless)
+
+		map(String::toUpperCase) -> notação method reference -> chama metodo existente / map aceita uma função (1 parametro e 1 retorno) compilador inferencia o argumento
+
+		filter recebe predicate
+
+		forEach da classe stream é diferente do forEach dos lambdas - aceita o consumer como parametro.
+			não retorna valor, logo é operação terminal. encerra a corrente de operações (retorna void ou resultado que não é Stream)
+
+		operações que retornam Stream são intermediárias
+
+		Stream<String> strings = Stream.of("i1", "i2")
+		Stream.concat(stream1, stream2) //estático, não dá p usar no meio do pipe da stream mas dá p usar como fonte
+		count() é operação terminal (retorna long não stream)
+		distinct() //intermediario
+		peek() //for Each mas intermediário
+		map() //transforma objeto em outro
+		flatMap() // retorna stream -> recebe lambda --- flatten nested lists - multiplas listas viram uma - performar operações sem ter um stream como source???
+		collect() // elementos na stream retornados num tipo diferente de resultado, como stream -> lista / set / etc
+			tem toList, groupingBy, etc
+		reduce() // reduz stream a um elemento
+		ifPresent() //ver se achou (predicate?)
+
+		streams não podem ser reusadas, se uma operação terminal executar, não dá p usar mais, tem q criar outro
+		streams são lazy, operações intermediárias só são executadas quando tem uma terminal
+		tem streams tipadas
+
+		parallel streams - concorrencia?
+
+		classes anonimas -> lambdas -> stream (aumento de sofisticação)
+
+Regular Expressions
+
+	descreve padrões
+
+	muitos metodos de string funcionam com regular expressions
+
+	string literais são expressões regulares
+
+	case sensitive
+
+	caracter '.' é wild card para qualquer caracter (combinado com * para qqr coisa, padrão, qqr coisa)
+	caracter '^' procura sequencia (boundary matcher) -> procura só se casa no começo da string - "^aaa" - se for usado dentro de [], exige que ache pelo menos um p dar match
+	'$' - oposto de '^', examina se bate no fim da string - "aaa$"
+	[aaa] - procura todas as ocorrencias na string de de cada um dos caracteres dentro dos brackets
+	[aaa][bb] - igual acima mas só substitui se chars do primeiro brackets são seguidas por chars do segundo
+	[^abc] - todos menos os chars a b ou c (nega o padrão quando dentro de brackets)
+	[a-f3-8] - todos chars entre a e f e todos entre 3 e 8
+	(?i)[abc] - todos os caracteres entre brackets, mas ignora case sensitive (?u - unicode)
+	\d ("\\d") -  numeros decimais?
+	\D ("\\D") -  todas as letras
+	\s ("\\s") -  \n, espaços e tabulações
+	\S ("\\S") -  tudo menos espaços linhas e tabulações
+	\w ("\\w") -  numeros letras e pontuações, não espaços
+	\b ("\\b") -  caracteres antes e depois dos caracteres encontrados
+		normalmente o atalho maiusculo é o oposto do minusculo
+
+	quantifier: ex: "abcDe{3}" - pra bater tem q ter 3 'e's (chaves com o quantifier sempre depois do caracter desejado)
+		"abcDe+" - pra bater tem q ter 1 ou mais 'e's)
+		"abcDe*" - pra bater tem q ter 0 ou mais 'e's)
+		"abcDe{2,5}" - pra bater tem q ter 2 até 5 'e's)
+		pode ser greedy (*) - pega o maior texto possível
+		pode ser lazy (*?) - pega o primeiro match possivel
+
+	string matches examina a string inteira e tem q casar a string inteira
+		matcher só pode ser usado uma vez, e ele tem um estado que se atualiza no matcher.matches(). pode resetar com matcher.reset()
+		matcher.start() e matcher.end()
+
+		"(<h2>)" - groups onde os parenteses nãofazem parte do padrão - string inteira é zero, ocorrencias começam do 1
+
+	operador and : implicito
+	operador or: |
+
+
+Networking
+
+	comunicação TCP e UDP predominam
+	porta direciona dados para aplicação dentro de um mesmo ip
+	pacote java.net -> low e high level apis
+
+	abre conexão com server -> ( request -> response ) -> close
+
+	low level: socket (endpoint) - possivel ter mtos sockets para a mesma porta
+	ServerSocket e Socket (client)?
+
+	new Socket("address", port)
+
+	serverSocket.accept();
+	BufferedReader input = new BufferedReader( new InputStreamReader(socket.getInputStream()))
+	PrintWriter output = new PrintWriter(socket.getOutputStream(), true) // true para autoflush
+
+	servers que tem multiplos clientes precisa de multiplas threads
+	try with resources não fecha socket
+
+	socket pode ter timeout
+
+	UDP - manda datagram. perder pacotes não importa, mas mais rápido - datagrampacket - new DatagramPacket(buffer, buffer.length) (byte [])
+		não precisa da resposta
+
+	High Level Apis
+		URI (unique resource identifier - talvez não tenha toda a informação para o recurso - pode ser relativo) x URL (unique resource location - tem a informação - tem q ser absoluto)
+		java.net costuma usar URI, mas a maioria aceita URL tb.
+			http - file - ftp (schemas)
+		classes: URI, URL, URLConnection, HttpUrlConnection
+
+		classes tem get para as partes
+
+		converter URI para URL: toUrl() - pode dar problema, pois tem q ser valido
+
+		url pode abrir input stream, podendo ser bufferizado - faz coisas de socket por baixo dos panos
+		url.openConnection -> setDoOutput(true) -> connect()
+
+
+
+Java module system
+
+	segurança e manutenção, escalabilidade (deixou de ser monolito), performance
+
+	coleção de dados e codigo, container de pacotes
+	tem metadados
+	module-info.java - palavra reservada module
+	normal - compile time e run time para exportados
+	open - considera todos pacotes como exportados
+
+	blbiotecas como spring e etc q usam reflection só funciona com open modules
+
+============================================
+https://pretius.com/blog/java-17-features/
+https://reflectoring.io/java-release-notes/

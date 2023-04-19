@@ -1,0 +1,112 @@
+PYTHON
+
+normalmente é interpretado - executa linha a linha (compiladores leem o arquivo inteiro)
+quando falam de python, é uma implementação, especificação - download oficial é um programa em c (tem interpetrador em c, java, .net...)
+
+interpreter gera bytecode q é lido por uma vm e de fato executado pela maquina
+tb tem shbang line igual bash mas para python - #!/usr/bin/env python3
+rodar script: python3 script.py
+
+nome vem de monthy python
+python 3 quebra compatibilidade com 2. 2 para de receber atualizações
+
+python costuma ser mais lento q java, c, c# mas é produtivo (mais facil de escrever com menos linhas)
+
+---
+https://zerotomastery.io/blog/?tag=PM&utm_source=udemy&utm_medium=coursecontent#monthly
+
+Basics
+
+    type(2 + 4) -> retorna tipo de 2 + 4 -> tipo 6 -> <class 'int'> - tipo instanceof?
+
+    Python Data Types:
+        Fundamental - primitivas?
+            
+            int - inteiro - assim como java, usa float se somado com float
+                2 ** 2 -> potencia
+                2 // 2 -> divisão inteira arredondada para baixo
+                2 % 2 -> resto          
+                round(3.1) -> arredonda
+                abs(-2) -> absoluto       
+            float - ponto flutuante
+            complex - numeros complexos
+            bool - booleano
+            str - string
+            list - lista
+            tuple - tuplas
+            set - sets
+            dict - dicionário
+        
+        Classes - tipos customizados
+        
+        Specialized - vem de bibliotecas
+        
+        None - null?
+        
+    bin(5) - retorna binário do inteiro - inverso é int('0b101', 2)
+    
+    augumented assignment operator: +=
+    
+    string = ''' ... ''' -> string longa em multiplas linhas
+    
+    "primitivas" também são funções -> ex: str(100)
+    
+    funções: int(), print() etc não depende de algo para rodar
+    metodos: string.format() etc. depende de algo para rodar
+    
+    print(f'hi {name}. you are {age} years old.') - formatação de string (py3)
+    print('hi {0} you have {1} years').format('John', '55') formatação (py2)
+    strings são arrays: string [start:stop] - substring . : . string[0:8:2] - vai até o limite, pulando de 2 em 2.
+        [-1] - é o primeiro do fim - string[::-1] - reverte string. parecido com bash
+        strings são imutaveis, para mudar o valor, precisa criar outra
+        len(string) - tamanho da string
+        print('*' * 10) - imprime 10 *
+        
+    comentários: #
+    
+    lists: é uma forma de array => list1 = [1,2,3,4,5]
+        lista pode misturar tipos, ter int, float, boolean, string, etc
+        list1[0] retorna 1, etc
+        mesma coisa do slice de string funciona com listas (ex: sublistas, indexes negativos, etc...) - slice retorna nova cópia de lista
+        copia de lista inteira: list2 = list1[:]
+        listas são mutaveis
+
+            len(list1) - tamanho
+            list1.append(100) - adiciona elemento ao fim, mas não retorna referencia nem cópia
+            list1.insert(5, 100) - adiciona na posição 5 100
+            list.extend([100, 101]) - append uma outra lista no fim
+            list.pop() - remove elemento do fim e retorna elemento removido
+            list.remove(4) - procura elemento passado e remove - não retorna referencia nem copia
+            list.clear() - remove todos os elementos da lista - não retorna referencia nem copia
+            list.index(2) - retorna posição do elemento passado
+            list.index(2, 0, 2) - retorna posição do elemento passado - mas limita a sublista de 0 a 2 não inclusivo no limite final
+            list.count('d') - conta ocorrencias do elemento na lista
+            list.sort() - reordena a lista, modifica a lista sem retornar copia ou referencia
+            sorted(lista) - retorna copia de lista, mas ordena a copia
+            lsita.copy() - cria copia de lista e retorna
+            lista.reverse() - inverte lista - não retorna copia nem referencia
+            'd' in basket -> booleano se lista basket contem elemento d
+            list(range(1,100)) -> cria lista de 0 a 99
+            ' '.join(['hi','my','name','jojo']) - retorna uma lista separada pelo caracter que chama o join (' ' nesse caso)
+            a,b,c = [1,2,3] - faz unpack de lista, atribui valor da lista as variaveis na mesma posição
+            a,b,c, *resto = [1,2,3,4,5,6,7,8,9] - mesmo acima, mas coloca lista restante em resto
+            a,b,c, *resto, d = [1,2,3,4,5,6,7,8,9] - mesmo acima, mas coloca lista restante em resto e ultimo elemento em d
+        
+        matrix: lista de listas
+    
+    None: null do python
+    
+    Dictionary: como se fosse um mapa - estrutura de dados muito parecido com um json - dict
+        chave valor
+        dictionary = { 'a':1, 'b':2 }
+            dictionary['a']
+        lista pode ter dicionario, dicionario pode ter lista, é uma terra de ninguem
+    
+    
+        
+----------------
+#!/usr/bin/env python3
+
+print('Well this is weird')
+text = input('this is weird still... ')
+print(text + ', i agree')

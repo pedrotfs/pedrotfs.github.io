@@ -1,0 +1,363 @@
+JENKINS
+
+automation server. continuous integration, continuous delivery.
+
+senha inicial tá no log de subida.
+
+criar job > new item
+
+task == job
+
+jenkins pode ser usado em container.
+comandos rodam no container. não refletem na maquina hospedeira do container A MENOS que sejam nas pastas marcadas como volume.
+
+echo "current date is $(date)" : executa comando date dentro de uma string. operador $().
+
+HARDOWAY=marcelo
+echo $HARDOWAY
+	>seta variavel HARDOWAY e imprime valor dela
+
+#!/bin/bash na primeira linha de um script é o cabeçalho que indica que é bash script
+
+NAME=$1
+LASTNAME=$2
+SHOW=$3
+	>indica que name é primeiro parametro, lastname é segundo parametro e show terceiro parametro do bash script
+
+cuidado com espaços no shell, tipo para váriaveis
+opção <this project is parameterized> abre para adicionar parametros ao job
+
+parametro do tipo choice: lista dropdown
+para usar parametros, não rodar o script linha a linha no shell do jenkins. mandar o jenkins rodar o ARQUIVO do script.
+
+é possível rodar jobs do jenkins em hosts remotos usando chaves ssh
+
+variáveis globais de ambiente: $BUILD_NUMBER $BUILD_ID $BUILD_URL $JOB_NAME ...
+é possível criar variáveis de ambiente globais (manage jenkins > configure system)
+
+configurar url > configure system > jenkins url
+
+cron interno: job > configure > build triggers > build periodically > escrever expressão cron (para achar expressões cron: https://crontab.guru) no campo schedule
+	usar H na expressão dá ao jenkins o trabalho de escolher qual job executa se houver vários no mesmo horário(EX: exp normal > 1 * * * exp com H > H 1 * * *)
+	1 * * * (1h da manhã todo dia). * * * * (todo minuto)
+
+disparar job de aplicação externa:
+	1 - criar ou usar um usuário com permissão para executar o job
+	2 - usar crumb conforme adendo. chamar url com curl?
+
+JENKINS + AWS
+
+necessário instalar aws-cli para mandar as coisas do host remoto para aws.
+Global credentials: informações sigilosas como senhas e chaves
+
+JENKINS + ANSIBLE
+
+ansible basic inventory > arquivo que define hosts
+ansible playbook > script de coisas que o ansible deve fazer
+	>ansible-playbook -i hosts play.yml (passa arquivo de hosts e roda play.uml)
+
+jenkins tem plugin de ansible (manage jenkins > manage plugins > available ...)
+para rodar no jenkins, use o plugin e use a opção invoke ansible playbook. usar caminho inteiro do arquivo no container do jenkins, usar opção do file or host list para usar inventário
+
+parametros no ansible pelo jenkins: parametrizar projeto, depois na aba build > extra variables abre um painel com key e value, key é variavel esperada
+no ansible, definida como "{{ VAR }}" por exemplo e value como $ANSIBLE_MSG, sendo ANSIBLE_MSG o parametro do jenkins desejado
+
+colorir console do jenkins com ansible:  plugin ansicolor + configurar o job > build > colorized stdout
+
+linux: nl people.txt mostra numero de linhas do arquivo, começando em 1
+
+JENKINS SECURITY
+
+Configure Local Security > opções de segurança.
+use jenkins db > allow users to sign up > permite criar contas. default cria contas admin.
+
+plugin de segurança: role based authorization strategy
+	criar role: manage and assign roles. Role tem que ser associada a usuários depois de criada.
+	project roles: cria roles baseadas em strings (ex: ansible-.* - tudo que começa por ansible)
+
+criar usuários no db do jenkins: manage users > create users
+
+JENKINS + EMAIL
+
+mail plugin: mailer
+AWS email: ses (simple email service) - manda emails
+configure system > configurar smtp
+
+para mandar email pós build: job config > Post-build actions > email notification
+
+JENKINS + MAVEN + GIT
+
+plugin: maven integration
+plugin: git plugin, git client
+
+source code management: git, svn, etc... clona e faz pull sozinho depois de configurar
+workspace: pastas onde jenkins manipula arquivos(ex: checkout do git). cada job tem um workspace.
+
+configurar maven: manage jenkins > global tool configuration > add maven
+build com maven no job: job > configure > build environment > build step > invoke top level maven target
+	goals: instruções normalmente achadas nos jenkinsfile. omitir comando mvn pois é implicito. (ex: mvn clean install -> clean install)
+	argumento test do maven executa testes unitários
+
+deploy jar: build step > shell > java -jar <caminho/jar>
+adicionar grafico de resultado de testes: post build > publish junit test result report. colocar caminho do arquivo do surefire report
+
+arquivar artefatos: post build > archive the artifacts. pode usar expressão regular tipo target/*.jar
+
+git hooks: scripts bash para reagir a estados(ex: commit na master dispara job de build no jenkins)
+	pasta custom_hooks, arquivo com o nome do hook (ex: post-receive)
+
+JENKINS + DSL
+
+criar jobs por codigo ao invés de interface (groovy)
+plugin: Job DSL
+
+seed job: job que cria jobs
+
+Build step > process job DSLs
+evitar configurar jobs criados por dsl
+
+CI/CD
+
+metodologia de deploy rápida para produção
+Continuous Integration: commit -> testes unitários -> testes de integração -> testes funcionais. geralmente iniciado por git_hook
+Continuous Delivery: após CI, deploy para ambiente de testes -> testes de aceitação
+Continuous Deployment: promover para produção
+
+PIPELINE + JENKINSFILE
+
+pipeline: workflow do CI/CD. de dev até produção
+jenkinsfile: pipeline declarativa x pipeline scriptada
+			 -legivel/template      -groovy
+
+plugin: pipeline(vários - vem com a opção de plugins mais usados na config inicial do jenkins)
+
+DOCKER INSIDE DOCKER CONTAINER
+
+Razão: mais fácil que ficar rodando comando ssh para rodar comandos docker no hospedeiro
+volume> - “/var/run/docker.sock:/var/run/docker.sock”
+
+JAR + DOCKER
+
+Base: maven:3-alpine
+Volume: .m2
+
+Bash: $@ -> todos os parametros recebidos
+
+
+
+----------------------------------------------------------------------------------------------------
+samples
+----------------------------------------------------------------------------------------------------
+
+NAME=pedro
+echo "Hello $NAME, current date is $(date)"
+
+-
+-
+-
+
+NAME=pedro
+echo "Hello $NAME, current date is $(date)" > /tmp/info
+
+-
+-
+-
+
+#!/bin/bash
+
+NAME=$1
+LASTNAME=$2
+SHOW=$3
+
+if [ "$SHOW" = "true" ]; then
+  echo "Hello, $NAME $LASTNAME"
+else
+  echo "If you want to see the name, please mark the show option"
+fi
+
+----------------------------------
+#!/bin/bash
+
+counter=0
+
+while [ $counter -lt 50 ]; do
+	let counter=counter+1
+	
+	name=$(nl people.txt | grep -w $counter | awk '{print $2}' | awf -F ',' '{print $1}')
+	lastname=$(nl people.txt | grep -w $counter | awk '{print $2}' | awf -F ',' '{print $2}')
+	age=$(shuf -i 20-25 -n 1)
+
+	mysql -u root -p1234 people -e "insert into register values ($counter, '$name', '$lastname', $age)"
+	echo "$counter - $name $lastname was imported"
+done
+
+
+-
+- AWS BACKUP MYSQL JENKINS JOB
+-
+
+#/bin/bash
+
+DATE=$(date +%H-%M-%S)
+BACKUP=db-$DATE.sql
+
+DB_HOST=$1
+DB_PASSWORD=$2
+DB_NAME=$3
+AWS_SECRET=$4
+BUCKET_NAME=$5
+
+mysqldump -u root -h $DB_HOST -p$DB_PASSWORD $DB_NAME > /tmp/$BACKUP && \
+export AWS_ACCESS_KEY_ID=AKIAJRWZWY3CPV3F3JPQ && \
+export AWS_SECRET_ACCESS_KEY=$AWS_SECRET && \
+echo "Uploading your $BACKUP backup" && \
+aws s3 cp /tmp/db-$DATE.sql s3://$BUCKET_NAME/$BACKUP
+
+- 
+
+----------------------------------------------------------------------------------------------------
+docker-compose
+----------------------------------------------------------------------------------------------------
+version: '3'
+services:
+  jenkins:
+    container_name: jenkins
+    image: jenkins/jenkins
+    ports:
+      - "4040:8080"
+    volumes:
+      - $PWD/jenkins_home:/var/jenkins_home
+    networks:
+      - net
+networks:
+  net:
+
+  ------------
+executar script em container:
+
+  docker cp script.sh 0baafe5c1c17:/var/jenkins_home/scripts > copia pra dentro do container
+  docker exec -it 0baafe5c1c17 bash  >> entra no container
+  chmod 777 script.sh >> da permissão
+  (jenkins shell execute option) /var/jenkins_home/scripts/script.sh $NAME $LASTNAME $SHOW >> executa
+
+----------------------------------------
+ansible_host file example
+----------------------------------------
+
+[all:vars]
+ansible_connection = ssh
+
+[test]
+test1 ansible_host=remote_host ansible_user=remote_user ansible_private_key_file=var/jenkins_home/ansible/remote-key
+
+----------------------------------------
+ansible play book: play.yml (rodado no container do jenkins)
+----------------------------------------
+- hosts: test1
+  tasks:
+  	- shell: echo hello world > /tmp/ansible-file
+
+----------------------------------------
+ansible play book: play.yml (rodado no container do jenkins)
+----------------------------------------
+- hosts: test1
+  tasks:
+  	- debug:
+  		msg: "{{ MSG }}"
+
+----------------------------------------
+DSL JOB EXAMPLE // cria job ao executar dentro do jenkins (.j2?)
+
+job('job_dsl_created') { 
+	description('new job description here')
+
+	parameters {
+		stringParam('param', defaultValue = 'value', description = 'description')
+		booleanParam('FLAG',true)
+		choiceParam('OPTION', ['o1 (default)', 'o2', 'o3'])
+	}
+
+	scm {
+		git('https://github.com/pedrotfs/springbootstudy2', 'branch')
+	}
+
+	triggers {
+		cron('H 5 * * 7')
+	}
+
+	steps {
+		shell("""
+			echo 'hello world'
+			echo 'run script'
+			/tmp/script.sh
+			"""
+		)
+	}
+
+	publishers {
+		mailer('pedrotfs@gmail.com', true, true)
+	}
+	
+}
+
+----------------------------------------
+pipeline sample (caixinhas verdes)
+----------------------------------------
+pipeline {
+    agent any
+    environment {
+    	secret = credentials('TEST')
+    }
+    stages {
+        stage('Build') {
+            steps {
+                sh 'echo "My first pipeline"'
+                sh '''
+                    echo "By the way, I can do more stuff in here"
+                    ls -lah
+                '''
+            }
+        }
+        stage('Timeout') {
+            steps {
+                retry(3) {
+                	sh 'sl'
+                }
+                timeout(time: 3, unit: 'seconds') {
+                	sh 'timeout'
+                }
+            }
+        }
+    }
+}
+
+----------------------------------------
+
+adendo
+
+There's a chance your githooks won't trigger correctly with 403 erros. This is due to a jenkins major upgrade, which modified something called CSRF in Jenkins, that protects you against DOS attacks.
+
+Info:
+
+https://jenkins.io/doc/upgrade-guide/2.176/#SECURITY-626
+
+Resolution:
+
+* Install a plugin named Strict Crumb Issue
+
+* Go to Manage Jenkins -> Configure Global Security -> CSRF Protection.
+
+* Select Strict Crumb Issuer.
+
+* Click on Advanced.
+
+* Uncheck the Check the session ID box.
+
+* Save it.
+
+---------------------------------
+criar crumb(token) crsf
+
+crumb=$(curl -u "jenkins:1234" -s 'http://jenkins.local:8080/crumbIssuer/api/xml?xpath=concat(//crumbRequestField,":",//crumb)')
+# curl -u "jenkins:1234" -H "$crumb" -X POST http://jenkins.local:8080/job/ENV/build?delay=0sec #sem parametros
+curl -u "jenkins:1234" -H "$crumb" -X POST  http://jenkins.local:8080/job/backup-to-aws/buildWithParameters?MYSQL_HOST=db_host&DATABASE_NAME=testdb&AWS_BUCKET_NAME=jenkins-mysql-backup

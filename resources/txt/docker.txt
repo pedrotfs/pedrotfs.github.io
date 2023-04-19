@@ -1,0 +1,798 @@
+DOCKER
+draw.io
+
+precisa de conta no docker-hub para usar comando docker.
+
+docker le imagem, pega dependencias e instala programa e executa num container.
+imagem é igual classe, e execução em container é igual objeto
+
+se docker não acha imagem em image cache local, pinga docker hub.
+container: namespace. no namespace, as dependencias atendem o container. são isolados. também limita quantidade de recursos para os programas.
+container: processo + recursos especificos e limitados + dependencias + isolamento.
+
+namespace + control groups : exclusivo do linux.
+em outros OS ele roda em uma maquina virtual do linux.
+
+image: arquivos de sistema + comando de inicialização. docker run faz exatamente isso. pega imagem e roda.
+
+docker run busybox echo hi there - echo hi there é override ao comando default.
+docker run busybox ls - folders dentro do container
+
+programas podem não existir na imagem de sistema de imagens. por ex hello-world não tem nada. busybox tem coisas de unix tipo ls, echo
+
+docker ps - mostra containers em execução
+docker ps --all -mostra containers em execução desde instalação do docker.
+
+nomes são gerados aleatórios.
+
+docker run = docker create + docker start
+docker start -a ID_CRIADO_POR_DOCKER_CREATE //-a é para imprimir saida do container.
+
+containers exitados podem ser reiniciados. mas o comando não pode ser mudado.
+docker start -a ID_CONTAINER_STOPADO // reinicia container parado
+
+docker system prune - apaga containers, cache, redes etc de containers parados. limpa espaço. APAGA INSTANCIAS.
+docker logs CONTAINER_ID // obtem logs do container. não reinica ou re-executa container.
+
+docker stop CONTAINER_ID //para processo do container, permitindo o processo parar nos seus próprios termos.segurança. espera e se não para, chama kill.
+docker kill CONTAINER_ID //mata processo do container, parando ele imediatamente.
+
+docker exec -it CONTAINER_ID COMMAND //it permite executar input no container(IMPORTANTE). pode ser usado para inserir um novo programa num container existente.
+-it = -i + -t //-i attach terminal to stdin of container. -t "embeleza"
+
+docker exec -it CONTAINER ID sh //insere um shell dentro do container? fazer ls, export blablabla util pra debug. ctrl + d sai das coisas se ctrl + c não sair. em alguns casos dá pra usar bash. depende da imagem.
+docker run -it IMAGE_NAME sh // inicia container direto do shell. pode atrapalhar execução do programa principal.
+docker run -p 8080:8080 IMAGE_ID // redireciona requisições da porta 8080 exterior para 8080 interior ao container
+docker run DOCKER_USER/IMAGE_NAME //implicito que é a ultima versão da tag usada.
+docker run -p 3000:3000 -v /app/node_modules -v $(pwd):/app IMAGE_ID // 1o -v separa esse diretorio para que ele não seja mapeado, 2o -v mapeia pwd(pasta local) para /app
+docker run -it 01253f0ca979 npm run test //roda a imagem em um container, com entrada em stdin e depois roda os comandos especificados(npm run test)
+
+
+containers, mesmo que sejam da mesma imagem, são isolados. tem file system e recursos próprios.
+
+dockerfile: base image + install programs + commands to run on container setup. nomenclatura é Dockerfile sem extensão
+
+docker build . //builda imagem
+docker build -t DOCKER_USER/IMAGE_NAME/VERSION . //cria tag para buildar sem usar o id do container. convenção é docker user name / nome imagem / versão.
+docker build -f Dockerfile.dev  . // builda arquivo custom
+
+tecnicamente, só numero da versão é a tag
+
+instructions: FROM, RUN, CMD...
+FROM tipo import.
+RUN comandos para preparar imagem.
+CMD comando da linha de comando.
+
+alpine: linux distro
+
+docker run cria um container temporário para fazer as operações da imagem base para a imagem final. após a criação da imagem final o container temporário é apagado.
+cache do docker: execução sem cache segue da primeira mudança não cacheada e segue diferente.
+
+docker commit -c 'CMD ["redis-server"]' CONTAINER_ID cria um novo container que roda o comando redis-server em cima do container CONTAINER_ID.
+
+alpine tem mais ou menos 5mb. tem quase nada nela.
+docker hub tem imagens com variadas instalações e versões.
+
+COPY origin(local machine) destiny(on image file system)
+requisições só entram no container se for explicitado a porta de entrada e uma port forwarding. feito na inicialização do container.
+requisições saem livremente do container.
+WORKDIR /folder seta diretorio de trabalho dentro da imagem.criado se não existe.
+/usr é seguro para destino de aplicações.
+
+// para usar comandos com espaço, CMD ["npm", "start"]
+
+docker-compose: sobe vários containers ao mesmo tempo. automatiza argumentos do docker run. usa arquivos yml. cria containers na mesma rede, com acesso para comunicação entre si.
+services: tipo de container
+
+nome do container no yml acaba agindo como dns na rede interna do container.
+
+docker-compose up // sobe imagem do arquivo yaml
+docker-compose down // derruba imagem do arquivo yaml
+docker-compose up --build //builda e sobe
+docker-compose ps //status dos containers dentro do compose em execução no diretorio do arquivo yml.
+
+cuidado com dependencias repetidas. ex. tem na imagem e vc roda comando pra baixar elas.
+docker volume: ao inves de fazer copia de diretorios, faz referencia a diretorios na maquina local. similar aos mapeamentos de porta.
+docker attach se liga ao processo primário, o processo de execução do container.(o primeiro serviço do yml no caso do compose.)
+
+multi step docker builds -> possibilita o uso de mais de uma imagem base, onde cada step gera resultado para proxima imagem base.
+segundo from de um docker file indica que o step anterior foi terminado.
+container de imagens de ngnix não precisam de comando de inicialização. ele se inicia sozinho.
+travis assume que os testes executam e saem. mas default do react abre um menu e não fecha sozinho
+travis ci tem em settings area de env variables onde pode se por chave de acesso e senha (conteudos de um arquivo PEM) e ele se vira.
+
+EXPOSE 80 expoe porta 80 no dockerfile
+redis: quando uma conexão escreve dados, ela não pode recuperar mais. por isso usa-se conexões duplicadas.
+CMD ["npm", "run", "dev"] usa dependencia nodemon, que faz refresh dos arquivos alterados em dev.
+
+env variable in docker compose: is applied at runtime. se setado com =, é aplicado em runtime. se não setado com =, pega da maquna que tá rodando a imagem. não é salvo com imagem ou etc
+cuidado com portas, elas podem mudar com facilidade em produção.
+big docker compose files can crash because of the dowload order.
+
+docker run files (json): containers.
+yaml -> build commands x docker run files -> built images
+docker-compose é docker run file adaptado para aws
+
+amazon elastic bean stalk delega containers para amazon elastic container service.
+em aws, serviços criam uma rede privada virtual por região por default. (vpc)
+em aws, security groups permitem conexão de serviços dentro da vpc
+em aws, variaveis de ambiente valem para todos os serviços. diferente do yml que especifica variaveis para cada serviço.
+
+kubernetes: master + nodes, escalabilidade
+node: maquina fisica ou virtual, podem rodar numeros de containers e containers diferentes entre si.
+acesso feito pelo master que repassa comando aos nodes
+
+vm (node) contem containers
+
+minikube - manage vm (local env only)
+kubectl - manage containers in the node
+
+tb precisa de vm(virtual box por ex)
+
+minikube start
+minikube status
+minikube dashboard
+minikube ip
+eval $(minikube docker-env) //reconfigura docker local para afetar maquina virtual do k8s. APENAS PARA A JANELA ONDE O COMANDO FOI EXECUTADO.
+
+kubectl logs PODNAME
+kubectl cluster-info
+kubectl apply -f filename_of_config_file
+kubectl apply -f folder (aplica todos configs de uma pasta)
+kubectl delete -f filename_of_config_file
+kubectl get pods
+kubectl get pods -o wide
+kubectl describe TYPE NAME
+kubectl set image TYPE/OBJECT_NAME CONTAINER_NAME = FULL_IMAGE_NAME
+kubectl set image deployment/client-deployment client=pedrotfs/multi-client:v5
+kubectl get storageclass
+kubectl get pv  //volumes
+kubectl get pvc //volume claims
+kubectl create secret SECRET_TYPE SECRET_NAME --from-literal key=value //from literal exige par key value pq não é de arquivo.
+kubectl create secret generic pgpassword --from-literal PGPASSWORD=1234asdf
+kubectl get secrets
+
+docker compose x kubernetes
+d: pode buildar imagem x k: imagens tem que estar prontas
+d: cada entry é um container x k: cada arquivo de config é um objeto
+d: cada entry define rede x k: redes tem q ser definidas na mão
+
+objeto não é necessariamente container.
+k8s = kubernetes
+objeto pode ser container.
+
+campo kind define tipo de objeto.
+pod executa container
+service faz coisas com containers, tipo rede
+campo version limita tipos de objetos que podem ser usados
+
+pods tem integração acoplada. tem que rodar juntos
+em k8s, tem que deployar containers dentro de pod. não dá pra rodar container sem pod.
+kubeproxy: conexão entre pods serviços e o mundo exterior
+kubernates usa labelselector; vc referencia objetos entre sí pelos labels
+conteudos de label são arbitrarios ex > label: arbitrario1: arbitrario2
+nodeport: exposto ao mundo (30000-32767 range)
+targetport porta de entrada no app pod
+master decide qual node roda qual container
+
+config files mudam o estado desejado do master.
+master executa tarefas até alcançar o estado desejado e depois tenta manter o estado desejado
+
+imperative deployments: crie esse container ali (ordens implicitas)
+declarative deployments: o ideal seria ter esses containers (se vira ai master)
+k8s suporta os dois. o mais recomendado é declarative
+
+no arquivo de config, nome e tipo são chave de identificação.
+se nome e tipo forem os mesmos em um arquivo de cfg e o que tá rodando no k8s, ele é atualizado. não é criado um novo
+
+objeto deployment: mantem pods identicos e garante configurações corretas
+pods são usados em dev, deployment pode ser usado em prod
+deployment usa pods.
+
+ip do pod muda muito, mas o serviço acha o pod pelo seletor
+ip local não é localhost, usar minikube ip
+pvc persistent volume claim: volume fica na maquina "hospedeira" do k8s, não perdendo quando o pod crasha ou morre
+
+cluster ip service: acesso do node a tudo dentro dos pods gerenciados. (bom pra prod se usado com load balancer, ou ingress)
+node port service: expoe as coisas para acesso externo. se um item dentro do node quiser fazer acesso a algo exposto pelo node port, faz como se fosse externo(bom pra dev)
+
+manter arquivos de configuração separados é melhor ao invés de concatenar com --- pq é mais legivel, e pq é mais fácil de dar comandos demonstrativos para o k8s
+
+se container crasha, pod é perdido e perde tudo (todos os dados no caso de banco de dados)
+no k8s, volume é um objeto que permite um container a guardar dados a nível de pod
+persistent volume e persistent volume claim são mais desejaveis que volumes em k8s
+
+volume: sobrevive a container, morre com pod.
+persistent volume: sobrevive a pod.
+persistent volume claim: não é um volume, é uma promessa. ve se tem volume disponivel e se não tiver, cria dinamicamente.
+para atender persistent value, k8s cria uma pseudo partição se local. senão precisa dizer qual cloud usar. config associada storageClassName
+
+metadata names são hostnames em k8s
+objeto secret serve pra guardar informações sigilosas, como senhas. é melhor usar um comando imperativo para não expor o segredo.
+variaveis de ambiente devem ser string
+
+serviço do tipo load balancer pega configurações do provedor de cloud. ponte do trafego do exterior para o interior do cluster - deprecado?
+ingress - faz meio q a mesma coisa que o load balancer. existem várias implementações
+
+nginx ingress: 2 versões diferentes: ingress-nginx (comunidade, apoiado por k8s) x kubernetes-ingress(da empresa nginx) - favorecer versão comunidade ???
+setup do ingress-nginx muda muito dependendo do ambiente/provedor de nuvem
+
+objeto controller: trabalha para atingir estado desejado. igress controller trabalha para executar regras de routeamento. estado desejado é trafego dentro do cluster
+google cloud cria load balancer proprio e cria deployment default backend para verificar saude do cluster.
+
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/mandatory.yaml mandatório
+minikube addons enable ingress - para minikube
+
+k8s criado pelo google.
+pwd present working directory
+
+tagear imagens com duas tags, latest e $git_sha pra criar uma versão única a cada commit
+
+https://kubernetes.io/docs/reference/kubectl/cheatsheet/
+==============================================samples
+#use docker image as base
+from alpine
+#download and install dependencies
+run apk add --update redis //command run on alpine image. not Docker command, OS command.
+#start container.
+CMD ["redis-server"] 
+
+-----
+
+FROM node:alpine
+WORKDIR /usr/app #seta pasta dentro da imagem.
+COPY ./package.json ./ #pre copia e ve se as dependencias mudaram. faz isso para economizar um build do npm.
+RUN npm install
+COPY ./ ./ #copia o resto. se mudou coisa sem ser o package ou pom ou arquivo de dependencia, só copia. util pra htmls, pra js, tag e etc...
+CMD ["npm", "start"]
+
+----------------
+
+FROM node:alpine as builder
+WORKDIR '/app'
+COPY package.json .
+RUN npm install
+COPY . .
+RUN npm run build
+
+FROM nginx --multi step build
+COPY --from=builder /app/build /usr/share/nginx/html --copia arquivos necessarios gerados pela build do step anterior
+
+--------------------------------------------
+
+FROM nginx
+COPY ./default.conf /etc/nginx/conf.d/default.conf --override nginx with config file. ex below
+
+-----------------------------------
+
+upstream client {
+    server client:3000;    
+}
+
+upstream api {
+    server api:5000;    
+}
+
+server {
+    listen 80;
+    location / {
+        proxy_pass http://client;
+    }
+    location /api {
+        rewrite /api/(.*) /$1 break;
+        proxy_pass http://api;
+    }
+}
+
+----- docker compose example
+version: '3' #obrigatório
+services: #containers?
+  redis-server:
+    image: 'redis' #dockerhub image
+  node-app:
+    restart: always #container node-app reinicia sempre q cai;"no";always;on-failure;unless-stopped;  no tem aspas mesmo. sem aspas é false
+    build: . #build local folder Dockerfile
+    ports:
+      - "4001:8081" #- representa array
+
+--------------------------------
+
+version: '3' #obrigatório
+services: #containers?
+  web:
+    restart: always #container node-app reinicia sempre q cai;"no";always;on-failure;unless-stopped;  no tem aspas mesmo. sem aspas é false
+    build:
+      context: . #pasta
+      dockerfile: Dockerfile.dev # custom dockerfile
+    ports:
+      - "3000:3000" #- representa array
+    volumes:
+      - /app/node_modules #mapeamento de não copie esse.
+      - .:/app #mapeia pasta . de fora para /app de dentro do container.
+  tests:
+    build:
+      context: . #pasta
+      dockerfile: Dockerfile.dev # custom dockerfile
+    volumes:
+      - /app/node_modules #mapeamento de não copie esse.
+      - .:/app #mapeia pasta . de fora para /app de dentro do container.
+    command: ["npm", "run", "test"] #sobrescreve o comando de inicialização do Dockerfile do build.
+
+ -------------------------travis ci yml
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t pedrotfs/docker-react -f Dockerfile.dev .
+
+script:
+  - docker run -e CI=true pedrotfs/docker-react npm run test #run tests as travis CI
+
+deploy:
+  provider: elasticbeanstalk # from aws
+  region: "us-east-2" #from aws
+  app: "docker-react" #as created from the name of the elastic bean stalk
+  env: "DockerReact-env" #like previous
+  bucket_name: "elasticbeanstalk-us-east-2-542759777101" #auto generated by elastic bean stalk, available on s3 buckets in aws
+  bucket_path: "docker-react" #default is app name
+  on:
+    branch: master #travis will redeploy on any pushes to master branch only
+  access_key_id: $AWS_ACCESS_KEY #config in settings on travis cl
+  secret_access_key:
+    secure: "$AWS_SECRET_KEY" #config in settings on travis cl
+
+--------------------------travis ci yml
+
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t pedrotfs/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run pedrotfs/react-test npm test -- --coverage
+
+after_success:
+  - docker build -t pedrotfs/multi-client ./client
+  - docker build -t pedrotfs/multi-server ./server
+  - docker build -t pedrotfs/multi-worker ./worker
+  - docker build -t pedrotfs/multi-nginx ./nginx
+
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+
+  - docker push pedrotfs/multi-client
+  - docker push pedrotfs/multi-server
+  - docker push pedrotfs/multi-worker
+  - docker push pedrotfs/multi-nginx
+
+deploy:
+  provider: elasticbeanstalk
+  region: us-west-1
+  app: multi-docker
+  env: MultiDocker-env
+  bucket_name: elasticbeanstalk-us-west-1-342342342342
+  bucket_path: multi-docker
+  on:
+    branch: master
+  access_key_id:
+    secure: $AWS_ACCESS_KEY
+  secret_access_key:
+    secure: $AWS_SECURE_KEY
+
+
+--------------------------------------------------
+version: '3'
+services:
+  postgres:
+    image: 'postgres:latest'
+  redis:
+    image: 'redis:latest'
+  nginx:
+    restart: always
+    build:
+      dockerfile: Dockerfile.dev
+      context: ./nginx
+    ports:
+      - '3050:80'
+  api:
+    build:
+      dockerfile: Dockerfile.dev
+      context: ./server
+    volumes:
+      - /app/node_modules
+      - ./server:/app
+    environment:
+      - REDIS_HOST=redis #assim como o nome do serviço. env var são atribuidas em runtime
+      - REDIS_PORT=6379 #default port
+      - PGUSER=postgres
+      - PGHOST=postgres #nome do serviço
+      - PGDATABASE=postgres
+      - PGPORT=5432
+      - PGPASSWORD=postgres_password
+    depends_on:
+      - postgres #dependencia
+  client:
+    build:
+      dockerfile: Dockerfile.dev
+      context: ./client
+    volumes:
+      - /app/node_modules
+      - ./client:/app
+  worker:
+    build:
+      dockerfile: Dockerfile.dev
+      context: ./worker
+    volumes:
+      - /app/node_modules
+      - ./worker:/app
+    environment:
+      - REDIS_HOST=redis #assim como o nome do serviço. env var são atribuidas em runtime
+      - REDIS_PORT=6379 #default port
+
+{
+    "AWSEBDockerrunVersion":2,
+    "containerDefinitions":[
+        {
+            "name":"client",
+            "image":"pedrotfs/multi-client",
+            "hostname":"client",
+            "essential":false
+        },
+        {
+            "name":"server",
+            "image":"pedrotfs/multi-server",
+            "hostname":"api",
+            "essential":false
+        },
+        {
+            "name":"worker",
+            "image":"pedrotfs/multi-worker",
+            "hostname":"worker",
+            "essential":false
+        },
+        {
+            "name":"nginx",
+            "image":"pedrotfs/multi-nginx",
+            "hostname":"nginx",
+            "essential":true, //precisa de um essential pelo menos. se o essential cair, todos são derrubados.
+            "portMappings": [
+                {
+                    "hostPort":80,
+                    "containerPort":80
+                }
+            ],
+            "links": ["client","server"] //usa name dos containers, não hostname
+        }
+    ]
+}
+
+
+-------------------------aws-------------------------------------cheat-sheet----------------------------------
+
+RDS Database Creation
+
+Go to AWS Management Console and use Find Services to search for RDS
+Click Create database button
+Select PostgreSQL
+Check 'only enable options eligible for RDS Free Usage Tier' and click Next button
+Scroll down to Settings Form
+Set DB Instance identifier to multi-docker-postgres
+Set Master Username to postgres
+Set Master Password to postgres and confirm
+Click Next button
+Make sure VPC is set to Default VPC
+Scroll down to Database Options
+Set Database Name to fibvalues
+Scroll down and click Create Database button
+
+ElastiCache Redis Creation
+
+Go to AWS Management Console and use Find Services to search for ElastiCache
+Click Redis in sidebar
+Click the Create button
+Make sure Redis is set as Cluster Engine
+In Redis Settings form, set Name to multi-docker-redis
+Change Node type to 'cache.t2.micro'
+Change Number of replicas to 0
+Scroll down to Advanced Redis Settings
+Subnet Group should say “Create New"
+Set Name to redis-group
+VPC should be set to default VPC
+Tick all subnet’s boxes
+Scroll down and click Create button
+
+Creating a Custom Security Group
+
+Go to AWS Management Console and use Find Services to search for VPC
+Click Security Groups in sidebar
+Click Create Security Group button
+Set Security group name to multi-docker
+Set Description to multi-docker
+Set VPC to default VPC
+Click Create Button
+Click Close
+Manually tick the empty field in the Name column of the new security group and type multi-docker, then click the checkmark icon.
+Scroll down and click Inbound Rules
+Click Edit Rules button
+Click Add Rule
+Set Port Range to 5432-6379
+Click in box next to Custom and start typing 'sg' into the box. Select the Security Group you just created, it should look similar to 'sg-…. | multi-docker’
+Click Save Rules button
+Click Close
+
+Applying Security Groups to ElastiCache
+
+Go to AWS Management Console and use Find Services to search for ElastiCache
+Click Redis in Sidebar
+Check box next to Redis cluster and click Modify
+Change VPC Security group to the multi-docker group and click Save
+Click Modify
+Applying Security Groups to RDS
+Go to AWS Management Console and use Find Services to search for RDS
+Click Databases in Sidebar and check box next to your instance
+Click Modify button
+Scroll down to Network and Security change Security group to multi-docker
+Scroll down and click Continue button
+Click Modify DB instance button
+
+Applying Security Groups to Elastic Beanstalk
+
+Go to AWS Management Console and use Find Services to search for Elastic Beanstalk
+Click the multi-docker application tile
+Click Configuration link in Sidebar
+Click Modify in Instances card
+Scroll down to EC2 Security Groups and tick box next to multi-docker
+Click Apply and Click Confirm
+Setting Environment Variables
+Go to AWS Management Console and use Find Services to search for Elastic Beanstalk
+Click the multi-docker application tile
+Click Configuration link in Sidebar
+Select Modify in the Software tile
+Scroll down to Environment properties
+In another tab Open up ElastiCache, click Redis and check the box next to your cluster. Find the Primary Endpoint and copy that value but omit the :6379
+Set REDIS_HOST key to the primary endpoint listed above, remember to omit :6379
+Set REDIS_PORT to 6379
+Set PGUSER to postgres
+Set PGPASSWORD to postgrespassword
+In another tab, open up RDS dashboard, click databases in sidebar, click your instance and scroll to Connectivity and Security. Copy the endpoint.
+Set the PGHOST key to the endpoint value listed above.
+Set PGDATABASE to fibvalues
+Set PGPORT to 5432
+Click Apply button
+
+IAM Keys for Deployment
+
+Go to AWS Management Console and use Find Services to search for IAM
+Click Users link in the Sidebar
+Click Add User button
+Set User name to multi-docker-deployer
+Set Access-type to Programmatic Access
+Click Next:Permissions button
+Select Attach existing polices directly button
+Search for 'beanstalk' and check all boxes
+Click Next:Review
+Add tag if you want and Click Next:Review
+Click Create User
+Copy Access key ID and secret access key for use later
+
+AWS Keys in Travis
+
+Open up Travis dashboard and find your multi-docker app
+Click More Options, and select Settings
+Scroll to Environment Variables
+Add AWS_ACCESS_KEY and set to your AWS access key
+Add AWS_SECRET_KEY and set to your AWS secret key
+
+----------------------------------------k8s
+apiVersion: v1
+kind: Service
+metadata:
+  name: client-node-port
+spec: 
+  type: NodePort
+  ports:
+    - ports: 3050
+      targetPort: 3000
+      nodePort: 31515
+  selector:
+    component: web
+
+-----------
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: client-pod
+  labels:
+    component: web
+spec: 
+  containers:
+    - name: client
+      image: pedrotfs/multi-client
+      ports:
+        - containerPort: 3000
+
+--------------
+apiVersion: apps/v1
+kind: deployment
+metadata:
+  name: client-deployment
+  spec:
+    replicas: 1
+    selector:
+      matchLabels:
+        component: web
+  template:
+    metadata:
+      labels:
+        component: web
+    spec:
+      containers:
+        - name: client
+          image: pedrotfs/multi-client
+          ports:
+            - containerPort: 3000
+
+----------------------
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: client-cluster-ip-service
+spec:
+  type: ClusterIP
+  selector: 
+    component: web
+  ports:
+    - port: 3000
+      targetPort: 3000
+
+----------------------
+(--- separa configs no mesmo arquivo. evitar para manter a legibilidade)
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: server-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels: 
+      component: server
+  template:
+    metadata:
+      labels:
+        component: server
+    spec:
+      containers:
+        - name: server
+          image: pedrotfs/multi-server
+          ports:
+            - containerPort: 5000
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: server-cluster-ip-service
+spec:
+  type: ClusterIP
+  selector: 
+    component: server
+  ports:
+    - port: 5000
+      targetPort: 5000
+
+---------------------------------------------------------------------------------
+
+apiVersion: v1
+kind: PersistentVolumeClaim #kubernetes procura no disco uma seção que atenda os requisitos do spec
+metadata:
+  name: database-persistent-volume-claim
+spec:
+  accessModes:
+    - ReadWriteOnce #escrita e leitura de só um node pode usar por vez
+  resources:
+    requests:
+      storage: 2Gi #2 gigas
+
+------------------------------------------
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: postgres
+  template:
+    metadata:
+      labels:
+        component: postgres
+    spec:
+      volumes:
+        - name: postgres-storage
+          persistentVolumeClaim:
+            claimName: database-persistent-volume-claim
+      containers:
+        - name: postgres
+          image: postgres
+          ports:
+            - containerPort: 5432
+          volumeMounts: 
+            - name: postgres-storage
+              mountPath: /var/lib/postresql/data
+              subPath: postgres #postgres exige isso. quase ninguem
+          env: 
+            - name: PGPASSWORD #pegando valor de senha para o banco defaul das variaveis de ambiente , SE E SOMENTE SE ESTIVER PRESENTE
+              valueFrom:
+                secretKeyRef:
+                  name: pgpassword
+                  key: PGPASSWORD
+
+---------------------------
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: server-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels: 
+      component: server
+  template:
+    metadata:
+      labels:
+        component: server
+    spec:
+      containers:
+        - name: server
+          image: pedrotfs/multi-server
+          ports:
+            - containerPort: 5000
+          env: #variaveis de ambiente formato chave valor
+            - name: REDIS_HOST
+              value: redis-cluster-ip-service
+            - name: REDIS_PORT
+              value: '6379'
+            - name: PGUSER
+              value: postgres
+            - name: PGHOST
+              value: postgres-cluster-ip-service
+            - name: PGPORT
+              value: '5432'
+            - name: PGDATABASE
+              value: posgres
+            - name: PGPASSWORD #variavel de ambiente esperada
+              valueFrom: #recupera valor de um objeto tipo segredo
+                secretKeyRef:
+                  name: pgpassword #nome objeto
+                  key: PGPASSWORD #chave dentro do objeto que pode ter várias
+
+-----------routeando paths
+
+apiVersion: extensions/v1beta1
+kind: ingress
+metadata:
+  name: ingress-service
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+    - http:
+      paths:
+        - path: /
+          backend:
+            serviceName: client-cluster-ip-service
+            servicePort: 3000
+        - path: /api/
+          backend: 
+            serviceName: server-cluster-ip-service
+            servicePort: 5000

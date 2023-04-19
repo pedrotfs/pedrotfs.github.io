@@ -1,0 +1,142 @@
+Kafka basics
+
+Transferencia de dados entre sistemas
+
+tudo gira em torno de tópicos
+tópicos são stream de dados identificados por nome
+similares a tabelas de banco de dados sem constraints
+divididos em partições numeradas (id de cada mensagem da partição é offset)
+
+escolher numero de partições na criação do tópico
+garantia de ordenação só dentro da partição, não através de multiplas partições
+dado é mantido por tempo limitado.
+dado é imutavel depois de escrito na partição.
+
+kafka cluster = multiple brokers (servers)
+broker identified by integer id
+broker contain certain topic partitions
+connect to any broker is connecting to the cluster
+common broker number : 3
+
+topic's partitions are distributed across brokers
+
+topic replication factor usualy being 2 or 3(3 is better)
+replication factor is number of copies
+
+only one broker is leader for a partition, receive and serve data
+the others are slaves
+if one broker is leader and falls, other assumes leadership.
+when the leader come back, it will get a fresh data copy and try to become leader again
+
+producer write data to topics; know automatically wich broker and partition to write to
+automatically recover from broker failures
+choose to receive ack of data writes 
+acks=0 dont wait (possible data loss)
+acks=1 wait leader acks (limited data loss)
+acks=all wait leader and replicas(no data loss)
+
+producer can send a key(string number etc) with the message
+key = null data is sent to all brokers in sequence(message 1 broker 1 message 2 broker 2 etc)
+all messages for key go to same partition
+key specify ordering for specific field
+message with key goes to same partition
+
+consumers read from a topic(id by name)
+consumers know wich broker to read and how to recover from failures
+data read in order WITHIN each partition
+consumer can read from multiple partitions in paralell
+consumers read data in consumer groups
+each consumer within group read from exclusive partitions (exceding consumers will be inactive)
+usually have as many consumers as partitions
+
+consumer offsets
+kafka stores offsets wich consumer group has been reading(commit offset)
+commited live in topic __consumer_offsets
+if consumer dies it use this to find where it was
+consumer choose to commit offsets
+*at most once: as soon as message is received(wont read again so if issues message can be lost)
+*at least once: commit after read message (if issue message is read again - can result in duplicate processing)
+*exaclty once: only kafka to kafka/ for external system use idempotent consumer
+
+kafka broker is boostrap server (connect to one makes you connect to all)
+each broker know about all brokers topics and partition(metadata)
+
+zookeper manage brokers(have list of them)
+perform leader elections
+is a watchdog
+kafka depends on zookeper
+operates with odd number of servers
+zoo keeper also have master and slaves
+master handle writes slaves handle reads
+zookeper don't store consumer offsets(zookepers are isolated from kafka)
+
+messages appended in topic partition in order of sending
+consumers read in order stored in topic-partition
+producers and consumers can tolerate n-1 brokers being down with n being replication factor
+as long as partitions are constant, same key goes to same partition
+partitions per topic: small cluster(<6 brokers) 2 partitions per broker / large cluster(>12) 1 partition per broker. adjust for planned growth and peak performance
+20k partitions in all topics is the limit for kafka. if needed more, use another cluster.
+
+kafka can operate well in a single region so enterprises hava cluster across the world with replication across then
+partitions are made of segments(files)
+only one segment active
+segment configs: log.segment.bytes (tamanho maximo) e log.segment.ms (tempo de espera para comitar o seguimento se ele não está cheio)
+segment indexes: offset and timestamp (kafka pode achar dados em tempo constante)
+
+log.cleanup.policy: delete(age of data defaulting in 1week and/or size defaulting in -1 infinite)
+log.cleanup.policy: compact(based on keys delete duplicate keys after active segment is commited)
+
+advertised.listener: libera o ip publico para conexão com o broker (config/server.properties)
+
+zookeeper-server-start.sh config/zookeeper.properties
+kafka-server-start.sh config/server.properties
+
+kafka-topics.sh --zookeeper 127.0.0.1:2181 --topic first_topic --create --partitions 3 --replication-factor 1
+kafka-topics.sh --zookeeper 127.0.0.1:2181 --list
+kafka-topics.sh --zookeeper 127.0.0.1:2181 --topic first_topic --describe
+kafka-topics.sh --zookeeper 127.0.0.1:2181 --topic second_topic --delete
+kafka-console-producer.sh --broker-list 127.0.0.1:9092 --topic first_topic --producer-property acks=all
+
+kafka-console-consumer.sh --bootstrap-server 127.0.0.1:9092 --topic first_topic //só pega mensagens produzidas depois da invocação do comando
+kafka-console-consumer.sh --bootstrap-server 127.0.0.1:9092 --topic first_topic --from-beginning //tudo
+kafka-console-consumer.sh --bootstrap-server 127.0.0.1:9092 --topic first_topic --from-beginning --group my-first-app
+
+kafka-consumer-groups.sh --bootstrap-server localhost:9092 --list
+kafka-consumer-groups.sh --bootstrap-server localhost:9092 --describe --group my-first-app
+kafka-consumer-groups.sh --bootstrap-server localhost:9092 --group my-first-app --reset-offsets --to-earliest --execute --topic //sem execute é dry run | pode ser --all-topics tb
+
+kafka-configs.sh --zookeeper 127.0.0.1:2181 --entity-type topics --entity-name first_topic --describe //configuração do topico ou entidade(grupo, etc)
+kafka-configs.sh --zookeeper 127.0.0.1:2181 --entity-type topics --entity-name first_topic --add-config configuração
+kafka-configs.sh --zookeeper 127.0.0.1:2181 --entity-type topics --entity-name first_topic --add-config min.insync.replicas = 2 --alter //precisa do alter pra alterar
+kafka-configs.sh --zookeeper 127.0.0.1:2181 --entity-type topics --entity-name first_topic --delete-config min.insync.replicas --alter //precisa do alter pra alterar
+
+best pratics: create topic before producing for it
+reset offsets não apaga mensagens
+--shift-by avança o numero especificado. para voltar usar numeros negativos
+vai pra todas as partições
+
+kafka-console-producer --broker-list 127.0.0.1:9092 --topic first_topic --property parse.key=true --property key.separator=,
+>key,value
+>anotherkey, anothervalue
+
+kafka-console-consumer --bootstrap-server 127.0.0.1:9092 --topic first_topic --from-beginning --property print.key=true --property key.separator=,
+
+Kafka Tools
+
+min insync replicas: ack=all numero minimo de replicas que respondem. se responder menos, lança exceção
+retries to max integer value
+retry.backoff.ms default 100ms
+delivery.timeout.ms = 120 000 2 minutes default
+retries scramble order(even with key order because of parallelism)
+max.in.flight.request.per.connection(default 5) changing impacts performance
+
+enable.idempotence=true //garante order
+
+elastic
+get /_cat/indices?v
+put /indexNameLowerCase cria indice
+put /indexNameLowerCase/_doc/1 cria documento no index
+put /twitter/tweets/1 exemplo do acima passando json rodando muitas vezes causa update
+get /twitter/tweets/1 recupera acima
+delete /twitter/tweets/1 apaga
+delete /twitter deleta index

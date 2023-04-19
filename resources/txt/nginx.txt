@@ -1,0 +1,374 @@
+NGINX
+
+alternativa ao apache para suportar muitas conexões
+muitos plugins para extender funcionalidade
+
+apache: prefork > processos atendem um request por vêz.
+reverse proxy server: requests assíncronos que atendem vários processos ao mesmo tempo
+
+requests são atendidos por processos independentes e devolvidos por nginx
+
+nginx é leve
+processos são atendidos por submodulos: modulo de php atende processo de php e deixa outros submodulos livres. no apache todos os processos tem que atender todos os requests
+
+serve recursos estáticos mais rápido e aguenta mais concorrência que apache
+
+Nginx recebe requests e responde assincronamente
+apache recebe requests até limite pré definido e recusa o resto
+
+nginx: requests interpretados como uri
+apache: requests interpretados como pastas e arquivos
+
+digital ocean: provedor de vms
+
+package manager: limitado, sem muitas opções de instalação.
+pasta: /etc/nginx/
+
+ao construir a partir do codigo fonte: usar script ./configure
+--sbin-path=/usr/bin/nginx (executavel)
+--conf-path=/etc/nginx/nginx.conf (config)
+--error-log-path=/var/log/nginx/error.log
+--http-log-path=/var/log/nginx/access.log
+--pid-path=/var/run/nginx.pid
+--with-http_ssl_module (habilita modulo)
+
+make (compila o fonte)
+make install (instala o fonte compilado)
+
+systemd service script location: /lib/systemd/system/nginx.service
+
+SYSTEMD SAMPLE FILE ----------------------------
+[Unit]
+Description=The NGINX HTTP and reverse proxy server
+After=syslog.target network.target remote-fs.target nss-lookup.target
+
+[Service]
+Type=forking
+PIDFile=/run/nginx.pid
+ExecStartPre=/usr/sbin/nginx -t
+ExecStart=/usr/sbin/nginx
+ExecReload=/usr/sbin/nginx -s reload
+ExecStop=/bin/kill -s QUIT $MAINPID
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
+-------------------------------------------------
+
+systemctl start nginx
+ps aux | grep nginx
+systemctl status nginx
+
+systemctl enable nginx (sobe automatico no boot)
+
+CONFIGURATION
+
+nginx.conf
+context: seçoes no arquivo de conf. onde ficam as directivas. contexto mais elevado é o arquivo de config
+directive: opções no arquivo de configuração, com nome e valor.
+
+porta 80: http
+porta 443: https
+
+*.domain.com : aceita todos os subdominios de domain.com (www, http...)
+
+listen porta
+server_name endereço site
+root /sites/demo;
+types: tipos mime, text/html html; text/css css; (arquivo mime.types tem definições - usar include mime.types)
+
+reload não tem tempo descoberto, restart tem
+
+nginx -t : mostra erros de sintaxe nos arquivos de config
+
+bloco de localização:
+    location uri {
+        performa resposta
+    }
+location /greet { #prefix match. aceita greeting tb
+       return 200 'Greet location'
+    }
+    
+location = /greet { #exact match
+       return 200 'Greet location'
+    }
+    
+location ~ /greet[0-9] { #regex match - case sensitive
+       return 200 'Greet location'
+    }
+
+location ~* /greet[0-9] { #regex match - case Insensitive
+       return 200 'Greet location'
+    }
+regex tem mais prioridade que os outros
+
+location ^~ /greet[0-9] { #prefix match com mais prioridade que regex
+       return 200 'Greet location'
+    }
+    
+prioridades: exact(=) > prefix preferential (^~) > regex (~*) > prefix
+
+nginx conf implementa scope, variáveis, assim como linguagens de programação.
+host, uri, args...
+tem variáveis próprias, de modulo e criadas por usuário
+
+    location /inspect {
+       return 200 "$host \n $uri \n $args";
+    }
+
+if( $arg_apiKey != 1234 ) { #precisa dos espaços para que os parenteses não "toquem" na condição
+    return 401 "invalid key"
+}
+
+set $weekend 'No'; #cria variaveis string, boolean e inteiros
+$date_local guarda string de timestamp atual
+
+return 307 uri #redireciona
+redirect: muda uri
+rewrite: muda uri internamente sem alterar no client. aceita regex. mais pesado. é reavaliado o arquivo conf inteiro.
+
+rewrite ^/user/(\w+) /greet/$1; # faz rewrite de chamada em /user/ qqr coisa para /greet e captura o nome do usuário (usando parenteses ao redor do que se quer capturar).
+                                # $1 faz com que argumento 1 seja colocado ai
+                                
+rewrite ^/user/(\w+) /greet last; # não permite nenhum rewrite após rewrite com flag last
+
+try_files caminho #aplicavel nos contextos server e location
+try_files /thumb.png /greet; #se num existe root + /thumb.png # se primeiro não existir, oferta o segundo ao requisitante. ultimo argumento causa rewrite.
+                             #usavel com variáveis
+                             
+try_files $uri /cat.png /greet /friendly_404; #ultimo é bom existir
+
+contexto herda caracteristicas do contexto pai.
+
+LOGGING
+
+logs: error (errors) access (requests)
+habilitado por default. localização definida na configuração de instalação
+404 -> maioria das vezes é access log. boa prática é 404 não dar erro, ser tratado de forma correta
+
+diretiva acces_log caminho #armazena log para escopo onde a diretiva foi chamada
+error_log caminho #igual acima para error_log
+error_log off; #desliga error log para escopo
+
+recomendação é desligar maior parte de access log e não mexer em error log;
+
+HERANÇA
+
+array directive: cada declaração adiciona no existente. na herança é sobrescrita. (ex: access_log)
+standard directive: só pode ser declarada uma vez. sobrescrita nos filhos
+action directive: não tem herança pois muda fluxo.
+
+PROCESSAMENTO PHP
+
+serviço paralelo processa e retorna para servidor nginx que retorna para cliente.
+index index.php index.html
+location ~\.php$ {
+    include fastcgi.conf # opcional se quiser usar isso
+    fastcgi_pass unix:/run/php/php7.1-fpm.sock; # idem
+}
+fora de contexto > user www-data # usa usuario existente.
+
+ADICIONAR MODULOS A INSTALAÇÃO EXISTENTE
+
+reconstruir a fonte -> adicionar no fim da confiugruação existente a config do modulo e reconstruir o codigo fonte
+modulos dinamicos não são carregados por padrão.
+extensão de modulos: .so
+usar diretiva load_module caminho/relativo
+
+CONFIGURAÇÔES DE PERFORMANCE
+
+master process(nginx server) gera worker process para atender requisições
+    default 1 worker para 1 master.
+    directiva worker_process 2; #aumenta worker process, tem que ser fora de todos os escopos, igual user. pode ser auto, 1 worker pra cada core.
+    
+worker process são assincronos, geralmente trabalhando no máximo do hardware permitido. 1 worker só pode rodar em 1 core de processador.
+99% das vezes: n de workers = n de cores;
+
+nproc e lscpu: detalhes de processadores.
+
+directiva worker_connections #dentro do contexto events - obter > ulimit -n (maximo de conexões com arquivo)
+directiva pid caminho #muda caminho do pid. fora de contextos
+
+BUFFER E TIMEOUT
+
+# Buffer size for POST submissions
+  client_body_buffer_size 10K; #muito desperdiça, pouco causa mais escrita a disco que é lenta.
+  client_max_body_size 8m; #não aceita mais que isso, responde com 413 (muito grande)
+
+  # Buffer size for Headers
+  client_header_buffer_size 1k; #mais do que suficiente pra 99% dos dados
+
+  # Max time to receive client headers/body
+  client_body_timeout 12; # tempo entre leituras consecutivas. default 60s o que é muito
+  client_header_timeout 12; #
+
+  # Max time to keep a connection open for
+  keepalive_timeout 15; #tempo para manter conexão aberta para esperar mais dados. reduz tempo perdido para abrir nova conexão, mas gasta pool de conexão
+
+  # Max time for the client accept/receive a response
+  send_timeout 10; #se cliente num receber NADA aborta nesse tempo
+
+  # Skip buffering for static files
+  sendfile on;
+
+  # Optimise sendfile packets
+  tcp_nopush on;
+  
+dependem mais da requisição que do hardware
+
+HEADER EXPIRES
+
+directiva add_header my_header "Hello world"; (contexto location ou http (array directive) ex > location ~* \.(css|jpg|png|gif)$ > estáticos)
+add_header Cache-Control public; #permite cachear header
+add_header Pragma public; #versão mais antiga do cache control
+add_header Vary Accept-Encoding; #permite variação de encoding
+expires 60m; #expira em 60 minutos (h hora m minuto s segundo ms milisegundo M mes...)
+
+RESPOSTAS COMPRIMIDAS COM GZIP
+
+se client aceitar dados comprimidos, nginx pode comprimir com gzip.
+directiva (contexto http) gzip on;
+    gzip_comp_level 1 (0 - tamanho original, 5 - maximo de compressão pratico, 8 maximo)
+    gzip_types text/css text/javascript; (quaisquer tipos mime) (add_header Vary indica que cliente aceita isso) (cliente manda header com : "Accept-Encoding: gzip, deflate")
+
+FAST CGI CACHE
+
+contexto http
+directivas:
+    fastcgi_cache_path /tmp levels=1:2 keys_zone=ZONE_1:100m inactive=60m;
+    #levels indica diretórios e subdiretórios, armazenando via um hash esquisito MD5
+    
+    fastcgi_cache_key "$scheme$request_method$host$request_uri" # chave do cache - scheme checa se é http ou https. tirar ele mantem o cache dos dois juntos
+    
+    fastcgi_cache ZONE_1; # em um location
+    fastcgi_cache_valid 200 404 60m; #tipos de retorno
+    
+    set $no_cache 0;
+    if($request_method = POST) {
+        set $no_cache 1;
+    }
+    fastcgi_cache_bypass $no_cache; #exceção para pular o cache
+    fastcgi_no_cache $no_cache;
+
+HTTP 2 x HTTP 1.1
+
+http 1 x 2: 1 é texto 2 é binário
+http 2 comprime headers
+http 2 usa conexões persistentes
+http 2 usa multiplex stream (combina recursos em um stream binário  usando menos conexões concorrentes)
+http 2 faz push no server
+
+listen 443 ssl http2; #usa http 2 e ssl
+
+http2_push /file; #em um location, faz com que file seja colocado no stream binário do http2
+
+SEGURANÇA
+
+HTTPS é padrão
+
+redirecionar chamadas http para https para além de segurança, ter os benefícios de http2
+
+contexto http, criar um novo contexto server, com mesmo server name, escutando na porta 80, e redireciona o servidor seguro(return 301 https://$host$request_uri)
+
+SSL (secure socket layer ) é obsoleto e substítuido por TLS (transport layer security), portanto, é melhor desabilitar ssl
+directiva para desabilitar ssl (contexto server) >
+    
+    ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
+    ssl_prefer_server_ciphers on;
+    ssl_ciphers ECDH+AESGCM:!MD5; #usa ecdh... e não usa md5. procurar a mais atual
+    ssl_dhparam /etc/nginx/ssl/dhparam.pem; #DH parameters: troca completamente secreta de chaves
+        gerar param dh > open ssl dhparam 2048 -out /etc/nginx/ssl/dhparam.pem #tem que ter o mesmo tamanho da chave do certificado ssl
+    add_header Strict-Transport-Security "max-age=31536000"; #HSTS diz para navegador não carregar nada de http
+    
+    ssl_session_cache builtin; #sessão ssl para cachear handshakes. pode ser shared
+    ssl_session_timeout 4h;
+    ssl_session_tickets on;
+    
+RATE LIMITING
+
+limita transferencias. util para segurança(contra força bruta), confiança(previne aumentos subitos de trafego), e melhora prioridade dos serviços
+
+teste de carga de servidor: usar ferramenta siege
+diretivas:
+    limit_req_zone $server_name zone=MYZONE:10m rate=60r/m; #aplica no server. limita a 10 mega e a 60 requests por minuto
+    limit_req_zone $binary_remote zone=MYZONE:10m rate=60r/m; #aplica por usuário
+    limit_req_zone $request_uri zone=MYZONE:10m rate=60r/m burst=5 nodelay; #por url, permite que tenha um pico de 6(1 + 5) requests sem ser em um segundo, enfileirando e atendendo 1r/s
+        #nodelay ignora limit e atende todos do burst de uma vez, mas novos requests tem que respeitar o limite de rate
+
+zona de rate pode ser aplicada aos contextos server e location(diretiva limit_req zone=MYZONE;)
+limites são aplicados de forma distribuida, ou seja. 60r/m é igual a 1r/s
+
+AUTH
+
+htpasswd -c /etc/nginx/.htpasswd user1 #gera senha num arquivo no formato httpasswd em formato hash
+diretivas: (aplicar em location. server também?)
+    auth_basic "Secure area";
+    auth_basic_user_file /etc/nginx/.htpasswd #local do arquivo
+    
+esconder versão do header: contexto http: diretiva server_tokens off;
+prevenção de click jacking(abrir site em iframe externo malicioso): contexto server: add_header X-Frame-Options "SAMEORIGIN";
+    add_header X-XSS-Protection "1; mode=block";
+    
+GERAR CERTIFICADOS
+
+ferramentas certbot e letsencrypt
+certbot certonly -d dominio.com
+
+PROXY REVERSO E LOAD BALANCING
+
+proxy reverso: recebe informações de outros modulos ao invés de ser um monolito
+load balance: aumentar disponibilidade
+    diretiva: proxy_pass 'http://localhost:10001/'
+    
+    contexto upstream: agrupa servers.fica no contexto http
+        upstream php_servers {
+            server localhost:10001;
+            server localhost:10002;
+            server localhost:10003;
+        }
+        ...
+        ...
+        ...
+        proxy_pass http://php_servers
+        
+        ip_hash; #mantem conexão no mesmo nó até acabar a capacidade dele
+        least_conn; #igual ip_hash mas direciona para o nó com menos uso
+        
+
+GEO IP
+
+usar config na instalação: with-http_geoip_module (requer biblioteca libgeoip-dev do so)
+diretivas no http contexto
+    geoip_country /etc/nginx/geoip/GeoIp.dat; #baixado externamente da internet
+    geoip_city /etc/nginx/geoip/GeoLiteCity.dat; #
+    
+    depois usar variavel $geoip_contry_name
+    
+Video Streaming
+
+modulo --with-http_mp4_module
+mp4;
+mp4_buffer_size 4m;
+mp4_max_buffer_size 10m;
+
+
+    
+
+----------------------------------------------------------
+docker run --name mynginx2 -v /var/www:/usr/share/nginx/html:ro -v /var/nginx/conf:/etc/nginx:ro -P -d nginx
+docker run --name mynginx2 -v /var/www:/home/pedrosilva/dev/nginx/volume/varwww -v /var/nginx/conf:/home/pedrosilva/dev/nginx/volume/etcnginx -P -d nginx
+
+-------------
+
+version: '3'
+services:
+    nginx:
+        container_name: nginx
+        image: nginx:alpine
+        volumes:
+            - /home/pedrosilva/dev/nginx/volume/varwww:/var/www
+            - /home/pedrosilva/dev/nginx/volume/etcnginx:/var/nginx/conf
+            - /home/pedrosilva/dev/nginx/volume/etcnginx/nginx.conf:/etc/nginx/nginx.conf
+        ports:
+            - "80:80"
+            - "443:443"

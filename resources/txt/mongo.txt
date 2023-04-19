@@ -1,0 +1,676 @@
+MongoDB
+
+Database contem collections, não tabelas
+collections contem documentos {"name" : "Max", "age":"29"} - Json
+Schemaless. vc pode guardar dados diferentes na mesma collection (ex coleção acima pode ter um campo só com nome ou com atributos a mais)
+
+pode guardar dados aninhados, um documento dentro do outro
+pode guardar listas
+
+mongo converte json para um formato interno (BSON - binary json)
+mongo é flexivel e otimizado
+
+menos ou nenhuma relação entre tabelas / coleções
+
+mongo server chama storage engine que em um primeiro momento escreve em memória pra depois escrever no banco (velocidade na manipulação)
+storage engine default: wired tiger
+
+database hold one or more collections. 
+collections hold documents(data)
+mongo create implicitly databases, collections and documents
+
+setar Id na mão, passar chave-valor "_id":"valor qualquer"
+id são chave e tem q ser único
+
+CRUD
+Create : insertOne(data, options), insertMany(data, options)
+Read: find(filter, options), findOne
+Update: updateOne(filter, data, options), updateMany, replaceOne
+Delete: deleteOne(filter, options), deleteMany
+
+sudo kill -9 $(sudo lsof -t -i:27017)
+
+mongod -> start database
+mongod --dbpath --port-> start com caminho da pasta data/db e porta
+
+mongo -> shell
+mongo --port -> shell com porta
+
+show dbs -> mostra databases
+use banco - conecta em um banco. se não existe, cria
+
+find devolve cursor, não tudo. paginado? commando it itera
+pretty é metodo de cursor, findOne não retorna cursor
+
+projection -> igual view de outros bancos
+
+documentos dentro de outros: 100
+tamanho maximo de documento: 16 mb
+
+data types:
+text
+boolean
+number(int32, int64, float64, numberdecimal[high precision]) - default float64
+objectId, ISODate, timestamp
+embedded document, arrays
+
+Normal integers (int32) can hold a maximum value of +-2,147,483,647
+Long integers (int64) can hold a maximum value of +-9,223,372,036,854,775,807
+Text can be as long as you want - the limit is the 16mb restriction for the overall document
+It's also important to understand the difference between int32 (NumberInt), int64 (NumberLong) and a normal number as you can enter it in the shell. The same goes for a normal double and NumberDecimal.
+NumberInt creates a int32 value => NumberInt(55)
+NumberLong creates a int64 value => NumberLong("7489729384792")
+If you just use a number (e.g. insertOne({a: 1}), this will get added as a normal double into the database. The reason for this is that the shell is based on JS which only knows float/ double values and doesn't differ between integers and floats.
+NumberDecimal creates a high-precision double value => NumberDecimal("12.99") => This can be helpful for cases where you need (many) exact decimal places for calculations.
+When not working with the shell but a MongoDB driver for your app programming language (e.g. PHP, .NET, Node.js, ...), you can use the driver to create these specific numbers.
+
+strong one to one: use embedded (need both at the same time)
+weak one to one: reference (need only one of those)
+
+relações mongo
+embedded: documento um dentro do outro
+reference: vc passa só o id (imitando fk)
+
+$lookup: joins
+
+The MongoDB Data Types: https://docs.mongodb.com/manual/reference/bson-types/
+More on Schema Validation: https://docs.mongodb.com/manual/core/schema-validation/
+
+se insertMany falhar em um indice, os anteriores são inseridos por default(order default) - sem rollback, sem seguintes
+writeConcern - escrita em banco é primeiro em memória, depois em jornal de ToDo, depois em disco. - espécie de ack de memória, de jornal, de disco
+... - {w:1, j:false} //defaults
+
+atomicidade: nivel de documento, se documento falhar subdocumentos inseridos não sofrem rollback
+mongo concatena chaves em and por default
+evitar usar duas operações no mesmo campo(ex inc e set para age de um usuário)
+
+index: guarda de forma ordenada um campo para aumentar velocidade de buscas depois retorna o documento.
+no index: scan all then filter x index: scan filtered documents
+
+too much indexes: custo de performance nos inserts. toda inserção tem que atualizar o index
+indexes também aumentam a velocidade dos sort das queries e cursores
+index são mais uteis para queries que retornam uma parte menor do banco. para parte maior do banco, index atrapalha. EX usuarios com menos de 80 anos são maioria de um cadastro
+index pode ter mais de uma chave
+index pode ajudar ordenação de coleções gigantes. senão ele não aguenta em memória
+index default : _id
+valores não existentes são convertidos para nulo podendo causar erro de valores duplicados em indice unico
+olhar miliseconds process time para avaliar eficacia, numero de chaves, numero de documentos examinados e documentos retornados(chaves, documentos analisados e retornados devem ter numeros proximos para serem eficientes)
+indices compound(multiplos campos): ordem importa e tem impacto na performance
+
+covered query: buscar campo indexado, projetar para não voltar _id. analisa nenhum documento, muito rápido.
+quando um plano de execução de query é "vencedor", é cacheado. queries identicas usa o cache. expira após 1000*default) documentos escritos na coleção, reconstrução de indexes, restart de server.
+
+index fica no documento, não no documnento pai do documento.
+1 campo multi key por index.
+text indexes: salva palavras chave. remove palavras "stop words" (artigos, preposições, etc)
+
+geojson - localizações
+aggregation: collection -> $match -> $sort -> $group -> $project -> output (cada estagio da pipeline aggregation pode ser repetido)
+group: n documents to 1 document; projection: 1 document to 1 document
+
+normal decimal values don't have precision
+high precision doubles have 34 decimal digits of garanteed precision
+default number value: 64 bit double (equals javascript)
+shell de mongo é implementado baseado em javascript
+
+authentication : valid users
+authorization: what the user can do
+privileges: resources(artifact - shop->products) + actions(insert())
+Roles: collection of privileges
+
+default roles: database user, database admin, all database Roles, cluster admin, backup/restore, superuser
+existe replica sets e eles tem eleições pra saber qual é o primário, bem parecido com kafka.
+sharding - distribui, não replica. queries são executadas em todos os shards
+mongos - roteador mongo que resolve qual shard atende requisição
+use wise shard key so queries use it as often as possible
+
+
+
+==================================================================================================================================================================
+==================================================================================================================================================================
+==================================================================================================================================================================
+==================================================================================================================================================================
+==================================================================================================================================================================
+
+db.products.insertOne({"name":"max", ...}) - banco conectado com use banco.coleção.operação (se coleção não existe é criada)
+db.products.insertOne({"name":"max", ...}, {writeConcern: {w: 1, j: true, wtimeout: 200 } }) - usando writeConcern para ack de memoria, de jornal e com timeout de 200ms
+db.flightData.insertMany([ //insert many uses an array demarked by []
+...   {
+...     "departureAirport": "MUC",
+...     "arrivalAirport": "SFO",
+...     "aircraft": "Airbus A380",
+...     "distance": 12000,
+...     "intercontinental": true
+...   },
+...   {
+...     "departureAirport": "LHR",
+...     "arrivalAirport": "TXL",
+...     "aircraft": "Airbus A320",
+...     "distance": 950,
+...     "intercontinental": false
+...   }
+... ]
+... 
+)
+db.products.insertMany([ {"name":"max", ...}, {"name":"max2", ...}, ... ], {ordered:false}) //permite inserção de todos os validos, não para no primeiro q deu erro
+
+db.products.find().pretty() - find all
+db.products.find()
+
+db.flightData.deleteOne({"departureAirport": "VUC"})
+db.flightData.updateOne({"distance":12000}, {$set: {"marker":"delete"}}) // precisa do set pra dizer qual o campo novo
+db.flightData.updateMany({}, {$set: {"marker":"toDelete"}}) // o {} no filtro indica tudo, tipo update all
+db.flightData.deleteMany({"marker":"toDelete"})
+
+db.flightData.find({"distance":950}).pretty()
+db.flightData.find({"distance": {$gt: 100 }  }).pretty() //$gt é greater than ou >
+db.flightData.findOne({"distance": {$gt : 100} }) // acha o primeiro só
+db.flightData.find({ "_id":ObjectId("5d9f5804b5ff51e274b3785c") }).pretty() // busca por ID
+
+db.flightData.update({ "_id": ObjectId("5d9f5804b5ff51e274b3785b")} ,  {"delayed": false} ) //aceita sem o $set, mas o update (sem ser one ou many) sobrescreve o encontrado pelo filtro para o documento novo, sobrando só o documento novo - MUITO CUIDADO
+
+db.flightData.replaceOne({"_id" : ObjectId("5d9f5804b5ff51e274b3785b")}, { //substitui igual o update mas é mais seguro. o Id já existe, conforme query acima
+...     "departureAirport": "MUC",
+...     "arrivalAirport": "SFO",
+...     "aircraft": "Airbus A380",
+...     "distance": 12000,
+...     "intercontinental": true
+...   })
+
+db.passengers.find().toArray() // pega tudo como array
+db.passengers.find().forEach((p) => {printjson(p)}) // lambda?; eficiente, faz lazy load, mais eficiente q o acima
+var cursor = db.passengers.find(); cursor.next() //itera tudo. se num guardar em variavel ele sempre vlta pro começo pq refaz a query
+db.movies.find().sort({"rating.average": 1}) //ordena o cursor por atributo. 1 é crescente, -1 é decrescente. aceita multiplos atributos
+db.movies.find().sort({"rating.average": 1}).skip(10) //ordena e pula 10 primeiros
+db.movies.find().sort({"rating.average": 1}).skip(10).limit(10) //ordena e pula 10 primeiros e limita a 10 os resultados obtidos. ordem correta o mongo aplica por baixo dos panos
+
+db.passengers.find({}, {age:1, _id:0}).pretty() //find all projetando / trazendo só o campo age. id sempre vai se num foi explicito q num quer /projeção
+db.movies.find({runtime : {$ne :60}}) //ne not equals
+db.movies.find({runtime : {$lt :60}}) //menor q
+db.movies.find({runtime : {$lte :60}}) //menor q e igual
+
+db.movies.find({genres: ["Drama"]}).pretty() // procura por filmes que tem o genero drama e somente drama
+db.movies.find({genres: "Drama"}).pretty() //procura por filmes que tem o genero drama, dentre outros
+db.movies.find({"runtime": {$in:[30,42] }}) //procura por filmes que tem duração q corresponda ao array em $in
+db.movies.find({"runtime": {$nin:[30,42] }}) //procura por filmes que a duração NAO esteja no array
+db.movies.find({$or: [{ "rating.average": {$lt: 5} }, {"rating.average": {$gt: 9.3}} ]}).count() //usando or: precisa do array de documentos, e count conta o resultado
+db.movies.find({$nor: [{ "rating.average": {$lt: 5} }, {"rating.average": {$gt: 9.3}} ]}) // contrario de or
+
+db.movies.find({$and: [{"rating.average": {$gt: 9}}, {genres: "Drama"}] }) // and
+db.movies.find({"rating.average": {$gt: 9}, genres: "Drama"}) // and tb
+db.movies.find({genres: "Drama", genres: "Horror"}) sobrescreve o genres pq é o mesmo nome, precisando do and
+db.movies.find({genres: "Horror"}) equivalente ao de cima
+
+db.users.find({age: {$exists : true}}) //verifica se o campo existe MESMO se o valor for null
+db.users.find({age: {$exists : true, $ne: null}}) //verifica se o campo existe e filtra null
+db.users.find({phone: {$type : "number"}}) //verifica se o campo é do tipo numero (integer e float)
+db.users.find({phone: {$type : ["number", "string"]}}) //multiplos tipos
+
+db.users.find({"hobbies.title": "Sports"}) //se hobbies for um array, busca elementos do array que atendam a chave
+db.users.find({hobbies: {$size: 3}}) // busca pelo tamanho do array. tem que ser numero exato
+db.box.find({genre: {$all: ["action", "thriller"] }}) busca independente da ordem do array passado. sem isso considera a ordem e não acha ["thriller", "action"] por exemplo
+db.users.find({hobbies: {$elemMatch: {title: "Sports", frequency: {$gte: 3} } }}) //busca um elemento interno que atenda multiplas condições. senão ele acha elementos que atendam as duas mesmo que não sejam o mesmo
+
+db.movies.find({summary: {$regex: /music/}}).pretty() //procura por textos em sumary que contenham a expresão music. regex não é performavel
+db.sales.find({$expr: {$gt: ["$volume", "$target"] }}) //ve se valor do campo volume é maior que target
+db.sales.find({$expr: {$gt: ["$volume", "$target"] }})
+db.passengers.findOne({"name":"Albert Twostone" }).hobbies //acessando campo interno
+db.passengers.findOne({"name":"Albert Twostone" }).age // igual
+
+db.passengers.find({"hobbies":"sports"}).pretty() //filtra por elemento dentro de elemento (hobbies é array dentro de passageiro)
+db.flightData.find({"status.description": "on-time"}).pretty() //busca por elemento interno (description tá dentro de status que tá dentro de voo)
+db.flightData.find({"status.details.responsible": "pedro silva"}).pretty()
+
+db.dropDatabase() apaga banco
+db.collection.drop() apaga coleção
+
+db.flightData.updateMany({}, {$set: {"status": {"description":"on-time", "lastUpdated": "1 hour ago" } } }) insere documento dentro de documento
+db.passengers.updateOne({"name":"Albert Twostone"}, {$set: {"hobbies": ["sports", "cooking"] }}) // adicionando array de string
+
+db.users.updateOne({_id:ObjectId("5da0d65ec75f0897c4cea4c8")}, {$set: {hobbies: [ {title:"Sports", frequency:5}, {title:"Cooking", frequency:3}, {title:"Hiking",frequency:1} ] } }) //faz update do array hobbies
+db.users.updateMany({"hobbies.title":"Sports"}, {$set: {isSporty: true}}) adiciona campo pra todo mundo que tem hobby titulo sports
+db.users.updateOne({_id:ObjectId("5da0d65ec75f0897c4cea4c8")}, {$set: {age:40, phone:5456455646} })  //muda mais de um campo
+db.users.updateOne({name: "Manuel"}, {$inc: {age: 1}, $set: {isSporty: false} }) //incrementa o campo age em uma unidade do usuario de nome manuel
+db.users.updateOne({name: "Chris"}, {$min: {age:38}}) //muda a idade para o valor 38, se 38 for menor que a idade atual
+db.users.updateOne({name: "Chris"}, {$max: {age:38}}) //muda a idade para o valor 38, se 38 for maior que a idade atual
+db.users.updateOne({name: "Chris"}, {$mul: {age:1.1}}) //muda a idade para o resultado da multiplicacao por 1.1
+db.users.updateMany({isSporty: true}, {$unset: {phone: 1} }) // apaga o campo por completo, não deixa nem null
+db.users.updateMany({}, {$rename: {age: "totalAge"}}) // renomeia campo age para totalAge
+
+db.users.updateOne({name: "Maria"}, {$set: {age: 29} }, {upsert: true}) // se não acha, insere UPdate.inSERT. auto insere o filtro
+db.users.updateMany({hobbies: {$elemMatch: {title:"Sports", frequency: {$gte:3}}}}, {$set: {"hobbies.$".newField: true }}) // hobbies.$ usa o primeiro elemento encontrado pelo elemMatch
+db.users.updateMany({totalAge: {$gt: 30}}, {$inc: {"hobbies.$[].frequency": -1}}) update todos os elementos encontrados no array
+db.users.updateMany({"hobbies.frequency": {$gt: 2}}, {$set: { "hobbies.$[el].goodFrequency": true}}, {arrayFilters: [{"el.frequency": {$gt: 2}}] }) //num sei nem por onde começa
+db.users.updateOne({name:"Maria"}, {$push: {hobbies: {title: "Sports, frequency: 2"} } }) //adiciona elemento no array hobbies
+db.users.updateOne({name:"Maria"}, {$pull: {hobbies: {title: "Sports, frequency: 2"} } }) //remove elemento no array hobbies
+db.users.updateOne({name:"Chris", {$pop: {hobbies: 1}}}) //tira ultimo elemento. -1 tira primeiro
+db.users.updateOne({name:"Maria"}, {$addToSet: {hobbies: {title: "Sports, frequency: 2"} } }) //adiciona elemento no array hobbies SEM DUPLICATAS
+$sort existe para arrays para adicionar tb
+
+db.stats() // mostra stats
+NumberInt(1) guarda numero como int 32
+NumberLong("39127831278937") guarda numero como int 64 - tem que usar string. senão dá overflow (limitações de javascript)
+typeof db.collection.findOne().field mostra o tipo
+
+db.contacts.explain().find({"dob.age" : {$gt: 60}}) //sem pretty()! EXPLAIN explica como o mongo faz a query. util para ver a necessidade de indices de busca
+db.contacts.explain("executionStats").find({"dob.age" : {$gt: 60}}) //mais detalhes
+
+db.contacts.createIndex({"dob.age": 1}) cria index no campo age de dob de contacts. 1 é asc
+db.contacts.dropIndex({"dob.age": 1})
+db.contacts.createIndex({"dob.age": 1, gender:1}) index com multiplas chaves, limite : 31, é usado esquerda direita. pode usar o primeiro e o segundo e o terceiro, só o primeiro e segundo, nunca pulando algum
+db.contacts.createIndex({"dob.age": 1}, {unique: true}) cria index cujo valor do campo é unico
+db.contacts.createIndex({"dob.age": 1}, {partialFilterExpression: {"gender:male"}}}) cria index e filtra nele só idade de pessoas do genero masculino. não é um filtro. só usa se filtrar pelo filtro da expressão
+db.contacts.createIndex({"dob.age": 1}, {unique : true, partialFilterExpression: {"gender :{$exists: true} }}}) indice parcial q só considera o campo como existente. (explicitamente declarado como nulo é existente)
+db.contacts.createIndex({"dob.age": 1}, {expireAfterSeconds: 10}) remove elemento após o tempo. só funciona para indexes de data. depois de adicionar elemento ele reconsidera todos os existentes.
+
+db.books.createIndex({description: "text"}) // text index, guarda key words num array em caixa baixa. um text index por coleção
+db.books.createIndex({description: "text", title:"text"}) // text index, guarda key words num array em caixa baixa. um text index por coleção e com duas chaves
+db.books.find({$text: {$search: "awesone"}}) //busca usando text index
+db.books.find({$text: {$search: "awesone -shirt"}}) //busca usando text index e excluindo produtos que tem a palavra com '-'
+db.books.find({$text: {$search: "\"busca texto não palavra\""}}) //busca usando text index
+db.books.find({$text: {$search: "awesome book"}}, {score: {$meta: "textScore"}}) entender como ele faz a ordenação de resultados por texto
+
+db.books.createIndex({description: "text", title:"text"}, {default_language:"german"}) // define como filtrar palavras por idioma
+db.books.createIndex({description: "text", title:"text"}, {default_language:"german", weights: {title:1, description: 10} }) // define quais campos contam/pesam mais para o score de texto
+db.books.find({$text: {$search: "bla", $language: "german", $caseSensitive: true}}) // define busca por text index com idioma e case sensitive
+//dropar index de texto tem q ser por nome.
+db.contacts.getIndexes() // recupera indices
+
+db.places.insertOne({name: "california academy of science", "location": {type: "Point", coordinates:[-122.4724356, 37.7672544]} }) //geojson - chaves precisam ter esses nomes(type, cooordinates(long, lat)). type precisa ser suportado
+db.places.find({location: {$near: {$geometry: {type:"Point", coordinates: [-122.471114, 37.3771104]} }}}) //index necessário
+db.places.find({location: {$near: {$geometry: {type:"Point", coordinates: [-122.471114, 37.3771104]} }}}) //query por localização
+db.places.find({location: {$near: {$geometry: {type:"Point", coordinates: [-122.471114, 37.3771104]}, $maxDistance: 7000 }}}) //filtro de distancia maxima
+db.places.find({location: {$geoWithin: {$geometry: {type:"Polygon", coordinates: [[[p1,p2,p3,p4, p1]]]   },  }}}) //filtro de verificação de documentos dentro de um poligono. p1...p4 setados como const e contem coordenadas long lat. termina sempre no primeiro ponto para indicar q fechou o poligono
+
+db.areas.insertOne({name:"area", area:{type:"Polygon", coordinates: [[[p1,p2,p3,p4, p1]]] } }) //guardando geojson no banco
+db.areas.find({area: {$geoIntersects: {$geometry: {type:"Point", coordinates: [-122.471114, 37.3771104]} } } }) //ve se ponto faz intersecção com area
+
+db.places.find({location: {$geoWithin: {$centerSphere: [ [-122, 37], 1/ 6378.1] } } } ) // centerSphere recebe centro da esfera, e raio em radianos (1/ 6378.1 é a conversão)
+
+var indentifier = db.patients.findOne().diseaseSummary //seta variavel
+db.books.aggregate([{$lookup: {"from":"authors", "localField": "authors", "foreignField":"_id", "as":"creators"} }]).pretty() //simple join
+//from collections, localfield fk, foreignField pk da referencia, as nome do campo
+aggregation benefits from index, return cursor
+db.contacts.aggregate( [ {$match: {gender: "female"} }, {$group: {_id : {state: "$location.state"}, totalPersons:{$sum: 1} } } ] ).pretty() // match filtra, group faz group by(no caso, soma mulheres de cada estado)
+db.contacts.aggregate( [ {$match: {gender: "female"} }, {$group: {_id : {state: "$location.state"}, totalPersons:{$sum: 1} } }, {$sort: {totalPersons: -1}} ] ).pretty() // mesmo acima fazendo sort por campo novo
+db.persons.aggregate([
+    {
+      $project: {
+        _id: 0,
+        gender: 1,
+        fullName: {
+          $concat: [
+            { $toUpper: { $substrCP: ['$name.first', 0, 1] } }, //substring, s0 + distancia
+            {
+              $substrCP: [
+                '$name.first',
+                1,
+                { $subtract: [{ $strLenCP: '$name.first' }, 1] } // //string.lenght()
+              ]
+            },
+            ' ',
+            { $toUpper: { $substrCP: ['$name.last', 0, 1] } },
+            {
+              $substrCP: [
+                '$name.last',
+                1,
+                { $subtract: [{ $strLenCP: '$name.last' }, 1] }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  ]).pretty();
+
+$convert: {input: "$location.coordinates.longitude", to:"double", onError: 0.0, onNull:0.0} //converte string pra double na projeção e trata erro e null
+
+db.persons.aggregate([
+    {
+      $project: {
+        _id: 0,
+        name: 1,
+        email: 1,
+        birthdate: { $convert: { input: '$dob.date', to: 'date' } }, // pode ser substituido por $toDate: '$dob.date'. existem atalhos para transformações simples
+        age: "$dob.age",
+        location: {
+          type: 'Point',
+          coordinates: [
+            {
+              $convert: {
+                input: '$location.coordinates.longitude',
+                to: 'double',
+                onError: 0.0,
+                onNull: 0.0
+              }
+            },
+            {
+              $convert: {
+                input: '$location.coordinates.latitude',
+                to: 'double',
+                onError: 0.0,
+                onNull: 0.0
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      $project: {
+        gender: 1,
+        email: 1,
+        location: 1,
+        birthdate: 1,
+        age: 1,
+        fullName: {
+          $concat: [
+            { $toUpper: { $substrCP: ['$name.first', 0, 1] } },
+            {
+              $substrCP: [
+                '$name.first',
+                1,
+                { $subtract: [{ $strLenCP: '$name.first' }, 1] }
+              ]
+            },
+            ' ',
+            { $toUpper: { $substrCP: ['$name.last', 0, 1] } },
+            {
+              $substrCP: [
+                '$name.last',
+                1,
+                { $subtract: [{ $strLenCP: '$name.last' }, 1] }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    { $group: { _id: { birthYear: { $isoWeekYear: "$birthdate" } }, numPersons: { $sum: 1 } } }, // $isoWeekYear extrai o ano.    
+    { $sort: { numPersons: -1 } }
+  ]).pretty();
+
+db.persons.aggregate([
+    {
+      $project: {
+        _id: 0,
+        name: 1,
+        email: 1,
+        birthdate: { $toDate: '$dob.date' },
+        age: "$dob.age",
+        location: {
+          type: 'Point',
+          coordinates: [
+            {
+              $convert: {
+                input: '$location.coordinates.longitude',
+                to: 'double',
+                onError: 0.0,
+                onNull: 0.0
+              }
+            },
+            {
+              $convert: {
+                input: '$location.coordinates.latitude',
+                to: 'double',
+                onError: 0.0,
+                onNull: 0.0
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      $project: {
+        gender: 1,
+        email: 1,
+        location: 1,
+        birthdate: 1,
+        age: 1,
+        fullName: {
+          $concat: [
+            { $toUpper: { $substrCP: ['$name.first', 0, 1] } },
+            {
+              $substrCP: [
+                '$name.first',
+                1,
+                { $subtract: [{ $strLenCP: '$name.first' }, 1] }
+              ]
+            },
+            ' ',
+            { $toUpper: { $substrCP: ['$name.last', 0, 1] } },
+            {
+              $substrCP: [
+                '$name.last',
+                1,
+                { $subtract: [{ $strLenCP: '$name.last' }, 1] }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    { $out: "transformedPersons" } //escreve em uma nova coleção
+  ]).pretty();
+
+db.transformedPersons.aggregate([
+    {
+      $geoNear: { //avalia se tá perto, tem q ser o primeiro elemento da pipeline. unico elemento com acesso direto a coleção
+        near: { //geoJson
+          type: 'Point',
+          coordinates: [-18.4, -42.8]
+        },
+        maxDistance: 1000000, //meters
+        num: 10, //amount of results, mais eficiente aqui que com limit
+        query: { age: { $gt: 30 } }, //igual um find
+        distanceField: "distance" // retorna a distancia no campo distance. pode ser qqr nome
+      }
+    }
+  ]).pretty();
+
+
+
+//aggregate arrays
+db.persons.aggregate( [ { $group: { _id: { age:"$age"}, allHobbies{ $push: "$hobbies"}}}]) //cria um array novo e adiciona todos os elementos do array hobbies de cada pessoa no array de grupo hobbies criado para projeção; allHobbies vira array de hobbies
+
+db.persons.aggregate( [ { $unwind: "$hobbies" }, { $group: { _id: { age:"$age"}, allHobbies{ $push: "$hobbies"}}}]) // mesmo que acima mas extrai os elementos do array hobbies. isso causa um documento pra cada elemento do array. ex: max tem hobbies cooking e sports. vai ter 2 max, um com sports e outro com cookies. tem q usar agrupando pra evitar esse caso // mas tem repetição
+ 
+db.persons.aggregate( [ { $unwind: "$hobbies" }, { $group: { _id: { age:"$age"}, allHobbies{ $addToSet: "$hobbies"}}}]) //remove repetição do caso acima
+
+db.friends.aggregate([
+    { $project: { _id: 0, examScore: { $slice: ["$examScores", 2, 1] } } } //pega 1 elemento a partir da segunda posição do array examscores. sublist
+  ]).pretty();
+
+db.friends.aggregate([
+    { $project: { _id: 0, numScores: { $size: "$examScores" } } } //size pega o tamanho do array e guarda em numscores
+  ]).pretty();
+
+db.friends.aggregate([
+    {
+      $project: {
+        _id: 0,
+        scores: { $filter: { input: '$examScores', as: 'sc', cond: { $gt: ["$$sc.score", 60] } } } //mostra exames na variavel score filtrando scores com resultado acima de 70 $filter
+      } //$$ filter precisa de variaveis temporarias em cada passo, indicadas pelo $$ dolar duplo
+    }
+  ]).pretty();
+
+db.friends.aggregate([
+    { $unwind: "$examScores" },
+    { $project: { _id: 1, name: 1, age: 1, score: "$examScores.score" } },
+    { $sort: { score: -1 } },
+    { $group: { _id: "$_id", name: { $first: "$name" }, maxScore: { $max: "$score" } } },
+    { $sort: { maxScore: -1 } }
+  ]).pretty();
+
+db.persons
+  .aggregate([
+    {
+      $bucket: { //divide resultados em "baldes" diferentes
+        groupBy: '$dob.age',
+        boundaries: [18, 30, 40, 50, 60, 120], //intervalos. intervalos vazios são recusados
+        output: {
+          numPersons: { $sum: 1 },
+          averageAge: { $avg: '$dob.age' }
+        }
+      }
+    }
+  ])
+  .pretty();
+
+db.persons.aggregate([
+    {
+      $bucketAuto: { // faz os intervalos sozinhos
+        groupBy: '$dob.age',
+        buckets: 5,
+        output: {
+          numPersons: { $sum: 1 },
+          averageAge: { $avg: '$dob.age' }
+        }
+      }
+    }
+  ]).pretty();
+
+
+db.persons.aggregate([
+    { $match: { gender: "male" } },
+    { $project: { _id: 0, gender: 1, name: { $concat: ["$name.first", " ", "$name.last"] }, birthdate: { $toDate: "$dob.date" } } },
+    { $sort: { birthdate: 1 } },
+    { $skip: 10 }, //pula 10 //ordem de sort, limit ,skip, match, ..., importa na projeção. no find não. aggregate é um pipeline sequencial.
+    { $limit: 10 } //pega 10
+  ]).pretty();
+
+
+
+//setting validation for schema, criando na mão a coleção
+//indica campos obrigatorios
+//tipo de dados
+db.createCollection('posts', {
+  validator: {
+    $jsonSchema: {
+      bsonType: 'object',
+      required: ['title', 'text', 'creator', 'comments'],
+      properties: {
+        title: {
+          bsonType: 'string',
+          description: 'must be a string and is required'
+        },
+        text: {
+          bsonType: 'string',
+          description: 'must be a string and is required'
+        },
+        creator: {
+          bsonType: 'objectId',
+          description: 'must be an objectid and is required'
+        },
+        comments: {
+          bsonType: 'array',
+          description: 'must be an array and is required',
+          items: {
+            bsonType: 'object',
+            required: ['text', 'author'],
+            properties: {
+              text: {
+                bsonType: 'string',
+                description: 'must be a string and is required'
+              },
+              author: {
+                bsonType: 'objectId',
+                description: 'must be an objectid and is required'
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+});
+
+//mudando validação de schema
+db.runCommand({
+  collMod: 'posts', //collection modifier
+  validator: {
+    $jsonSchema: {
+      bsonType: 'object',
+      required: ['title', 'text', 'creator', 'comments'],
+      properties: {
+        title: {
+          bsonType: 'string',
+          description: 'must be a string and is required'
+        },
+        text: {
+          bsonType: 'string',
+          description: 'must be a string and is required'
+        },
+        creator: {
+          bsonType: 'objectId',
+          description: 'must be an objectid and is required'
+        },
+        comments: {
+          bsonType: 'array',
+          description: 'must be an array and is required',
+          items: {
+            bsonType: 'object',
+            required: ['text', 'author'],
+            properties: {
+              text: {
+                bsonType: 'string',
+                description: 'must be a string and is required'
+              },
+              author: {
+                bsonType: 'objectId',
+                description: 'must be an objectid and is required'
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  validationAction: 'warn' //deixa passar mas dá um log de erro
+});
+
+db.createCollection('posts', {capped:true, size 10000, max:3}) cria capped collection (tipo buffer, sobrescreve documentos antigos com novos.)
+db.capped.find().sort({$natural: 1}) //pega a ordem pq capped é ordenado
+
+mongoimport filename -d movieData -c movies --jsonArray --drop //para qual banco e coleção como array de multiplos documentos. dropa se existe ao invés de concatenar
+
+createUser()
+mongoD --auth
+db.auth(username, password)
+mongo -u username -p password -authenticationDatabase admin //logar em mongo protegido
+show collections
+
+localhost Exception: when no user you can create just one user (pedro:pedro for study)
+
+use admin
+db.createUser({user: "pedro", pwd: "max", roles: ["userAdminAnyDatabase", ...] })
+db.updateUser("user", {roles: ["readWrite", {role:"readWrite", db:blog}]})
+
+dropUser() apaga usuario
+
+db.logout()
+
+vc pode criar user em qqr database.
+existe erro too many user authenticated
+any role assigned to user from db only works on that db
+assignar role pra usuario é assignado só no banco q ele tá ou no banco especificado
+
+openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 gerar ssl
+mongod --sslMode requireSSL --sslPEMKeyFile mongodb.pem
+mongo --ssl --sslCAFile mongodb.pem --host localhost
+
+//transaction
+const session = db.getMongo().startSession()
+session.startTransaction() //só as coisas rodadas na session serão enfileiradas para a transação
+const userC = session.getDatabase("blog").users
+const postC = session.getDatabase("blog").posts
+userC.deleteOne({_id : 1})
+postC.deleteMany({userId: 1})
+session.commitTransaction() // comita as mudanças e garante transação ou session.abortTransaction() para abortar
+
+handson:
+-npm start
+-npm run start:server
+-mongod --auth
+-sudo kill -9 $(sudo lsof -t -i:27017)

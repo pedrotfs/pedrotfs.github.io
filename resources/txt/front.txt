@@ -1,0 +1,831 @@
+[FRONT] HTML 5, Jquery, CSS3
+
+Editor front end: brackets
+referencia: http://codingheroes.io/resources/
+
+HTML
+
+hypertext markup language
+tags que diagramam e exibem conteúdo
+<a>conteudo</a>
+
+nome default: index.html
+estrutura:
+<!DOCTYPE html>
+<html>
+    <head>
+    </head>
+    <body>
+    </body>
+</html>
+
+<!DOCTYPE html> indica que a versão do html é 5 para o browser
+<em>texto em itálico</em>
+<br> quebra linha
+
+https://www.blindtextgenerator.com/lorem-ipsum
+
+<p> <a href="https://a.espncdn.com/i/headshots/mlb/players/full/32801.png" target="_blank"><b>Jose Ramirez</b></a></p> abre em outra janela
+
+CSS
+
+cascading style sheet
+Define aparência do HTML
+html é conteudo, css é aparência
+
+3 formas:
+dentro de tag, dentro de <style> no head, arquivo externo (recomendado)
+
+linkando css no html. em <head>,
+<link rel="stylesheet" type="text/css" href="styles.css">
+
+css: selector + declaration
+h1 {
+	color: green;
+	font-size: 40px
+}
+
+regras comuns:
+h1 {
+	color: green;
+	font-size: 40px;
+    font-family: Helvetica Neue, Arial;
+}
+
+h2 {
+	color: green;
+	font-size: 25px;
+    font-family: Helvetica Neue, Arial;
+}
+
+pode virar
+
+h1,h2 {
+    color: green;
+    font-family: Helvetica Neue, Arial;
+}
+
+h1 {
+	font-size: 40px;
+}
+
+h2 {
+	font-size: 25px;    
+}
+
+body {
+	font-family: Helvetica Neue, Arial;
+}
+body funciona meio que um global.
+há herança em css. todos os componentes herdam as declarações dos elementos pais
+
+cores:
+hex (0 a 255)
+rgb
+
+transparencia: (29, 167, 23, 0.75) o ultimo é a transparência
+
+Classes e IDs: seletores.
+
+uma classe pode ser atribuida para multiplos elementos
+id para um só
+
+.mainText { //seleciona todos elementos com a classe
+    text-align: :justify
+}
+
+#link { //seleciona elemento com id
+    font-size: 22px;
+}
+
+* { //todos os elementos
+	
+}
+evitar usar ids
+
+box model:
+conteudo, padding, bordem, margem
+padding: espaço entre conteudo e borda. transparente
+borda: ao redor do conteudo e padding
+margem: espaço entre caixas
+
+altura e largura: conteudo, não caixa. padding margem e borda vão para o maior valor possível
+evitar isso: box-sizing: border-box; no seletor *
+block elements: largura do navegador
+inline elements: não é possivel setar altura e largura?
+navegadores adicionam margens default se não for especificado
+
+div: divide -> dividir conteúdo
+centralizar conteúdo na div: setar margin left e margin right como auto - é responsivo
+float: empurra elemento para esquerda ou direita num container
+
+clear: anti float ?
+
+.clearfix:after { //clear fix comum e muito usado
+    content:"";
+    display: table;
+    clear: both;
+}
+
+margin: 20px auto 0 auto; (anti horario, cima direita baixo esquerda)
+usar background colors para visualizar divs
+
+.author img { //seleciona img apenas dentro de container com class author
+border-radius: 50% // cria borda circular na imagem
+
+a:hover {
+    color: green;
+    text-decoration: underline;
+}
+
+posição relativa x absoluta
+
+relativa: depende de outros elementos
+absoluta: em qqr lugar dentro do container pai, ignora padding, container pai tem que ter position: relative explicito
+
+.blogPost {
+    width: 75%;
+    float: left;
+    padding-right: 30px;
+    position: relative;
+}
+...
+.date {
+    position: absolute;
+    top: 10px;
+    right: 30px;
+}
+
+WEB DESIGN
+
+tamanho adequado: entre 15 e 25 px para texto "de corpo"
+titulos: tamanhos "grandes" (90 px, 60 px, 32 px, etc)
+tamanhos grandes: fontes discretas(sans serif)
+line spacing: entre 150% e 120% do tamanho da fonte
+45 a 90 caracteres por linha
+fontes: sans-serif (neutras, limpas, simples, modernas) x serif(tradicional, contar historias, leituras longas)
+		open sans (google fonts, linkadas sem download)
+		lato
+		raleway
+		monsterrat
+		pt sans
+
+		(serifs)
+		cardo
+		merriweather
+		pt serif
+escolher fonte: depende do site, usar apenas o mesmo tipo(serif ou sans serif)
+
+usar só uma cor base (não preto branco ou cinza) - ferramenta flat ui colors - e usar versões mais claras ou escuras da cor base
+usar cor(base ou secundária) para chamar a atenção para botões.
+não usar preto no design
+vermelho: poder, ansiedade
+laranja: chama atenção, alegria, amizade, coragem
+amarelo: energico, felicidade, curiosidade, brilho, inteligencia
+verde: saude, vida, dinheiro, natureza, harmoniza
+azul: paz, confiança estabilidade, profissionalismo, honra (redes sociais)
+roxo: poder, riqueza, realeza, misterio
+rosa: passividade, cuidado, afeto
+marrom: relaxar, confiança, terra, resiliencia
+
+colocar texto diretamente na imagem(imagem escura, texto claro)
+aplicar filtro de cor em imagens para realçar texto, ou embaçar a imagem ou fazer floor fade (imagem escurece no fundo para mergear com menu com texto claro)
+
+icones: features / steps, actions / links
+icones devem ser reconhecidas imediatamente e não ambiguas. se há espaço, escrever o que elas fazem
+icones devem ser suporte, não centrais.
+usar icon fonts, são vetoriais.
+
+usar espaçamento para criar um visual limpo e moderno
+espaçar entre elementos, entre grupos de elementos, entre seções do site, mas sem exagerar
+espaçamento define hierarquia. defina onde olham primeiro, e depois faz um fluxo que guia de uma seção para a outra
+
+7 PASSOS PARA UM SITE FUNCIONAL
+
+1 - definir objetivo / definir publico alvo
+2 - planejar conteúdo / hierarquia visual / definir navegação / sitemap
+3 - fazer rascunhos rápidos
+4 - design com os principios usando html e css (photoshop não tem responsivo)
+5 - otimizar velocidade do site e SEO
+6 - subir em um host
+7 - manutenção, atualização de conteúdo
+
+normalize.css: fix para css ficar igual em navegadores modernos. usar antes da folha de estilos própria (https://necolas.github.io/normalize.css/8.0.1/normalize.css)
+https://fonts.google.com/specimen/Lato gera link com a familia customizada (embed) - <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;1,300&display=swap" rel="stylesheet">
+
+começar css "sempre" com 
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+font-family: 'Lato', 'Arial', sans-serif; diz que se nem lato nem arial forem encontradas, usa uma sans serif disponivel
+
+html {
+    background-color: #fff;
+    color: #555;
+    font-family: 'Lato', 'Arial', sans-serif;
+    font-size: 20px;
+    font-weight: 300;
+    text-rendering: optimizeLegibility;
+}
+
+RESPONSIVO
+
+1 - fluid grid: tamanhos relativos, em porcentagem
+2 - flexible images: tamanhos relativos
+3 - media queries: regras diferentes de css de acordo com tamanho do navegador
+
+responsivo: usar css do responsivegridsystem.com - divide em colunas
+definir no css proprio .row { max-width: 1140px;}
+
+tag header: igual div
+
+imagem de background num div/header
+header {
+    background-image: url(../img/hero.jpg); //caminho relativo
+    background-size: cover; //imagem inteira cobre navegador inteiro
+    background-position: center;
+    height: 100vh; //vh é view height
+}
+
+.hero-text-box {
+    position: absolute;
+    width: 1140px;
+    top: 50%; //elemento começa 50% do topo, no meio
+    left: 50%; //elemento começa 50% da esquerda, no meio
+    transform: translate(-50%, -50%); //o começo do elemento sai do 0,0 do elemento e vai pra metade. centraliza no centro ao invés do começo do elemento
+}
+
+imagem de fundo escurecida:
+background-image: linear-gradient(rgba(0,0,0, 0.7), rgba(0,0,0, 0.7)), url(../img/hero.jpg);
+função rgba permite usar transparencia (no caso em 0.7)
+função linear gradient cria um degrade(no caso de preto para preto mesmo para manter a mesma cor)
+resultado fica uma cor preta com transparencia por cima da imagem de background
+
+font-size: 200%; //responsivo, 200% do original. só ajustar o original para mudar o tamanho com as media queries
+font-weight: 300; diminui peso da fonte (boldness)
+text-transform: uppercase; converte pra upper case direto pelo css
+letter-spacing: 1px; espaço entre letras
+word-spacing: 4px; espaço entre palavras
+
+h1 costuma vir com bold
+
+elemento pode ser inline e block ao mesmo tempo
+
+editar estados de link (hover, visited, active, link)
+.button:link {
+    display: inline-block;
+    padding: 10px 30px;
+    font-weight: 300;
+    text-decoration: none;
+    color: #ffffff;
+    border-radius: 200px;
+}
+.button:hover {
+    display: inline-block;
+    padding: 10px 30px;
+    font-weight: 300;
+    text-decoration: none;
+    color: #ffffff;
+    border-radius: 200px;
+}
+...
+
+atribuir estilos para mais de um estado ao mesmo tempo: .button-ghost, .button-ghost:visited { ...
+
+ordem de classes e estados e subclasses IMPORTA
+
+transition: background-color 0.2s, border 0.2s, color 0.2s; //transição de cor em .2 segundos
+/* comentarios */
+
+tag nav: navigation (div?)
+
+NÃO POR ESPAÇO ENTRE NUMERO E PX: ex 100 PX é DIFERENTE de 100px
+NÃO DEIXAR COISAS ENCOSTADAS NOS EXTREMOS DA PAGINA: TOPO, FUNDO, ETC
+
+tag section - div?
+
+cada pagina deve ter apenas um h1
+
+ionicons v2.0.1: importar css, usar tag i com class da imagem selecionada - <i class="ion-ios-stopwatch-outline"></i>
+
+background color: espaçar com padding ao invés de margin
+
+pseudo classe after: acontece depois da classe ou elemento.
+h2 {
+    font-size: 180%;
+    word-spacing: 2px;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+h2:after {
+    display: block;
+    height: 2px;
+    background-color: #e57e22;
+    content: "";
+}
+tem que especificar o content quando a pseudo classe é after
+
+tag figure é container de imagem e caption
+
+overflow: hidden; esconde o que estrapola o limite do container
+
+escurecer e dar zoom no hover:
+.section-meals {
+    padding: 0;
+}
+
+.meals-showcase {
+    list-style: none;
+    width: 100%;
+}
+
+.meals-showcase li {
+    display: block;
+    float: left;
+    width: 25%;    
+}
+
+.meal-photo {
+    width: 100%;
+    margin: 0;
+    overflow: hidden; //esconde o .15 excessivo abaixo
+    background-color: #000000;
+}
+
+.meal-photo img {    
+    opacity: 0.7; //transparencia para preto do background color acima escurece imagem
+    width: 100%;
+    height: auto;
+    transform: scale(1.15); //tamanho inicial 1.15 com overflow
+    transition: transform 0.5s, opacity 0.5s; //no hover muda esses em meio segundo
+}
+
+.meal-photo img:hover {
+    opacity: 1; //muda no hover pra tirar a transparencia
+    transform: scale(1.03);    muda no hover pra diminuir o tamanho
+}
+
+.steps-box:first-child //escolhe primeiro elemento com a classe
+.steps-box:last-child // "" ultimo ""    ""   ""  ""  ""
+
+classe que limpa floats dos elementos após aplicar(gambiarra)
+.clearfix {zoom:1}
+.clearfix:after {
+    content: '.';
+    clear: both;
+    display: block;
+    height: 0;
+    visibility: hidden;
+}
+
+truques alinhamento vertical
+.icon-small {
+    color: #e57e22;
+    display: inline-block;
+    width: 30px;
+    text-align: center;
+    font-size: 120%;
+    line-height: 120%; //esse
+    vertical-align: middle; //esse
+    margin-top: -4px; //esse
+}
+
+tag blockquote: citações
+cite: quem fez a citação
+<div class="col span-1-of-3">
+    <blockquote>
+        Omnifood is just awesome! I just launched a startup which leaves me with no time for cooking, so Omnifood is a life-saver. 
+        Now that I got used to it, I couldn't live without my daily meals!
+        <cite>Alberto Duncan</cite>
+    </blockquote>
+</div>
+
+background fixo e o scroll que muda:
+.section-testimonials {
+    background-image: linear-gradient(rgba(0,0,0, 0.8), rgba(0,0,0, 0.8)), url(../img/back-customers.jpg) ;
+    background-size: cover;
+    color: #ffffff;
+    background-attachment: fixed; //esse
+}
+tag span: aparece dentro de paragrafo para estilizar texto diferente do resto
+
+100% toma como base o pai
+ex: pai tem 1000px de width; filho 1 tem 300% de width (3000px); filho 2 filho de filho 1 com width(50%) teria 1500px
+
+sombra no container: box-shadow: eixoX eixoY blur color
+
+tag label existe.
+input type email existe.
+tag footer existe.
+
+drop down:
+<select name="find-us" id="find-us">
+    <option value="friends">Friends</option>
+    <option value="internet" selected>Internet</option>
+    <option value="ads">Ads</option>
+    <option value="other">Others</option>
+</select>
+
+<textarea name="message" placeholder="Your message"></textarea>
+<input type="checkbox" name="newsletter" id="newsletter" checked>Yes, please
+<input type="submit" value="Send it!">
+
+pode se usar o id dos campos do form para serem referenciados no label, quando clica no label seleciona o campo
+
+input[type=text], input[type=email], select, textarea { //seletor de tipo de input
+
+*:focus {
+    outline: none; //tira foco visual do navegador
+}
+
+MEDIA QUERIES
+
+break points: larguras de tela
+480px telefone
+768px tablet em pé
+1024px tablet deitado
+1200px tela
+
+não é regra, pode ser feito a partir do ponto onde fica tudo feio.
+reduzir navegador até os break points e ir arrumando o que quebra.
+escolher maior valor de break point levando em conta margens
+
+
+no html head
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" type="text/css" href="resources/css/queries.css"> //arquivo com as media queries
+
+no arquivo de media queries
+/*levar em conta o tamanho da classe row, no caso aqui 1140px*/
+@media only screen and (max-width: 1200px) {
+    .hero-text-box { //esse ja existe no css principal, só colocar aqui o que muda quando o tamanho cai abaixo de 1200px
+        width: 100%; //ex de 1140px, vai pra 100%
+        padding: 0 2%;
+    }
+
+    .row {
+        padding: 0 2%;
+    }
+}
+
+/*tablets em modo retrato*/
+@media only screen and (max-width: 1023px) {
+
+}
+
+/*small phones to small tablets*/
+@media only screen and (max-width: 767px) {
+
+}
+
+/*iphone 4 e 5*/
+@media only screen and (max-width: 480px) {
+
+}
+
+.col {
+        width: 100%; //remove colunas lado a lado e coloca elas uma em cima da outra
+    }
+
+Browser prefixes
+android: -webkit-
+chrome: -webkit-
+firefox: -moz-
+ie: -ms-
+ios:-webkit-
+opera: -o-
+safari: -webkit-
+
+propriedads direcionadas:
+-moz-border-radius: 25px;
+-o-border-radius: 25px;
+-webkit-border-radius: 25px;
+
+extensão do brackets: auto-prefixer
+
+JQUERY
+
+biblioteca do java script gratis, popular para animações, seleção de elementos, e ajax. tem muito plugin
+
+colocar <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script> antes de fechar o body
+usar classes separadas como "alvos" do jquery ex: class="main-navigation js--main-navigation" 
+
+menu flutuante:
+estilizar uma classe extra no menu, e mudar o que convem das classes que já existem
+[CSS]
+.sticky {
+    position: fixed; //menu fixo na tela
+    top: 0; //s0
+    left: 0; //s0
+    width: 100%;
+    background-color: rgba(255, 255, 255, 0.98);
+    box-shadow: 0 2px 2px #efefef;
+    z-index: 9999; //topo dos outros elementos
+}
+
+.sticky .main-navigation {
+    margin-top: 18px;
+}
+
+.sticky .main-navigation li a:link,
+.sticky .main-navigation li a:visited {
+    color: #555555;
+    padding: 16px 0px;
+}
+
+.logo-black {
+    height: 50px;
+    width: auto;
+    float: left;
+    display: none;
+    margin: 5px 0;
+}
+
+.sticky .logo-black {
+    display: block;
+}
+
+.sticky .logo {
+    display: none;
+}
+
+[JS JQUERY - precisa de lib waypoints]
+$(document).ready(() => {
+    
+    $(".js--section-features").waypoint((direction) => {
+        if(direction == "down") {
+            $("nav").addClass("sticky")
+        } else {
+            $("nav").removeClass("sticky")
+        }
+    })
+
+})
+
+ancoras: <a href="#features"> ... para um elemento que tem id features
+
+scroll por waypoints
+$(".js--scroll-to-plans").click(() => {
+    $("html,body").animate({scrollTop: $(".js--section-plans").offset().top}, 500)
+})
+
+animação fade in
+html
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" >
+css
+.js--wp-1 {
+    opacity: 0;
+}
+
+.js--wp-1.animated { //seletor sem espaço indica necessidade de ter as duas classes ao mesmo tempo no elemento
+    opacity: 1;
+}
+jquery
+$(".js--wp-1").waypoint((direction) => {
+    $(".js--wp-1").addClass("animate__animated animate__pulse")
+})
+
+a sem href não recebe ponteiro do mouse como link -> estilo cursor: pointer;
+menu que abre e fecha
+jquery
+/*mobile navigation*/
+    $(".js--nav-icon").click(() => {
+        var nav = $(".js-main-navigation")
+        nav.slideToggle(200) //abre e fecha conteudo da div com animação de slide
+        var icon = $(".js--nav-icon i")
+        if(icon.hasClass("ion-navicon-round")) {
+            icon.addClass("ion-close-round")
+            icon.removeClass("ion-navicon-round")
+        } else {
+            icon.addClass("ion-navicon-round")
+            icon.removeClass("ion-close-round")
+        }
+    })
+
+css
+/*mobile navigation*/
+.mobile-nav-icon {
+    float: right;
+    margin-top: 30px;
+    cursor: pointer;
+    display: none;
+}
+
+otimizar imagens: inspecionar imagens pelo tamanho natural.
+imagens devem ter tamanho dobrado do tamanho máximo exibido para aparecer melhor em resoluções maiores. redimensionar de acordo
+
+minificar js e css
+
+otimizar search engine optimization: 
+<meta name="description" content="conteudo" />
+<meta charset="utf-8">
+
+keywords: coisas para seo
+backlinks, links de volta funcionam como notas de recomendação.
+
+google analytics
+criar conta, e é tudo setado na conta do google.
+copiar o tracking code no fundo de cada pagina, igual bootstrap ou jquery
+
+dar presentes?
+popups?
+dizer o beneficio no botão principal
+formularios com menos campos
+provas sociais, como depoimentos, e parceiros
+usar urgencia e escassez
+
+FLEXBOX
+
+linhas unidimensionais sem float
+css grid: parece tabelas, é bidimensional. (ir atrás de css grid)
+
+propriedades container
+
+flex-direction: row | row-reverse | column | column-reverse
+flex-wrap: nowrap | wrap | wrap reverse
+justify-content: flex-start | flex-end | center | space-between | space-around | space-evenly
+align-items: stretch | flex-start | flex-end | center | baseline
+align-content: stretch | flex-start | flex-end | center | space-between | space-around
+
+propriedades item
+align-self: auto | stretch | flex-start | flex-end | center | baseline
+order: 0 | (int)
+flex-grow: 0 | int             \
+flex-shrink: 1 | int           -> flex: 0 1 auto | int int lenght
+flex-basis: auto | lenght      /
+
+metodo bem: block element modifier -> nomeia tudo com base no bloco. ex. bloco pizza, elementos internos pizza__elemento. se tiver elemento repetido usar modificador
+um item é container do flex box, e os itens internos são itens que aí podem ser alinhados usando as propriedades do flexbox
+quando se usa o flex grow em um item, permite que ele cresça para ocupar o espaço disponivel no flexbox
+items são alinhados no container.
+align-items no container muda alinhamento de todos os items. align self no item muda só o item.
+align-items é para eixo y. justify-content é para eixo x.
+se vc tem um item apenas no flex box, esse item é um container com apenas um elemento, o elemento vira flex item
+
+flexbox demo
+html
+<figure class="pizza">
+  <div class="pizza__hero">
+    <img src="https://images.unsplash.com/photo-1574071318508-1cdbab80d002?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80" alt="pizza" class="pizza__img">
+  </div>
+  <div class="pizza__content">
+    <div class="pizza__title">
+      <h1 class="pizza__heading">Pizza Cheese</h1>
+      <div class="pizza__tag pizza__tag--1">#Cheese</div>
+      <div class="pizza__tag pizza__tag--2">#Italian</div>
+    </div>
+    <p class="pizza__description">Yummy pizza with lots of cheese, oil, 
+    that will kill you, which is also good! There is nothing here worth living for anyways!</p>
+    <div class="pizza__details">
+      <p class="pizza__detail">850 kcal </p>
+      <p class="pizza__detail">30 min </p>
+      <p class="pizza__detail">4.7/5.0 </p>
+    </div>
+  </div>
+  
+  <div class="pizza__price">
+    $11.99
+  </div>
+</figure>
+
+css
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap');
+/* 
+67b26f
+4ca2cd
+5aaa9d
+*/
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  color: #444;
+  font-family: roboto;
+  padding: 50px;
+  background: linear-gradient(to bottom right, #67b26f, #4ca2cd);
+  height: 100vh;
+  display:flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pizza {
+  display:flex; /*seta como flex box*/
+  max-width: 800px;
+  border-radius: 4px;
+  box-shadow: 0 30px 80px 10px rgba(0,0,0,.2);
+  overflow:hidden;
+}
+
+.pizza__hero {
+  flex: 0 0 45%
+}
+
+.pizza__content {
+  flex: 1; /*grow 1 resto auto*/
+  background:white;
+  padding: 35px 30px;
+  display:flex;
+  flex-direction:column;
+  
+}
+
+.pizza__price {
+  background: linear-gradient(to bottom, #67b26f, #4ca2cd);
+  flex: 0 0 50px;
+  writing-mode:vertical-rl; /*escreve vertical*/
+  color:white;
+  font-size: 18px;
+  
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.pizza__img {
+  width:100%;
+  display:block;
+}
+
+.pizza__title {
+  display:flex;
+  align-items:center;
+  margin-bottom: 20px;
+}
+
+.pizza__heading {
+  font-size:20px;
+  margin-right: auto;
+}
+
+.pizza__tag {
+  font-size:10px;
+  text-transform:uppercase;
+  color:white;
+  padding: 2px 7px;
+  border-radius: 100px;
+  margin-left: 7px;
+  
+}
+
+.pizza__tag--1 {
+  background-color:#67b26f;
+}
+
+.pizza__tag--2 {
+  background-color:#4ca2cd;
+}
+
+.pizza__description {
+  font-size:14px;
+}
+
+.pizza__details {
+  display:flex;
+  justify-content: space-between;
+  margin-top:auto;
+}
+
+.pizza__detail {
+  font-size: 15px;
+  text-transform:uppercase;
+  margin-right: 15px;
+  font-weight: 700;
+  
+}
+
+/*---------------------------------------------------*/
+flatuicolors.com //cores para flat design
+0to255.com //tons semelhantes
+mailinator //
+jsdelivr: scrips para adaptar coisas, como responsivo para versões antigas de IE
+caniuse.com //ver o que é compativel com cada navegador
+animate.css // <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" > //css animations com apenas a classe https://animate.style/#usage
+https://realfavicongenerator.net/ gera favicons a partir de alguma imagem aleatória
+optimizilla: comprime imagens online
+minifycss.com/css-compressor/ -> minifica css
+validator.w3.org/check - verifica se html é válido
+https://codepen.io/pedrotfs/pen/MWyzoZe?editors=1100 -> criador de snippet
+godaddy?
+99design -> competição, premio, inspiração
+
+facebook blue #3b5998
+twitter #00aced
+youtube #bb0000
+linkedin #007bb6
+insta #517fa4
+
+plugins jquery
+magnific-popup: galerias e popups
+tooltipster: alts de imagens alternativos com imagens e bastante coisa
+maplace.js: integração com google maps com marcadores e etc
+typer: plugin que digita e apaga texto e etc
+onepagescroll: scrolla telas de uma vez, parece apresentação de power point
+waypoints: scroll to element

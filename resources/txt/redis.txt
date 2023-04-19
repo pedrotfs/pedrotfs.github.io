@@ -1,0 +1,257 @@
+REDIS
+
+banco de dados baseado em chave valor (hash tables em java)
+não tem tabelas ou schemas
+não armazena documentos complexos multi níveis (como o mongo faz por exemplo)
+Rápido
+
+comandos docker: docker pull redis:3.0.0
+				 docker run -v $(pwd):/data redis:3.0.0
+				 docker ps
+				 docker exec -it <imagem> bash
+
+local client imagem: /usr/local/bin/redis-cli
+
+porta default: 6379
+
+redis-cli -h localhost
+
+mset é mais rápido que set
+valores com mesma chave são sobrescritos sem qualquer verificação
+
+bgsave e save: persistem para arquivo dump.rdb
+
+tipo base: string (maximo para string é 512mb)
+chaves só podem ser string
+
+string numericas são armazenadas em formato numérico para economizar espaço
+
+é preferível usar SCAN ao invés de KEYS
+
+incr e incrby e -> incrementam e garantem atomicidade
+	podem decrementar com valores negativos
+	incrby -> valor. incr -> incrby 1. decr -> incrby -1
+	só funcionam para integers
+	incrbyfloat faz operações para float
+
+muito usado para caches
+chaves podem expirar
+	expire: faz chave expirar
+	TTL: exibe tempo restante para expiração
+	persist: torna chave inexpiravel
+
+atributos altamente descritivos: room:chat:user:message (por exemplo)
+
+SERVER CONFIG + SEGURANÇA
+
+ao subir: redis-server /path/to/redis.conf
+gerar um arquivo e usar esse ao subir
+
+config get e config set: mudam configurações em run-time
+
+só suporta autenticação por password
+senha gravada em texto puro no arquivo de config
+
+o correto é encriptar conexão server client.
+
+LOGGING E MONITORIA
+
+comando info, monitor(consome muita banda)
+configurações logfile, e loglevel(notice, verbose, debug, warning)
+
+slowlog-log-slower-than 1000 (armazena queries mais lentas que 1000 ms)
+slowleg lenght (maximo de queries guardadas)
+
+ARMAZENAMENTO
+
+processamento de queries em memória
+RDB -> redis db
+		salva snapshots de forma sincrona ou assincrona
+		default
+		compacto
+		recuperação mais rápida
+		ruim para minimizar perda de dados em catastrofes
+		mais dependente de memória ram livre
+
+AOF -> append only file
+		guarda sequencias de mudanças (igual o monitor gera)
+		ao iniciar o servidor é feito o replay das mudanças
+		mais durável e seguro em catastrofes
+		serve de log
+		arquivos maiores, demora mais pra subir e recuperar
+		histórico de bugs
+
+appendonly yes #usa aof, off usa rdb
+
+LISTAS E HASHES
+
+usar listas para diminuir o número de queries(cada atributo de entidade é uma query)
+
+chaves muito grandes gastam muito espaço
+
+lista: lista ordenada de strings
+comandos de lista iniciados por R atuam no fim da lista, L atuam no inicio
+
+llen pode receber valores negativos, considera a partir do fim
+
+SETS, HYPERLOG LOG
+
+set é uma sequencia não ordenada de strings
+sorted set: ordenado [string/score]
+set não tem repetição
+
+hyperloglog: probabilidades, mais leve que set, só atualiza quando muda tamanho
+			 não é preciso
+
+união: set que inclui todos os elementos dos sets que os compõem
+
+PUBLISH SUBSCRIBE
+
+subscribe: modo listener
+bem parecido com producers e consumers do kafka
+
+ESCALABILIDADE
+
+replicação mestre escravo (mestre escreve e le, escravo le)
+comando slaveof
+exemplo (em um client) slaveof localhost 6379 (vira escravo de localhost:6379)
+para encerrar: slaveof no one
+
+shards: parte dos dados em cada shard, divididos por ranges
+	não implementado no server, deve ser feito nos clients
+
+cluster: a partir da versão 3
+cluster-enable yes
+tem que rodar um script em ruby
+
+sentinel: mecanismo failover
+/usr/local/bin/redis-sentinel
+recomendado 1 sentinela por servidor
+
+TRANSAÇÕES E PIPELINES
+
+transação: unidade atomica de comando: comandos sequenciais isolados. só executa se todos forem bem sucedidos
+(ACID - Atomicidade, Consistência, Isolamento, durabilidade)
+
+comando MULTI inicia transação
+comandos pós transação são enfileirados
+comando EXEC executa a transação
+comando DISCARD aborta transação
+
+erros na transação: antes (abortados) e depois do comando exec(não tratados por redis)
+
+check and set: comando watch chave1 chave2...
+comando unwatch 'unwatcha' todos
+watch só funciona com transações. não permite transações afetarem chaves vigiadas
+
+pipeline: envia comandos sem esperar resposta dos comandos anteriores
+usar scripts externos ou netget
+
+EVAL comando de condição.
+scripts podem ser escritos com LUA
+no script. 
+EVAL "return string.format('Hello %s'), redis.call('GET', KEYS[1])" 1 name
+
+--------------------------------------------------------------samples
+set hello world
+mset chave1 valor1 chave2 valor2
+get valor
+mget valor1 valor2
+getset chave valor (recupera valor antigo e sobrescreve)
+
+del chave
+
+keys * (mostra todas as chaves)
+
+type chave (tipo da chave)
+
+dump chave (gera hash do valor)
+object refcount(conta?) / encoding(encoding no db) / idletime(tempo de criação) chave
+
+exists chave (ve se existe)
+keys t*u
+keys tch?u
+keys t[c]hau
+
+scan 4 MATCH page*
+RENAME chave1 chave2
+
+append chave valor
+getrange chave posição-inicial posição-final (substring)
+setrange chave posição-inicial substringNovaInserida
+
+expire chave 10 (expira chave em 10 segundos)
+ttl chave (exibe tempo restante em segundos)
+persist chave (remove expiração de chave)
+
+config set requirepass redis(cria senha redis para o banco)
+auth redis (loga com senha redis)
+
+info
+config resetstat
+monitor (client fica monitorando comandos executados por outros clients)
+
+slowlog get
+bgwriteaof - escreve arquivo aof
+
+hset chave campo valor (cria um hash com campo e valor)
+hsetnx chave campo valor (cria só se não existir campo)
+hmset user:1 login pedro nascimento 04/04/1986 password senha status morto
+
+hget 
+hmget user:1 login
+hmgetall user:1
+
+hkeys user:1
+hvalues user:1
+
+hdel user 1
+
+linsert list after 2 10 (insere 10 depois da segunda posçião)
+lpush list 1 2 3 4 5
+lset list 0 100 (muda elemento zero da lista para 100)
+rpush list 7
+
+lindex list 0 (0 é o indice)
+lrange list 0 3 (retorna valores 1 até 3 da lista)
+llen list (retorna tamanho da lista)
+lpop e rpop 0 3 (remove primeros(l) ou ultimos(r) elementos da lista)
+
+sadd numeros 1 2 3
+scard numeros (numero de elementos)
+srem numeros 1
+spop numeros (remove um elemento aleatório)
+
+sismember numeros 1 (avalia se 1 tá no set)
+srandmember numeros 3 (recupera 3 elementos aleatórios do set)
+smembers numeros (retorna os membros do set - custoso)
+
+zadd sset 1 one 2 two 3 three (set ordenado)
+zrem sset one (apaga)
+zcard
+zscore sset three(score)
+zrank sset three (indice)
+
+zrangebyscore sset -inf 2 (de 0 a 2)
+zrangebyscore sset -inf 2 (3 WITHSCORES
+zrange sset 0 -1
+
+zrangebylex (alfabetico)
+
+pfadd mylog 1 2 3
+pfcount mylog
+pfmerge destination origin1 origin2
+
+sunion set1 set2 (união)
+sunionstore set3 set1 set2
+sinter set1 set2 (intersecção)
+sinterstore set1 set2 (intersecção)
+sdiff set1 set2 (elementos do primeiro que não são do segundo)
+
+subscribe mychannel (inscreve) (some o prompt)
+publish channel message
+unsubscribe channel
+
+pubsub channels * (mostra canais)
+pubsub numbsub channel (usuários por canal)
+psubscribe punsubscribe (inscreve/sai de canais que atendam regex)

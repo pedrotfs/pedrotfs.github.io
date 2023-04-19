@@ -1,0 +1,1143 @@
+###########
+### AWS ###
+###########
+
+[01]INTRO
+
+Maioria dos ambientes linux.
+S3 -> Amazon Simple Storage Service (Armazenamento para uso de outras instancias da amazon)
+EC2 -> Amazon Elastic Compute Cloud (Servidores virtuais)
+RDS -> Amazon Relational Database Service (Bancos de dados)
+Amazon Route 53 -> DNS
+VPC -> Amazon virtual private cloud
+
+-Cloud Computing
+
+nuvem: computador que não é o seu
+nuvem: serviços de computação (redes, software, processamento, armazenamento, bancos de dados...) através da internet
+
+paga apenas pelo que usa
+
+tipos de serviços em núvem.
+ordem de visibilidade para usuário final: SaaS(usuario final) > PaaS(desenvolvedores) > IaaS (arquitetos de rede)
+
+IaaS infrastructure as a Service(redes, armazenamento, virtualização, migração de serviços para nuvem)
+PaaS platform as a Service (Desenvolvimento, web, streaming, SO, construção de serviços em nuvem)
+SaaS software as a Service (email, crm, erp, consumo de serviços em nuvem)
+
+Big Data as a Service (usa PaaS, SaaS, DaaS [data as a service])
+
+nuvens publicas: operadas pelo dono, fornecem serviços pela internet, hardware software gerenciados pelo proprietario (Azure, aws e afins)
+nuvens privadas: recursos usados por uma empresa.
+nuvens hibridas: misto das duas.
+
+Big data x cloud computing (qual proporcionou o crescimento de qual?)
+
+BigData: grandes volumes de dados, gerados em alta velocidade e com grande variedade.
+cloud computing é escalavel e adaptavel para resolver problemas de big data
+
+desafios de cloud
+- cultura de empresas
+- acompanhar evolução
+- resistencia da area de TI com medo em perder importancia. Erro pois TI pode focar em atividades mais criticas
+- largura de banda
+
+oportunidades de cloud
+- redução de custos de infraestrutura (memória, refrigeração, energia, etc, backup, recuperação de desastres)
+- redução de custos com licença e manutenção
+- dados acessiveis em qualquer local
+- acesso a infra estrutura de ponta dos cloud providers
+- segurança de dados costuma ser maior que redes corporativas
+- escalabilidade e dimensionamente elastico
+- foco maior na analise de dados ao invés de armazenar
+
+aws é maior do mercado e maior inovadora.
+
+latencia maior para regiões mais distantes. nem todas as regiões dispoem de todos os serviços. são mais de 1000 serviços.
+preço dos serviços é diferente nas regiões.
+
+Documentação: docs.aws.amazon.com. em constante mudança, não compensa baixar pdf, e sim olhar a versão html
+certificação tem que ser renovada a cada dois anos.
+
+https://aws.amazon.com/pt/free - camada gratuita
+
+---------------------------------------------------------appendix principais serviços aws
+Categoria 1 –Serviços de Computação e Rede (Compute and Networking Services)
+A  AWS  fornece  uma  variedade  de  serviços  de computação  e  rede  para  fornecer funcionalidades básicas para 
+que as empresas desenvolvam e gerenciem suas cargas de trabalho. 
+Estes serviços de computação e rede podem ser alavancados com o armazenamento, banco de dados  e  serviços  de  aplicativos  
+para  fornecer  uma  solução  completa  para  computação, processamento de consultas e armazenamento em uma ampla gama de aplicativos. 
+Esta seção oferece uma descrição de alto nível dos serviços básicos de computação e rede.
+
+Amazon Elastic Compute Cloud (Amazon EC2)
+Amazon Elastic Compute Cloud (AmazonEC2) é um serviço web que fornece capacidade de computação redimensionável na nuvem. 
+Permite que as empresas possam obter e configurar servidores virtuais nos datacenters da Amazon e aproveitar esses recursos para 
+criar e hospedar sistemas  de  software.  As organizações  podem  selecionar  uma  variedade  de  sistemas operacionais e recursos 
+de configuração (memória, CPU, armazenamento, etc.) que sejam os ideais de acordo com o perfil da aplicação e da carga de trabalho. 
+Amazon EC2 apresenta um verdadeiro ambientede computação virtual, permitindo que as organizações utilizem diversos sistemas operacionais, 
+implementem seusaplicativos personalizados e gerenciempermissões de acesso à rede enquanto mantém o controle completo sobre 
+o ambiente.
+
+AWS Lambda
+AWS  Lambda  é  uma  plataforma  de  computação  de  administração  zero  para desenvolvedores web backend que executa o seu código 
+para você no AWS Cloud e fornece uma estrutura de preços bem refinada. A AWS Lambda executa seu código de backend em sua própria 
+infraestrutura de pacotes AWS de instâncias do Amazon EC2 em várias zonas de disponibilidade em uma região, o que proporciona 
+alta disponibilidade, segurança, desempenho e escalabilidade da infraestrutura AWS.
+
+Auto Scaling
+O Auto Scaling permite que as organizações escalem a capacidade do Amazon EC2 para cima ou para baixo automaticamente de acordo com 
+as condições definidas para a carga de trabalho específica. Não só pode ser usado para ajudar a manter a disponibilidade do aplicativo 
+e garantir que o número desejado de instâncias do Amazon EC2 esteja sendo executado, mas também permite que os recursos escalem dentro 
+e fora para corresponder às demandas das cargas de trabalho dinâmicas. Em vez de provisionar a carga máxima, as organizações podem 
+otimizar os custose usar apenas a capacidade que realmente é necessária.O Auto Scaling é adequado tanto  para  aplicativos  que  
+possuem  padrões  de  demanda  estáveis  quanto  para aplicativos que experimentam variabilidade horária, diária ou semanal no uso.
+
+Elastic Load Balancing
+O Elastic Load Balancing distribui automaticamente o tráfego de aplicativos recebidos em várias instâncias do Amazon EC2 na nuvem. 
+Permite que as organizações alcancem níveis maiores de  tolerância  a  falhas  em  suas  aplicações,  proporcionando  a  quantidade  
+necessária  de capacidade de balanceamento de carga necessária para distribuir o tráfego de aplicativos.
+
+AWS Elastic Beanstalk
+AWS Elastic Beanstalk é a maneira mais rápida e simples de obter um aplicativo da Web instalado e funcionando na AWS. 
+Os desenvolvedores podem simplesmente carregar seu código de aplicativo e o serviço lida automaticamente com todos os detalhes, 
+como provisionamento de recursos, balanceamento de carga, escala automática e monitoramento. 
+Ele oferece suporte para uma variedade de plataformas, incluindo PHP, Java, Python, Ruby, Node.js, .NET e Go. 
+Com a AWS Elastic Beanstalk, as organizações mantêm o controle total sobre os recursos da AWS que alimentam o aplicativo e podem acessar 
+os recursos a qualquer momento.
+
+Amazon Virtual Private Cloud (Amazon VPC)
+O Amazon Virtual Private Cloud (Amazon VPC) permite que as organizações forneçam uma seção logicamente isolada da AWS Cloud, 
+onde eles podem lançar recursos AWS em uma rede virtual que eles definem. 
+As organizações têm controle total sobre o ambiente virtual, incluindo a seleção do intervalo de endereços IP, criação de sub-redes 
+e configuração de tabelas de  rotas  e  gateways  de  rede.  
+Além  disso,  as  organizações  podem  estender  suas  redes corporativas à AWS usando conexões de rede privada virtual (VPN) 
+de hardware ou software ou circuitos dedicados usando o AWS Direct Connect.
+
+AWS Direct Connect
+O AWS Direct Connect permite que as organizações estabeleçam uma conexão de rede dedicada do seu datacenter ao AWS. 
+Usando o AWSDirect Connect, as organizações podem estabelecer conectividade privada entre a AWS e seu datacenter, escritório 
+ou ambiente de trabalho,  o  que  em  muitos  casos  pode  reduzir  os  custos  de  rede,  aumentar  a  taxa  de transferência de 
+banda e proporcionar uma experiência de rede mais consistente do que as conexões VPN baseadas na Internet.
+
+Amazon Route 53
+O  Amazon  Route  53  é  um  serviço  web  de  DNS  (Domain  NameSystem)  altamente disponível  e  escalável.  
+Ele  é  projetado  para  fornecer  aos  desenvolvedores  e  empresas  uma maneira extremamente confiável e econômica de 
+encaminhar os usuários finais para aplicativos da Internet, traduzindo nomes legíveis para humanos, como www.datascienceacademy.com.br, 
+nos endereços IP numéricos, como 192.0.2.1, que os computadores usam para se conectar uns aos outros. 
+O Amazon Route 53 também serve como registrador de domínio, permitindo que você compre e gerencie domínios diretamente da AWS.
+
+Categoria 2 –Armazenamento e Entrega de Conteúdo (Storage and Content Delivery)
+A  AWS  fornece  uma  variedade  de  serviços  para  atender  às  necessidades  de armazenamento, como Amazon Simple Storage Service, 
+Amazon CloudFront e Amazon Elastic Block Store. Esta seção fornece uma visão geral dos serviços de armazenamento e entrega de conteúdo.
+
+Amazon Simple Storage Service (Amazon S3)
+O Amazon Simple Storage Service (AmazonS3) oferece aos desenvolvedores e equipes de TI  um  armazenamento  de  objetos  altamente  
+durável  e  escalável  que  lida  com  quantidades praticamente ilimitadas de dados e um grande número de usuários simultâneos. 
+As organizações podem armazenar qualquer número de objetos de qualquer tipo, como páginas HTML, arquivos de código-fonte, 
+arquivos de imagem e dados criptografados, e acessá-los usando protocolos baseados em HTTP. 
+O Amazon S3 fornece armazenamento econômico de objetos para uma grande variedade de casos de uso, incluindo backup e recuperação, 
+archive, análise de Big Data, recuperação de desastres, aplicativos em nuvem e distribuição de conteúdo.
+
+Amazon Glacier
+O Amazon Glacier é um serviço de armazenamento seguro, durável e de baixo custo para arquivamento de dados e backup de longo prazo. 
+As organizações podem armazenar de forma confiável grandes ou pequenas quantidades de dados por um custo muito baixo por gigabyte por mês. 
+Para manter os custos baixos para os clientes, o Amazon Glacier é otimizado para dados acessados com pouca frequência, 
+onde um tempo de recuperação de várias horas é adequado. O Amazon S3 integra-se com o Amazon Glacier para permitir que as 
+organizações escolham o nível de armazenamento certo para suas operações.
+
+Amazon Elastic Block Store (Amazon EBS)
+Amazon Elastic Block Store (Amazon EBS) fornece volumes de armazenamento de nível de bloco persistentes para uso com instâncias 
+do Amazon EC2. 
+Cada volume do Amazon EBS é replicado automaticamente em sua Zona de Disponibilidade para proteger as organizações de falhas  de  
+componentes,  oferecendo  alta  disponibilidade  e  durabilidade.  
+Ao  oferecer desempenho consistente e de baixa latência, o Amazon EBS fornece o armazenamento em disco necessário para executar 
+uma grande variedade de cargas de trabalho.
+
+AWS Storage Gateway
+O AWS StorageGateway é um serviço que conecta um dispositivo de software local com armazenamento baseado em nuvem para fornecer 
+uma integração perfeita e segura entre o ambiente  de  TI  local  da  organização  e  a  infraestrutura  de  armazenamento  AWS.  
+O  serviço suporta protocolos de armazenamento padrão que funcionam com aplicativos existentes. 
+Ele fornece baixo desempenho de latência, mantendo um cache de dados acessados com frequência no ambiente local, 
+armazenando de forma segura todos os dados criptografados no Amazon S3 ou Amazon Glacier.
+
+Amazon CloudFront
+O Amazon CloudFront é um serviço web de entrega de conteúdo. 
+Integra-se com outros serviços da AWS Cloud para oferecer aos desenvolvedores e empresas uma maneira fácil de distribuir conteúdo
+para usuários em todo o mundo com baixa latência, altas velocidades de transferência de dados e nenhum compromisso mínimo de uso. 
+O Amazon CloudFront pode ser usado para entregar todo o seu site, incluindo conteúdo dinâmico, estático, de transmissão e interativo,  
+usando  uma  rede  global.  
+Os  pedidos  de  conteúdo  são  encaminhados automaticamente para a localização mais próxima, de modo que o conteúdo é entregue 
+com o melhor desempenho possível para usuários finais em todo o mundo.
+
+Categoria 3 –Serviços de Banco de Dados (Database Services)
+A AWS fornece serviços de banco de dados relacionais e NoSQL totalmente gerenciados e cache em memória como um serviço, além de
+uma solução de data warehouse de escala petabyte. Esta seção fornece uma visão geral dos produtos nos serviços de banco de dados da AWS.
+
+Amazon Relational Database Service (Amazon RDS)
+O  Amazon  Relational  Database  Service  (Amazon  RDS)  fornece  um  banco  de  dados relacional totalmente gerenciado com suporte 
+para muitos populares mecanismos de banco de dados de código aberto e comerciais. 
+É um serviço econômico que permite que as organizações lancem  bancos  de  dados  seguros,  altamente  disponíveis,  tolerantes  a  falhas,  
+prontos  para produção em minutos. 
+Como o Amazon RDS gerencia tarefas de administração que consomem muito tempo, incluindo backups, mapeamento de software, monitoramento, 
+dimensionamento e  replicação,  os  recursos  organizacionais  podem  se  concentrar  em  aplicativos  geradores  de receita e negócios 
+em vez de tarefas operacionais básicas.
+
+Amazon DynamoDB
+O Amazon DynamoDB é um serviço de banco de dados NoSQL rápido e flexível para todas as aplicações que precisam de uma latência 
+de milissegundos em qualquer escala. 
+É um banco de dados totalmente gerenciado e suporta modelos de dados de documento e chave/valor. Seu modelo de dados flexível e seu 
+desempenho confiável o tornam ótimo para aplicações mobile, web, jogos, tecnologia de publicidade, Internet das Coisas e muitas outras 
+aplicações.
+
+Amazon Redshift
+O Amazon Redshift é um serviço rápido e totalmente gerenciado de armazenamento de dados em escala de Petabytes que torna simples e 
+econômico analisar dados estruturados. 
+O Amazon  Redshift  fornece  uma  interface  SQL  padrão  que  permite  às  organizações  usar ferramentas de inteligência 
+comercial existentes. 
+Ao alavancar a tecnologia de armazenamento em coluna que melhora a eficiência de E/S e as consultas de paralelismo em vários nós, 
+o Amazon Redshift é capaz de oferecer um desempenho de consulta rápido. 
+A arquitetura Amazon Redshift permite às organizações automatizar a maioria das tarefas administrativas comuns associadas ao 
+provisionamento, configuração e monitoramento de um data warehouse em nuvem.
+
+Amazon ElastiCache
+Amazon ElastiCache é um serviço web que simplifica a implantação, a operação e a escala de um cache de memória na nuvem. 
+O serviço melhora o desempenho de aplicativos Web, permitindo que as organizações recuperem informações de cache gerenciado em 
+memória de forma rápida, em vez de depender inteiramente de bancos de dados mais lentos e baseados em disco. 
+O Amazon ElastiCache suporta os mecanismos de cache Memcached e Redis.
+
+Categoria 4 –Ferramentas de Gerenciamento (Management Tools)
+A AWS fornece uma variedade de ferramentas que ajudam as organizações a gerenciar seus recursos AWS. Esta seção fornece uma visão geral
+das ferramentas de gerenciamento que a AWS fornece às organizações.
+
+Amazon CloudWatch
+O Amazon CloudWatch é um serviço de monitoramento para recursos Cloud da AWS e os aplicativos que executam a AWS. 
+Ele permite às organizações coletar e rastrear métricas, coletar e monitorar arquivos de log e definir alarmes. 
+Ao usar o Amazon CloudWatch, as organizações podem obter visibilidade em todo o sistema em termos de utilização de recursos, 
+desempenho de aplicativos e saúde operacional. 
+Ao usar essas informações, as organizações podem reagir, se necessário, para que as aplicações funcionem sem problemas.
+
+AWS CloudFormation
+O AWS CloudFormation oferece aos desenvolvedores e administradores de sistemas uma forma eficaz de criar e gerenciar uma coleção de 
+recursos AWS relacionados, provisionando e atualizando-os de maneira ordenada e previsível. 
+O AWS CloudFormation define uma linguagem de modelos baseada em JSON que pode ser usada para descrever todos os recursos do AWS que 
+são  necessários  para  uma  carga  de  trabalho.  Os  modelos  podem  ser  enviados  para  AWS CloudFormation e o serviço irá cuidar 
+do provisionamento e configuração desses recursos na ordem apropriada.
+
+AWS CloudTrail
+O AWS CloudTrail é um serviço Web que grava chamadas AWS API para uma conta e entrega arquivos de log para auditoria e revisão. 
+As informações gravadas incluem a identidade do chamador da API, o tempo da chamada da API, o endereço IP da fonte do chamador da API, 
+os parâmetros da solicitação e os elementos de resposta retornados pelo serviço.
+
+AWS Config
+AWS  Config  é  um  serviço  totalmente  gerenciado  que  fornece  às  organizações  um inventário  de  recursos  AWS,histórico  de  
+configurações  e  notificações  de  alteração  de configuração para habilitar segurança e governança. 
+Com a AWS Config, as organizações podem descobrir os recursos AWS existentes, exportar um inventário de seus recursos AWS com todos os  
+detalhes  da  configuração  e  determinar  como  um  recurso  foi  configurado  em  qualquer momento.  
+Esses  recursos  permitem  auditoria  de  conformidade,  análise  de  segurança, rastreamento de mudanças de recursos 
+e solução de problemas.
+
+Categoria 5 –Segurança e Identidade (Security and Identity)
+A AWS fornece serviços de segurança e identidade que ajudam as organizações a proteger seus dados e sistemas na nuvem. 
+A seção a seguir define esses serviços.
+
+AWS Identity and Access Management (IAM)
+O Gerenciamento de Identidade e Acesso (IAM) da AWS permite que as organizações controlem de forma segura o acesso aos serviços e recursos 
+da AWS Cloud para seus usuários. 
+Usando  o  IAM,  as  organizações  podem  criar  e  gerenciar  usuários  e  grupos  do  AWS  e  usar permissões para permitir e negar 
+seu acesso aos recursos da AWS.
+
+AWS Key Management Service (KMS)
+O AWS Key Management Service (KMS) é um serviço gerenciado que torna mais fácil para as organizações criar e controlar as 
+chaves de criptografia usadas para criptografar seus dados e usar os Módulos de Segurança de Hardware (HSMs) 
+para a segurança das suas chaves. 
+O AWS KMS  é  integrado  a  vários  outros  serviços  da  AWS  Cloud  para  ajudar  a  proteger  os  dados armazenados com esses serviços.
+
+AWS Directory Service 
+O serviço de diretório da AWS permite que as organizações criem e executem o Microsoft Active  Directory  na  nuvem  AWS  ou  conectem  
+seus  recursos  AWS  com  um  Microsoft  Active Directory existente. As organizações podem usá-lo para gerenciar usuários e grupos, 
+fornecer logon único em aplicativos e serviços, criar e aplicar políticas de grupo, incorporar instâncias do Amazon EC2 e simplificar 
+a implantação e gerenciamento de carga de trabalho baseada no Linux e no Microsoft Windows.
+
+AWS Certificate Manager
+O AWS Certificate Manager é um serviço que permite às organizações fornecer, gerenciar e implantar com facilidade certificados SSL/TLS 
+(Secure Sockets Layer / Transport Layer Security) para uso com os serviços da AWS Cloud. 
+Ele remove o processo manual demorado de compra, carregamento  e  renovação  de  certificados  SSL/TLS.  
+Com  o  AWS  Certificate  Manager,  as organizações podem solicitar rapidamente um certificado, implantá-lo em recursos AWS, 
+como o Elastic Load Balancing ou Amazon CloudFront, e permitir que o AWS Certificate Manager lide com renovações de certificados.
+
+AWS Web Application Firewall (WAF)
+O Firewall de aplicativos Web da AWS (WAF) ajuda a proteger aplicativos Web de ataques e  explorações  comuns  que  
+podem  afetar  a  disponibilidade  do  aplicativo,  comprometer  a segurança ou consumir recursos excessivos. 
+O AWS WAF dá às organizações controle sobre qual tráfego permitir ou bloquear seus aplicativos web definindo regras 
+personalizáveis de segurança na web.
+
+Categoria 6 –Serviços de Aplicação (Application Services)
+A AWS fornece uma variedade de serviços gerenciados para usar com aplicativos. 
+A seção a seguir define os principais serviços de aplicativos.
+
+Amazon API Gateway 
+O AmazonAPI  Gateway  é  um  serviço  totalmente  gerenciado  que  facilita  aos desenvolvedores  criar,  publicar,  manter,  
+monitorar  e  proteger  APIs  em  qualquer  escala.  
+As organizações podem criar uma API que atua como uma "porta da frente" para que os aplicativos acessem dados, 
+lógica de negócios ou funcionalidade de serviços de backend, como cargas de trabalho executadas no Amazon EC2, 
+código executado no AWS Lambda ou qualquer aplicativo Web. 
+Amazon API Gateway lida com todas as tarefas envolvidas na aceitação e processamento de  até  centenas  de  milhares  de  chamadas  
+simultâneas  da  API,  incluindo  gerenciamento  de tráfego, autorização e controle de acesso, monitoramento e gerenciamento 
+de versão da API.
+
+Amazon Elastic Transcoder
+Amazon Elastic Transcoder é a transcodificação de mídia na nuvem. Ele é projetado para ser  uma  maneira  altamente  escalável  e  
+econômica  para  os  desenvolvedores  e  empresas converter (ou transcodificar) arquivos de mídia de seus formatos de 
+origem em versões que serão reproduzidas em dispositivos como smartphones, tablets e PCs.
+
+Amazon Simple Notification Service (Amazon SNS)
+O Amazon Simple Notification Service (AmazonSNS) é um serviço web que coordena e administra a entrega ou o envio de mensagens 
+aos destinatários. 
+No Amazon SNS, existem dois tipos de clientes, editores e assinantes -também designados por produtores e consumidores. 
+Os editores se comunicam de forma assíncrona com os assinantes, produzindo e enviando uma mensagem para um tópico, 
+que é um ponto de acesso lógico e um canal de comunicação. 
+Os assinantes  consomem  ou  recebem  a  mensagem  ou  a  notificação  sobre  um  dos  protocolos suportados quando 
+estão inscritos no tópico.
+
+Amazon Simple Email Service (Amazon SES)
+O Amazon Simple Email Service (Amazon SES) é um serviço de e-mail econômico que as organizações podem usar para enviar 
+mensagens transacionais, mensagens de marketing ou qualquer outro tipo de conteúdo para seus clientes. 
+O Amazon SES também pode ser usado para receber  mensagens  e  entregá-las  a  um  bucket  Amazon  S3,  cadastrar  código  
+personalizado através de uma função AWS Lambda ou publicar notificações para o Amazon SNS.
+
+Amazon Simple Workflow Service (Amazon SWF)
+O  Amazon  Simple  Workflow  Service  (Amazon  SWF)  ajuda  os  desenvolvedores  a desenvolver, executar e escalar trabalhos em 
+segundo plano que tenham etapas paralelas ou sequenciais.  
+O  SWF  da  Amazon  pode  ser  pensado  como  um  coordenador  de  tarefas  e coordenador de tarefas totalmente gerenciado na nuvem. 
+Nos padrões arquitetônicos comuns, se  as  etapas  do  seu  aplicativo  demorarem  mais  de  500  milésimos  de  segundo  
+para  serem concluídas,  é  de  vital  importância  acompanhar  o  estado  do  processamento  e fornecer  a capacidade de recuperar 
+ou tentar novamente se uma tarefa falhar. 
+O Amazon SWF ajuda as organizações a alcançar essa confiabilidade.
+
+Amazon Simple Queue Service (Amazon SQS)
+O  Amazon  Simple  Queue  Service  (Amazon  SQS)  é  um  serviço  de  enfileiramento  de mensagens rápido, confiável, escalável e 
+totalmente gerenciado. 
+O Amazon SQS torna simples e econômico para desacoplar os componentes de um aplicativo em nuvem. 
+Com o Amazon SQS, as  organizações  podem  transmitir  qualquer  volume  de  dados,  em  qualquer  nível  de transferência, 
+sem perder mensagens ou exigir que outros serviços estejam sempre disponíveis.
+
+AWS https://aws.amazon.com/pt/
+Sobre a AWS https://aws.amazon.com/pt/about-aws/
+What is AWS https://aws.amazon.com/pt/what-is-aws/
+Documentação AWS https://aws.amazon.com/pt/documentation/
+Certificações AWS https://aws.amazon.com/pt/certification/
+Nível Gratuito AWS https://aws.amazon.com/pt/free/
+AWS Certified Solutions Architect –Associate https://aws.amazon.com/pt/certification/certified-solutions-architect-associate/
+29 Certificações em Data Science e Big Datahttp://datascienceacademy.com.br/blog/29-certificacoes-em-big-data-e-data-science/
+
+#########################################################################################################################
+
+[02] Linux
+
+baseado em unix
+kernel com software ao redor
+mac os é próximo do unix
+
+hadoop é para unix
+
+kernel.org
+distrowatch.com
+
+centos é uma distribuição livre do redhat, q é pago
+
+- terminal
+
+case sensitive
+
+ls > lista arquivos (-a|l)
+pwd > diretorio atual
+df -k > partições
+apt-get update (apt-get é o gerenciador de pacotes) update atualiza os mirrors
+privilégio de administrador: sudo (super user do)
+apt-get upgrade (atualiza SO)
+~ (atalho para /home/seu.usuario)
+man comando > manual
+whoami > usuario atual
+hostname > nome da maquina
+top > table of process -> processos em execução
+kill > mata processo > ex kill -9 13213
+cd e mkdir > muda e cria diretorio
+touch > cria arquivo vazio
+cat > conteudo de arquivo
+adduser > adiciona usuário
+find /diretorio -name teste.txt > busca arquivos
+if config > mostra coisas de conexão.
+wget url > baixa arquivo
+ssh > conexão ssh
+unzip > descompacta
+tar > compacta e descompacta (-tvf visualiza conteudo)
+gunzip > descompacta tar (tar é compactado, tar.gz é compactado e comprimido)
+cp localorigem localdestino > copia (-R para recursivo)
+scp > copia via ssh
+grep filtra saida de comando por termo.
+sudo passwd root > muda senha root
+su > usuario root
+which comando > mostra onde o comando tá instalado
+env > variaveis de ambiente
+ps > mostra processos
+chown usuario:grupo arquivo > muda dono do arquivo para usuario
+chmod 777 arquivo > muda permissão.
+    rwx é read write execute, 777 corresponde aos 3 blocos. privilegio de escrita é 4, de leitura é 2 e de execução é 1 (1+2+4=7)
+
+/etc/passwd -> usuarios ficam nesse arquivo
+
+nano > editor de texto no terminal
+vi e vim > editor de texto no terminal > i: modo edição, esc sai do modo edição, :q sai, dd: apagaalguma coisa ... usar man
+
+no ls -l começa com d é diretorio, começa com - é arquivo
+ls -l > nove letras > 3 blocos de 3 > primeiro bloco é permissões owner, segundo é grupo owner, terceiro é outros usuarios
+    rwx é read write execute, 777 corresponde aos 3 blocos. privilegio de escrita é 4, de leitura é 2 e de execução é 1 (1+2+4=7)
+
+conexão por ssh é possível
+
+grouplens.org: datasets gratuitos para download
+
+Estrutura de diretórios
+tree -L num_niveis > visualiza diretorios e subdiretorios
+- diretorios  (a partir de /)
+bin: executaveis
+boot: bootloader
+cdrom: monta cd ali
+dev: devices
+etc: configuração de sistema
+home: usuarios
+inits > atalahos para imagens de kernel
+libs > bibliotecas e modulos do kernel
+lost and found > arquivos perdidos
+media e mnt > montagem de sistemas de arquivos
+opt: instalação de programas
+proc: status de processos e arquivos do kernel
+root: home do usuario root
+run: processos em execução
+sbin: bin do sistema
+tmp: temporario
+srv: dados de serviços
+usr: utilitarios de aplicações e usuarios
+var: variaveis de sistema
+
+sistema de arquivos: estruturas logicas controlando acesso do so ao hd
+df -Th: mostra sistema de arquivos, tipo e ponto de montagem, tamanhos
+lsblk -f: igual acima mas mostra com mais informações.
+IDE começa com hd (hda...)
+Sata começa com sd (sda...)
+se tiver mais de 1, vira sdb, sdc
+sda1 é partição primária, extendidas são de 2 em diante? criando partições logicas começando em 5?
+
+disktype /dev/sda1 > resumo sobre a partição
+gparted é programa de edição de partição
+
+redirecionar aplicações graficas:
+xming: programa que recebe interface grafica remota do linux no Windows
+terminal em ssh > config x11 do putty, habilitar x11 forwarding
+
+fdisk /dev/sdb > criar partições (entra em terminal apartado - usar o comando m para guia)
+mkfs.ext4 /dev/sdb1 > formata e cria sistema de arquivos ext4 na partição fornecida
+fdisk -l lista discos e partições
+
+montar partição pelo terminal
+criar subdiretorio em mnt
+mount > mostra todas as pastas montadas
+mount -t ext4 /dev/sdb1 /mnt/pasta > monta como ext4 o sdb1 em /mnt/pasta
+
+automatizar montagem:
+arquivo /etc/fstab > seguir padrão, 0 dump, 0 pass
+
+script shell
+#!/bin/bash (mostra onde tá o interpretador)
+TEXTO="Hello World"
+echo $TEXTO
+
+para tornar arquivo executavel, de privilegio de execução com chmod
+
+read FIRSTNAME > guarda valor digitado  na variavel FIRSTNAME
+
+SERVERLIST = ("web1" "web2" "web3") # array
+
+for INDEX in ${SERVERLIST[@]}; do # loop for each
+...
+done
+
+case $CHOICE in #switchcase
+    1)
+    ....
+    2)
+    ...
+esac
+if [ $var -ge 100]; then
+    ... | ...
+fi
+
+cron: agendador cronologico de tarefas
+arquivo crontab (cron table)
+preenche na posição desejada
+(minutos horas dia-mes mes dia-semana[0-6 ou 1-7]) ex 02 * * * * (asterisco é não preenchido, ou todos)
+crontab -l (lista)
+crontab -e (edita)
+02 * * * * /home/user/script.sh (vai rodar esse script nesse local a cada dois minutos)
+
+processo: programa em execução
+ps u > processos com mais informações para usuario atual
+ps aux > mais informações e todos os usuários
+ps aux | less > paginação
+ps -eo user,pid,uid,gid | less > filtra informações
+
+pstree -> arvore de processos
+top > h: help M: ordena por memoria P: por cpu u: filtra usuario, 1: mostra core a core r: processo para mudar prioridade (-20 a 19)
+kill -9 pid : mata processo
+killall -9 pid : mata arvore de processo
+
+serviço: cada aplicativo num servidor precisa de um serviço em background
+gerenciador de serviços atual : systemd > predecessor era o sysv (que usa as pastas init e init.d)
+daemons: agentes executores
+
+systemd-analyze blame > avalia boot e mostra ordem dos serviços inicializados no boot
+systemctl > mostra daemons em execução (list-unit-files lista serviço), inicia e derruba serviços
+
+configurações de rede
+arquivo de endereço de redes: /etc/hosts
+ping pinga endereço
+ifconfig lista interfaces de rede e endereço de ip. (lo é loop back)
+3 classes internas de endereço (começados por 192, 10, 172)
+ip addr é resumo do if config
+
+lshw -class network > informações especificas de hardware de rede
+route > tabela de roteamento
+traceroute endereço > rota de roteamento até destino (conecta no resolv.conf)
+
+nmtui -> edita conexões com  interface de edit do dos
+systemctl pode afetar serviço de rede (NetworkManager)
+ifdown desativa interface de rede
+ifup sobe
+
+/etc/network/interfaces lista placas de rede instaladas
+
+ethtool dá resumo sobre config da placa
+R$ 30.416,05
+
+apache2 no ubuntu é httpd no centos
+tudo no linux é arquivo de configuração, no windows é dll
+
+iptables > sistema antigo de Firewall
+ufw > sistema atual do ubuntu para Firewall
+
+ufw app list > lista de aplicações que podem ser configuradas no Firewall
+ufw app info "appname" > informações de porta para appname
+ufw allow in "appname" > permite todas as portas de appname
+
+se habilitar o firewall negando todas conexões, perde acesso ssh.
+habilitar regra que permite conexão ssh
+
+ufw allow ssh (permite acesso ssh ipv4 e ipv6) - porta padrão ssh 22
+ufw enable (habilita firewall)
+ufw disable
+ufw allow 6000:6007/tcp (habilita intervalo de portas para conexão tcp)
+ufw allow from 15.13.12.1 to any port 22 (habilita para porta 22 para ip especificado)
+ufw allow from 15.13.12.1 (habilita ip especificado)
+ufw allow from 15.13.12.0/24 (habilita ip e subnet 24)
+
+ufw allow in on eth0 to any port 80 (conexões na porta 80 são permitidas apenas pelo dispositivo eth0)
+ufw deny http (bloquear http)
+
+ufw status numbered (mostra regras)
+ufw delete 10 (deleta regra 10 da tabela do status numbered)
+ufw status verbose (mostra mais informações)
+
+ufw delete allow ssh (deleta todas as regras que inferem com ssh)
+ufw reset (apaga todas as regras, fazendo backup)
+
+centos
+usuario administrador precisa estar no arquivo sudoers (entrar como root para adicionar se num tiver nenhum)
+centos não vem com ifconfig (pacote nettools)
+mysql no centos é maria db
+
+==========================================================================================
+
+[03] S3 - Simple Storage Service
+
+-armazenamento de dados na nuvem.
+-armazena dados como objetos dentro de buckets
+-objeto é arquivo e metadados do arquivo
+-arquivo é carregado no bucket (container, "pasta")
+-acesso e outras permissões pode ser controlado para cada bucket
+
+-faz parte da camada gratuita de 12 meses, desde que abaixo do limite de armazenamento, leitura (get)
+e escrita (put)
+
+-taxa cobrada é indireta e depende de vários fatores(tamanho, tempo de armazenamento durante o mes, 
+classe de armazenamento, região geografica) 
+-principal diferença entre classes de armazenamento é frequencia de acesso
+
+-armazenamento em bloco: baixo nivel, sequencia de blocos de tamanho fixo (so, ambiente tradicional)
+-armazenamento em arquivo: alto nivel, hierarquia de arquivos e pastas (so, ambiente tradicional)
+
+-armazenamento de objetos: gerenciado por api, identificação por chave especifica por usuario
+buckets são pasta plana simples, (como se fosse web folders). não pode ter um bucket dentro do outro.
+
+-pode se criar pastas para organizar dentro de um bucket, bucket pode ter um numero ilimitado de objetos.
+- leitura por get, escrita por put de objetos
+
+-opera no objeto inteiro diferentemente de partes como sistema de arquivos tradicionais.
+
+-altamente duravel e escalavel, minimalista, e abstrai detalhes que sistemas de arquivos tem que lidar.
+(não precisa se preocupar com limites de armazenamento, capacidade, replica, durabilidade, escalabilidade,
+etc...)
+
+-não é sistema de arquivos, não da pra instalar coisas ou montar como partição.
+
+-armazenamento em bloco pela amazon: EBS para nstancias do EC2, e EFS para arquivos compartilhados em rede.
+
+-nivel de durabilidade: 99,99999999999% (mais facil perder dado local que no s3)
+
+-criar bucket
+    console amazon > s3 > criar bucket
+    config de bucket existente pode ser copiada no botão escolher bucket
+    nomes dos buckets tem de ser unico em uma partição(agrupamento de regiões) mesmo que seja de outro usuário
+    versionamento de bucket: pode criar versões diferentes dos objetos
+    pode tagear
+    pode criptografar por padrão, que aumenta latência;
+    limite de buckets por conta. não usar como pasta, criar pasta dentro do bucket
+    aba propriedades é as configurações ao criar o bucket
+    se habilitar a notificação, vai cobrar pelo serviço de notificação tb
+    bucket tem regras de ciclo de vida, onde pode se automatizar a vida dos objeots e do bucket
+    bucket tem controle de ponto de acesso, podendo restringir o acesso via internet, via aplicativo, etc
+    ao se carregar o arquivo, tem uma série de configurações
+
+*classes de armazenamento: classes com maior frequencia de acesso para menor (maior frequencia de acesso, maior custo)
+*criptografia: aumenta segurança, diminui performance. versionamento e copia de bucket podem ter problemas com criptografia. ler Documentação.
+*controle de acesso(acl):pode se definir privilegio pra usuarios da aws, grupos, usuarios externos, etc... (privilegio do bucket tem prioridade sobre 
+    privilegio de arquivo)
+*bloqueio de objeto: nível de bucket, pode restringir objetos para apenas leitura, uma gravação (worm) - apenas na criação de bucket
+*tag: label, pode pesquisar por, pode documentar, etc
+*metadados: chave especifica para cada objeto
+
+entre serviços da aws é permitido usar por uri, externo usar url
+ajuste do privilegio: ajuste do bucket, e depois do arquivo
+
+versionamento de bucket: vale para todo conteudo do bucket. pode ser feito durante ao após a criação do bucket.
+    mantém histórico e possibilita configurar ciclo de vida de arquivos. não checa se o conteúdo é diferente.
+    ao acessar o arquivo pelo endereço padrão, se acessa a versão mais recente. as versões anteriores tem outros endereços.
+
+ciclo de vida:
+    escopo: filtro ou todos do bucket
+    filtros podem ser por prefixo, por tag(valor e chave devem ser diferentes)
+    ações determinam o que é feito. pode ser transição, expirar, etc...
+
+logging: registra mudanças e atividades em um bucket, em outro bucket
+
+Serviço storage gateway: integração entre armazenamento local e ambiente amazon
+deep archive: mais barata, menos acesso, longuissimo prazo, 1, 2 vezes por ano para quem mantem por 7 anos ou mais os arquivos.
+    acesso não imediato(+-12h).
+
+snowball: dispositivos fisicos para grande quantidades de dados (terabytes para cima).enviam um servidor para transferência fisica.
+    aws pega de volta e copia no s3 na nuvem.
+
+==========================================================================================
+
+[04] EC2 - Elastic Compute Cloud
+
+maquinas virtuais.
+
+/******************
+O  EC2  (ou  Elastic  Compute  Cloud)  é  o  serviço  que  permite  você  criar,  na  nuvem, instâncias de servidores virtuais usando 
+diferentes configurações —isso inclui armazenamento, memória e processadores —e sistemas operacionais (Windows ou Unix). 
+É em uma instância do EC2 que você colocará sua aplicação para funcionar. 
+Ao  decidir  em  utilizar  o  Amazon  EC2,  nosso  primeiro  objetivo  é  decidir  qual  a  nossa necessidade  de  computação.  
+O  termo  computação  refere-se à capacidade  computacional necessária para cumprir umacarga de trabalho. 
+Se sua carga de trabalho for muito pequena, como um site que recebe poucos visitantes, suas necessidades de computação são pequenas. 
+Uma grande carga de trabalho, como processamento para pesquisa do genoma humano, pode exigir uma grande quantidade de computação. 
+A quantidade de computação que você precisa pode mudar drasticamente ao longo do tempo. 
+O  Amazon  EC2  permite  que  você  obtenha  computação  através  do  lançamento  de servidores virtuais chamados instâncias. 
+Quando você inicia uma instância, você pode fazer uso da  capacidade  computacional  como  desejar,  
+assim  como  você  faria  com  um  servidor  on-premises(na rede local de uma empresa). 
+Como você está pagando pelo poder de computação da instância, você é cobrado por hora enquanto a instância está sendo executada. 
+Quando você interrompe a instância, você não será mais cobrado. 
+
+Você pode criar no EC2 vários tipos de instâncias,  sejam  elas  para  uso  geral,  com  baixaou  altaconfiguração e  diferentes  sistemas operacionais,  
+possuindo  memória  e  processamento  de  alta  capacidade. 
+Hátambém microinstâncias (que são as integrantes do período de uso gratuito que a Amazon oferece para novos usuários) 
+e que possuem configurações limitadas. 
+Existem dois conceitos que são fundamentais para o lançamento de instâncias no AWS: 
+(1)  a  quantidade  de  hardware  virtual  dedicado  à  instância e  
+(2)  o  software  carregado  na instância.  
+Essas  duas  dimensões  de  novas  instâncias  são  controladas,  respectivamente,  pelo tipo de instância e o AMI.
+/*********************
+
+instancia ec2 pertence a um virtual private cloud (vpc) na criação.
+tags de ec2 permite nomear e pesquisar, pratica recomendada
+
+estancia é maquina virtual no servidor. servidor pode ser dividido entre muitos usários e suas estancias.
+AMI -> imagens de sistemas operacionais para evitar configuração manual. podem ser compradas em marketplace
+auto scaling inicia estancia somente em pico de acesso.
+
+criar instancia: instancia > executar instancia > executar instancia
+
+passos:
+1 - AMI (imagem)
+2 - Tipo de instancia
+3 - configuração de instancia
+4 - adicionar armazenamento
+5 - adicionar tag
+6 - grupo de segurança
+7 - review
+
+tipo de instancias -> configurações de hardware:
+A1: proposito geral
+C4, C5, C5a, C5ad, C5d, c5n: otimizadas para computação
+...
+
+
+disco ebs: persiste
+disco instance: mais rapido, mas é perdido ao desligar a instancia
+numero de instancias: numero de instancias (pode ser usado com auto scalling, para usar instancias extras só por demanda)
+opção de compra: leilão de instancias mais fortes (oferece valor, se instancia tiver parada, pode pagar menos por uma instancia parada. é leilão, ganha
+    quem paga mais)
+rede: uma vpc por padrão. pode ser a default ou uma criada.
+subnet: sub redes para separar as instancias e isolar entre si
+endereço ip publico: automaticamente atribuido, pode ser desabilitado.
+placement group: aloca instancia de acordo a caracteristicas similares
+reserva de capacidade
+configuração de iam
+configuração de dominio
+shutdown behavior : parar(congela conteudo) ou terminar(encerra instancia e mata armazenamento instance) instancia
+hibernação: mantem memória
+evitar termination protection: evita terminate acidental
+monitoring com cloud watch:
+tenancy: onde a instancia fica (hardware fisico compartilhado entre maquinas virtuais, ou ambiente dedicado)
+elastic inference: maximiza uso de hardware?
+especificação de crédito: limita uso por horas, mas pode ser exceção para não desligar instancia em particular
+advanced details > user data : script para rodar assim que inicia a instancia.
+
+armazenamento: 
+    partição root é criada por padrão
+    delete on termination: mata tudo no volume quando der terminate. (é cobrado se não for marcado.)
+    tipos de volume: ebs é mais caro que s3, arquivos estaticos é melhor s3, se muitos arquivos mudam, ebs
+        tipos ebs: io2 - io1(privisionado iops[io per second] ssd), gp2(ssd geral)
+
+tags: maximo de 50, chave valor
+
+segurança:    
+
+máximo de atenção ao criar instancia pois nem todos atributos podem ser mudado depois
+definir grupo de segurança da instancia ECS: grupo que regula trafego que chega na instancia
+boa prática de segurança: bloqueia tudo e libera só o que precisa
+	0.0.0.0 indica qqr maquina na internet
+
+par de chaves de segurança ssh: chave publica fica na aws, chave privada na maquina (.pem)
+	procedimento de nova chave é trabalhoso, cuidar bem da chave
+	criar pares de chaves para grupo de instancias(produção, homologação, etc)
+
+painel ec2 > instancias em execução > se instancia é iniciada, tem q desligar, seja manual ou por regra
+
+segurança:    
+
+máximo de atenção ao criar instancia pois nem todos atributos podem ser mudado depois
+definir grupo de segurança da instancia ECS: grupo que regula trafego que chega na instancia
+boa prática de segurança: bloqueia tudo e libera só o que precisa
+	0.0.0.0 indica qqr maquina na internet
+
+par de chaves de segurança ssh: chave publica fica na aws, chave privada na maquina (.pem)
+	procedimento de nova chave é trabalhoso, cuidar bem da chave
+	criar pares de chaves para grupo de instancias(produção, homologação, etc)
+
+painel ec2 > instancias em execução > se instancia é iniciada, tem q desligar, seja manual ou por regra
+endereços privados são usados para comunicar dentro das redes aws
+
+acesso remoto ec2 por terminal ssh: usar chave pem com privilegios restritos (400)
+    no windows, converter pem para ppk usando puttygen
+
+elastic block store: grava um snapshot do disco (volume) no amazon s3
+ao carregar a ami (imagem de disco) ela já vem de um snapshot. editar nome, e cria snapshot para gravar uma snapshot do volume
+snapshots são incrementais, salva diff a diff
+
+ao interromper, continua pagando.
+ao encerrar, a instancia perde tudo que não foi previamente guardado, só apaga volumes marcados para serem deletados no fim da instancia.
+compra de instancias:  on demand: conveniente, fácil de usar, mais caras. outras instancias reservadas e etc são mais baratas
+    host dedicado (maquina fisica, não só a vm) TEM q ter a licença própria.
+    host dedicado pode ser mais barato que on demand a longo prazo
+    solicitação spot: se tiver maquina boa ociosa, pode usar ela pagando menos, mas se alguem pagar mais, a amazon repassa
+    em geral spot é mais barato que on demand
+
+EC2 - RAID
+
+raid 0 : multiplos hds funcionam como 1 hd, performa melhor, mas se perde 1 disco perde todos.
+raid 1 : espelho de disco, copia tudo de um nos outros, se perde 1 num perde nada, num performa melhor
+
+tamanho do disco do snapshot tem que respeitar ami (ex windows server exige 30 gb)
+acesso remoto windows na aws usa rdp (remote desktop protocol) - usa chave ssh para gerar senha windows admin
+cliente rdp windows: executar mstsc?
+raid é feito no sistema operacional, aws só fornece discos  
+
+bootstraping: criar um modelo de instancia via script. ao subir a instancia, ela se configura
+    colocar arquivos num bucket (não precisa de acesso publico, pois só o ec2 precisa acessar esse conteúdo. arquivos do site.)
+    ir em IAM (identity and access management) e ir em funções/roles (grupos de acesso) criar serviço aws para ec2,
+        adicionar full access para s3, e usar iam role ao subir instancia ec2
+        bootstrap fica no passo 3 do ec2, advanced details, numa caixa de texto abaixo de tudo. especificar o shell com #!/bin/bash no inicio
+    copiar arquivos do s3 numa maquina ec2 com permissão: aws s3 cp s3://address/file.extension /var/www/html
+cloud formation: cria um design com outros serviços aws, como se fosse um roteiro de quais serviços subir / configurar e desligar
+    roteiro salvo em json
+    pode usar template pronto, de exemplo ou criar num designer.
+
+auto scaling: ec2 > grupos auto scaling
+        modelo de execução: configuração das instancias EC2. pode herdar de outro modelo.
+
+RDS - RELATIONAL DATABASE SERVICE
+
+    banco de dados relacional já instalado e configurado. altamente escalavel (estilo kubernetes?).
+    se serviço rds for software licensiado, precisa da licença por fora
+    faz parte da camada gratuita.
+
+    single az - uma zona, multi-az - réplicas em outra zona.
+
+    bancos podem ser backupeados no s3. 
+
+    criar rds: create database > 
+        processo padrão tem várias configs. processo easy já configura muita coisa.
+        engine options > tipo de banco. dá pra escolher edição e versão e licença.
+        template: produção, dev/teste, free tier
+        depois da criação do banco, não pode mudar a vpc.
+
+    acessar instancia rds fechada a publico: instancia ec2 na mesma vpc acessa via linha de comando.
+        instalar client na instancia ec2, e acessar.
+        para mudar configurações, é recomendado tirar uma snapshot, derrubar instancia e subir outra com as configurações desejadas.
+
+    cloud shell: linha de comando que substitui (?) o awscli -> levar em consideração se tá ou não na vpc desejada.
+    réplicas de instancias de rds são cobradas. replicas podem estar em outra região. atentar ao preço
+    processo de replica cria snapshot e depois sobe a replica
+    promover replica: deixa de ser replica e fica independente
+    modificando instancia: é possível agendar a aplicação.
+    restaurando backup no rds: restore to point in time > escolher snapshot.
+    upgrade now > atualiza versão de engine. defer atualiza em uma janela definida com baixo uso. só para versão mais atual
+
+NOSQL
+
+graph - 
+    Esta categoria de Bancos de Dados NoSQL, geralmente é aderente acenários de rede social online, 
+    onde os nós representam as entidades e os laços representam as interconexões entre elas. 
+    Desta forma, é possível atravessar o gráfico seguindo as relações. Esta categoria temsido  
+    usada  para  lidar  com  problemas  relacionados  a  sistemas  de  recomendaçãoe  listas  
+    de controle de acesso, fazendo uso de sua capacidade de lidar com dados altamente interligados. 
+    Exemplos desta categoria são o Neo4j, FlockDB, GraphDB e ArangoDB
+
+document - 
+    Esta categoria de Bancos de Dados NoSQL permite o armazenamento de milhões de documentos. 
+    Por exemplo, você pode armazenar detalhes sobre um empregado, junto com o currículo  dele  (como  um  documento)  
+    e  então  pesquisar  sobre  potenciais  candidatos  a  uma vaga,  usando  um  campo  específico,  
+    como  telefone  ou  conhecimento  em  uma  tecnologia.Exemplos são: MongoDB, CouchDB, RavenDB e Terrastore.
+
+key-value - 
+    Nesta  categoria,  os  dados  são  armazenados  no  formato  key-value  (chave-valor)  
+    e  os valores  (dados)  são  identificados  pelas  chaves.  
+    É  possível  armazenar  bilhões  de  registros  de forma eficiente e o processo de 
+    escrita é bem rápido. 
+    Os dados podem ser então pesquisados através  das  chaves  associadas.  
+    Exemplos  são: Oracle  NoSQLDB,  MemcacheDB,  Redis  e Amazon DynamoDB.
+    
+column family - 
+    Também chamados 
+    bancos de dados orientados a coluna, os dados são organizados em grupos de colunas e 
+    tanto o armazenamento, quando as pesquisas de dados são baseados em chaves. HBase é um banco de dados NoSQL orientado a 
+    famílias de colunas. Outros exemplos são: Cassandra, Hypertable e Accumulo.
+
+Dynamo - NOSQL
+
+    80% dos dados gerados pela humanidade são não estruturados.
+
+Redshift
+
+    Data warehouse - não é banco transacional, gera relatórios.
+
+Elastic cache - in memory datastore
+
+    Dados na memória para serem processados o mais rápido possível    Dados na memória para serem processados o mais rápido possível. indice em memoria que      pode ser particionado.util para processar textos.
+
+Route 53
+
+    serviço dns
+    registro dns não é da amazon. route 53 só é um facilitador.
+    não tem nada na camada gratuita.
+    pode se registrar em outro lugar e hospedar na aws, ou pode registrar na aws direto (por zona).
+    consultas feitas por dominio são pagas.
+
+    DNS - domain name system. como se fosse uma lista telefonica.
+    FQDN - Full qualified domain name
+
+Zona DNS
+
+A Zona de DNS é o espaço disponível para gerenciar e editar entradas de DNS de sites, e-mails e outros serviços de um domínio. 
+Qualquer mudança na Zona de DNS leva algumas horas para refletir corretamente. 
+Esse intervalo também é chamado de propagação –ou atualização –de DNS. 
+A  zona  DNS  é  um  arquivo  que  armazena  registros  diferentes  que  especificam  os endereços dos servidores que hospedam 
+seu site (A) ou seus e-mails (MX). 
+Esses endereços podem ser na forma de endereços IP ou nomes de host. 
+Ou seja, em cada nome de domínio, que é uma parte do sistema DNS –há várias configurações de DNS, também conhecidas como 
+registros DNS. 
+Para que esses registros DNS sejam mantidos em ordem é que a zona DNS foi inventada.
+Uma zona DNS refere-se a uma determinada parte ou espaço administrativo dentro do Sistema  de  Nomes  de  Domínio  (DNS)  global.  
+Cada  zona  DNS  representa  um  limite  de autoridade sujeito à gestão por determinadas entidades. 
+O total de todas as zonas DNS, que são organizadas em uma ordem hierárquica semelhante a uma árvore de domínios em cascata de 
+nível inferior, formam o namespace DNS ou FQDN –Full Qualified Domain Name.
+A autoridade sobre cada zona DNS é delegada a uma entidade legal ou organização (por exemplo,  um  registro  de  domínio  
+de  nível  superior  de  código  de  país)  ou  uma empresa/indivíduo  registrado  para  usar  um  determinado  subdomínio  
+dentro  do  sistema. 
+Dependendo dos direitos administrativos delegados a uma determinada entidade, as zonas DNS podem  consistir  de  apenas  um  
+domínio  ou  de  muitos  domínios  e  subdomínios.  Poderá  ser delegada a outras partes, se necessário, uma autoridade adicional 
+sobre um subespaço.Quando  você  quiser  modificar  o  servidor  que  hospeda  seu  site  ou  e-mails  após  a mudança de host, 
+por exemplo, você tem que modificar sua zona DNS. Uma vez que este é atualizado,  seu  domínio  apontará  para  esses  novos  
+servidores.Perceba  ainda  que  Zona  e Domínio DNS são coisas diferentes:
+
+Abaixo uma  lista dos  registros  mais comuns  que  você  poderá  encontrar  durante  o gerenciamento de um domínio e suas zonas.
+
+NS - Registros  do  tipo  NS,  ou  Name  Server  (nome  do  servidor)  estão relacionados  à  empresa  que  controla  todas  as  definições  
+do  domínio  em questão.  
+Normalmente,  ao  editar  o  DNS  do  seu  domínio,  você  fará  a inclusão de um registro do tipo NS apontando o domínio para a empresa 
+que hospedará o seu site. O formato do registro NS pode ser parecido com ns1.empresa.com
+
+A - Registros do tipo A apontam sempre para um endereço de IP. Também pode ser utilizado para apontar um subdomínio para um servidor 
+específico.Em outras palavras, esses registros vinculam um domínio, ou subdomínio, a um endereço IP.
+
+AAAA - Possui o mesmo papel do registro A, mas é exclusivo para indicar o padrão IPv6 (registros A indicam apenas IPs do tipo IPv4).
+
+CNAME - Registros CNAME apontam para subdomínios. Geralmente, o CNAME de um domínio  já  vem  previamente  configurado  na  
+hospedagem  com  valores como www, para poder viabilizar o acesso de qualquer site com o www na frente  do  domínio.  
+Mas  outros subdomínios  também  podem  ser  criados através de registros do tipo CNAME. Um endereço de IP nunca pode ser utilizado 
+para registros CNAME.
+
+MX - Registros do tipo MX sempre apontam para o servidor que fornece o serviço de e-mails daquele domínio. 
+Assim, um mesmo domínio pode ter o serviço de hospedagem em um lugar e o de e-mails em outro. 
+Este registro já vem pré-configurado em serviços que oferecem hospedagem e e-mail no mesmo serviço.
+
+TXT - Pode  ser  usado  para  transmitir  informações  adicionais  a determinado domínio, como por exemplo aumentar a segurança 
+dos e-mails enviados a partir do domínio em questão.
+
+SOA - É o acrônimo de Start Of Authority e indica informações sobre a autoridade responsável pelo domínio e também outras 
+informações, como a data da última atualização do domínio.
+
+PTR - Esses  registros  fornecem  o  que  é  conhecido  como  “DNS  reverso”.  Os registros  PTR  atribuem  endereços  IP  a  um
+nome  de  servidor,  em  vez  de associar um nome de servidor a um endereço IP.
+
+registrar dominio: registro.br, godaddy, etc.
+Registrar dominio no route 53: dominios registrados > registrar dominio.
+Dominio pode ser transferido. processo iniciado no provedor de destino.
+
+Zona hospedada: automaticamente criada pelo registro.
+    região onde registros são atendidos pelo dns
+    zona hospedada pode ser publica(determina como o tragego é roteado na internet) ou privada(como é roteado numa vpc da amazon)
+
+vantagem do route 53: criação de registro dns pode usar um alias para serviço AWS, evitando configurações confusas de IP.
+se for apontar para um bucket, tem que ter o nome do site. exemplo: site é www.dsa.com, bucket tem que ser www.dsa.com
+
+route 53 não está associado a uma região, é global.
+
+politicas de roteamento: simples: padrão dns / ponderado: um servidor pode receber mais carga que outro / 
+    geolocalização: depende de onde ele tá qual atende / latencia / failover : redireciona pra outro quando falha / valores multiplos.
+
+configuração de load balancer: 
+    existem 4 tipos: application, network, gateway e classic.
+verificações de integridade pinga o servidor para ver se responde e se lança alerta.
+auto scaling é uma automação do load balancer
+é possivel fazer load balancing em multiplas razões
+drenar conexões elimina conexões zumbi.
+
+é possível migrar classico para outros tipos com um assistente.
+é possível integrar com dns do route 53 com alias.
+
+verificador de integridade do load balancer:
+    fail over checa integridade, load balancer por latencia não
+    limite de falha: se a cada n segundos tiver m falha, declara falha e redireciona
+    é possível disparar falhas em sns 
+
+para usar failsafe e verificadores, tem que definir na criação do dns.
+    tipos principal e secundário (se falha primario, manda para o secundário)
+    verificador de integridade é opcional para secundários
+
+Roteamento por geolocalização: geolocalização é baseada no local do usuário
+
+CloudFront: Rede de entrega de conteúdo
+    recursos adicionais, como  pdfs, videos, etc.
+    configura-se cache e outras coisas.
+    facil integração com route 53
+    edge computing -> processar algo próximo ao usuário. replicas mais próximas fisicamente dos usuários.
+    cloudfront usa o s3 para armazenamento. pode usar um servidor tb.
+    não precisa de um dominio, a amazon gera um dominio com nome feio
+
+Lambda: computação em núvem servless
+    (Evolução: Datacenter > Infra as a service (IAAS)> Platform as a service (PAAS - rds é isso)> Containers > Servless)
+    Não se preocupe com hardware, protocolos, rede, SO, camada de aplicação e AWS API.
+    Escala automaticamente, executa somente quando necessário.
+    Paga apenas pelo tempo de computação
+
+    Lambda tem gatilhos para executar e destinos.
+    Tudo no lambda é função. é possível comprar ou alugar lambdas. é possível criar do zero, usar esquema, ou usar imagem de container tb
+
+    usar api-gateway para acesso ao lambda é boa prática. api gateway pode restringir metodo de chamadas, como get, post, etc
+
+### VPC - Virtual private cloud ###
+
+redes de computadores virtual, isoladas, com controle de ips, sub redes, gateway, tabelas de rotas
+criar a vpc é gratuito. é cobrado os serviços associados na vpc.
+
+terminologia de redes
+
+TCP  significa  Transmission  Control  Protocol  (Protocolo  de  Controle  de  Transmissão). 
+Protocolo  é  uma  espécie  de  linguagem  utilizada  para  que  dois  computadores  consigam  se comunicar.
+
+Endereço IP, de forma genérica, é uma identificação de um dispositivo (computador, tablet, impressora, etc) 
+em uma rede local ou pública. 
+Cada computador na internet possui um IP (Internet Protocol ou Protocolo de internet) único, 
+que é o meio em que as máquinas usam para se comunicarem na Internet.
+
+O DHCP, (Dynamic Host Configuration Protocol) é uma sigla usada no meio informático que significa Protocolo de 
+Configuração Dinâmica de Endereços de Rede. Através do DHCP é possível fazer uma configuração automática e 
+dinâmica de computadores que estejam ligados a uma rede TCP/IP.
+
+DNS é a sigla em inglês para Domain Name System (Sistema de Nomes e Domínios, em português),  
+responsável  por  descodificar  os  nomes  dos  domínios  dos  sites  que  as  pessoas digitam nos navegadores web em números IP.
+
+NAT é um protocolo que, como o próprio nome diz (Network Address Translation), 
+faz a tradução dos endereços IP e portas TCP da rede local para a Internet. Ou seja, o pacote enviado 
+ou a ser recebido de seu computador na sua rede local, vai até o roteador onde é trocado pelo IP do mesmo. 
+Ele substitui o IP da rede local validando assim o envio do pacote na Internet. 
+No retorno do pacote, a mesma coisa acontece. O pacote chega e o IP do Roteador é trocado pelo IP do computador que fez 
+a requisição do pacote.
+
+A  redes  de  área  alargada  ("Wide  Area  Network")  têm  a  dimensão  correspondente  a países,  
+continentes  ou  vários  continentes.  São  na  realidade  constituídas  por  múltiplas  redes interligadas, 
+por exemplo LANs(Local Area Network)eMANs(Metropolitan Area Network). 
+O exemplo mais divulgado é a "internet". Dada a sua dimensão e uma vez que englobam LANs e WANs, 
+as tecnologias usadas para a transmissão dos dados são as mais diversas, contudo para que  
+as  trocas  de  informação  se  processem  é  necessário  um  elo  comum  assente  sobre  essa tecnologia heterogénea. 
+Esse elo comum é o protocolo de rede.
+A interligação ("internetworking") de redes de diferentes tecnologias é assegurada por dispositivos  conhecidos  por  "routers"  
+(encaminhadores).  Um  "router"  possui  tipicamente ligação física a duas ou mais redes, 
+recebendo dados de uma rede para os colocar na outra rede. Um exemplo típicoé a ligação de uma rede "Ethernet" a uma rede ponto-a-ponto.
+
+Uma "Local Area Network" caracteriza-se por ocupar uma área limitada, no máximo um edifício, ou alguns edifícios próximos, 
+muitas vezes limitam-se a apenas um piso de um edifício, um conjunto de salas, ou até uma única sala. 
+A tecnologia mais divulgada é a “ethernet”. Existe um conjunto de serviços e protocolos que são característicos das redes 
+locais e que fazem parte da definição de rede coorporativa.
+
+Tem crescido a utilização de redes locais sem fios, conhecidas com WLAN ("Wireless Local Area Network"). 
+Além de serem adequadas a situações em que é necessário mobilidade (ex.: posto montado em umveículoque circula num armazém, 
+ou portátil que circula nas mãos de  um  operador  de  "hipermercado"),  são flexíveise  da  fácil  instalação.  
+Embora  os equipamentos sejam mais caros do que para uma LAN tradicional e redução significativa dos custos de instalação 
+é muitas vezes compensatória.
+
+As redes locais virtuais "Virtual Local Area Network" são definidas sobre redes locais que estão equipadas com dispositivos apropriados 
+(dispositivos que suportam VLANs). 
+Trata-se de definir até que zonas da LAN se propagam as emissões em "broadcast" que tem origem noutra zona.
+
+As  redes  privadas  virtuais  ("Virtual  Private  Network")  utilizam  uma  rede  pública,  por exemplo a "internet" para 
+estabelecer uma ligação de dados entre dois pontos, estes dados têm  a  particularidade  de  serem  codificados  (cifrados) 
+de  tal  forma  que  apenas  os  dois intervenientes  os  conseguem  compreender.
+Os  dois  pontos  da  ligação  passam  a  funcionar como encaminhadores ("routers") para as respectivas redes. 
+Esta técnica pode ser usada para interligar redes distantes pertencentes a uma mesma organização, 
+com baixa qualidade, mas com grandes vantagens econômicas.
+
+Ip, máscara e gateway
+
+O  assunto  em  questão  aqui  é  IP  (Internet  Protocol)  ou  o  Protocolo da  Internet,  a máscara de rede e o gateway. 
+Cada um deles é diferente, mas muito importante.Cada IP dentro de uma rede é único, é ele quem identifica 
+a máquina (computador, tablet,  smartphone,  impressora,  etc...),  seu  “endereço  particular”  para  que  os  dados  sejam 
+transmitidos e entregues de forma correta, em caso de endereços IP duplicados, os mesmos entrarão  em  conflito  e  toda  a  
+rede  pode  ser  comprometida.  
+
+É  como  se  duas  residências possuíssem o mesmo endereço mesmo estando em locais diferentes de uma mesma cidade 
+–o carteiro não saberia em qual casa entregar a correspondência.
+Seguindo a mesma analogia, a máscara de rede pode ser comparada a um bairro de uma cidade; 
+cada um abrigando várias casas. (EndereçosIP) de uma mesma região.
+
+Sem dúvida, a mais usada é a máscara 255.255.255.0, tanto que muitos nem imaginam que  ela  pode  ter  outro  valor  e  não  apenas  este.  
+Esta  é  uma  máscara  também  comumente chamada de /24 ou “barra vinte e quatro“, que na prática significa que ela 
+possui 24 bits, ou simplificando: que esta rede pode comportar ao todo 254 hosts dentro de uma rede 
+(onde cada host corresponde a uma máquina).
+Nesta  rede  em  particular,  identificando  a  máscara  de  sub-rede  como  sendo 255.255.255.0, 
+sabemos que ela pode comportar até 254 hosts (computadores, smartphones, impressoras, etc...), 
+cada uma identificada com um endereço IP único. 
+
+As 3 primeiras “casas” do endereço  IP  possuem  a  função  de  identificar  a  rede,  então  deverão  ser  sempre  iguais: 
+192.168.1, enquantoa  última  “casa”  identificará  cada  equipamento  conectado  nesta  rede, começando de 1, podendo ir até 254. 
+No caso desta máscara /24 o ip 192.168.1.0 serve para identificar a rede, enquantoo IP 192.168.1.255 serve para broadcast.
+A máscara de rede, que pode ser comparada como um bairro que abriga várias casas (Endereços IPs), é uma sequência de números que 
+define a qual rede o computador pertence. 
+
+Os  usuários  poderão  usar  um  conjunto  de  IPs  privados  que  são  definidos  pela  máscara conforme a lista abaixo:
+
+•Classe A -de 10.0.0.0 até 10.255.255.255 e a máscara de rede é 255.0.0.0.
+•Classe B -de 172.16.0.0 até 172.31.255.255 e a máscara de rede é 255.255.0.0.
+•Classe C -de 192.168.0.0 até 192.168.255.255 e a máscara de rede é 255.255.255.0.
+
+Para  fins  didáticos,  imagine  que  exista  o  bairro  alfa e  este  possui  a  máscara 255.255.255.0. 
+Pode-se ter um computador com IP 192.168.0.1, outro com IP 192.168.0.101 e outro com IP 192.168.0.250, 
+contudo todos pertencentes ao mesmo bairro, pois usam a mesma máscara.
+
+O Gateway nada mais é do que um caminho de saída para outro bairro. No caso dos computadores  ele  funciona  como  a  saída  para  
+uma  outra  rede,  geralmente  essa  rede  é  a Internet. 
+O gateway também é um endereço no mesmo formato do IP. Quem tem Internet em casa  geralmente  tem  um  modem  que  recebe  
+o sinal  da  operadorae  é  conectado  no computador(ou  rede  wireless).  Esse  modem  também  tem  um  endereço  IP  e  para  ele  
+fazer parte dessa rede (alfa) precisa ter a mesma máscara. 
+
+A sua principal função é indicar o caminho para  a  Internet.  Observe  que  o  gateway(saída)  de  cada  computador  será  o  IP  
+do  próprio modem.Para encontrar o range de IPs que podem ser usados em uma sub-rede, é necessário calcular o número de IPscom 
+base na máscara. Para simplificar, você pode usar uma Subnet Calculator, como esta: http://www.subnet-calculator.com/
+
+AWS VPC
+
+cada região da aws tem uma vpc padrão para cada usuário.
+SE A VPC PADRÃO FOR APAGADA, SERÁ NECESSÁRIO ABRIR CHAMADO NA AWS PRA RESTABELECER.
+vpc é por região. CIDR: endereço ip
+Tenancy: ec2 internos da vpc são por demanda, ou dedicados que é mais caro
+ao criar Vpc subnets não são criadas.
+ao criar vpc cria tabela de roteamento, cria grupo de segurança.
+ao criar vpc não é criado internet gateway.
+
+manter vpc padrão e criar próprias.
+limites de vpc: em geral 5 por região, 50 regras de segurança por vpc, máximo 50 conexões vpn por região, etc.
+limites podem ser extendidos via chamado na aws.
+
+internet gateway: toda vpc precisa de um internet gateway para conectar a internet.
+
+Route tables: direciona trafego da fonte ao destino. é possível limitar recursos a redes, aumentando segurança.
+    para ir para internet, ir para internet gateway.
+    EVITAR ALTERAR VPC PADRÃO.
+
+Subnets: sub-rede. divisão lógica da VPC.
+    colocar na subnet que atende a vpn ou coisa do tipo apenas o necessário, e configurar rotas entre as outras para deixar mais seguro.
+    existem endereços reservados, como 10.0.0.1, 2, 3, 255
+    padrão é todo mundo na vpc ter acesso a todas subnets.
+    é possível comprar endereços ips ou reserva-los, mas é muito caro.
+
+Network Access Control list (NACL): regra de trafegos (portas, protocolos, origens, etc)
+    camada de segurança opcional, funciona como firewall.
+    filtra entrada e saída de uma ou mais subredes.
+    por padrão permite tudo, para facilitar acesso aos outros serviços, como ec2, etc.
+
+Grupo de Segurança: firewall virtual controlando entrada e saída.
+    é possível ter até 5 grupos de segurança em uma instância na vpc -> pode mudar.
+    diferença entre grupo e acl: acl é de rede (mais global), grupo de segurança é para recursos como instância (mais local)
+
+toda subnet é privada por padrão
+atribuição automática de ip publico: por padrão é não, mas na vpc padrão tá como sim.
+    para atribuir, modify auto assign ip settings
+1 internet gateway por vpc
+
+para chegar algo da subnet na internet, tem que configurar coisas pra chegar lá
+Internet -> internet gateway -> vpc -> route table -> NACL -> subnet
+
+boa prática: se preocupar com rede primeiro depois instancias.
+teste de ping por security group: all icmp - ipv4
+lembrete: é possível acessar maquina por ssh de outra com caminho aparente.
+
+Gateways: middle man
+NAT costuma ser uma instância ec2 com duas placas de rede, uma para entrada e uma para saída.
+
+no painel do ec2, marcar instancia nat, e ir em verificação de origem/destino,
+interrompa para que a instancia processe trafego que não seja destinado a ela.
+    Isso faz com que a instancia NAT vire um roteador.
+    Aí, pela tabela de roteamento adiciona rota pra internet (0.0.0.0/0) com alvo instancia nat
+
+Peering connections: comunicação entre VPCs
