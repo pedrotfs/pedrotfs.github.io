@@ -12,10 +12,16 @@ python 3 quebra compatibilidade com 2. 2 para de receber atualizações
 
 python costuma ser mais lento q java, c, c# mas é produtivo (mais facil de escrever com menos linhas)
 
+expressão resulta em valor
+
+PEP 8 - convenção e style code
+
 ---
 https://zerotomastery.io/blog/?tag=PM&utm_source=udemy&utm_medium=coursecontent#monthly
 
 Basics
+
+    função print cria semore nova linha -> print('string', end='') não pula linha. end padrão é \n
 
     type(2 + 4) -> retorna tipo de 2 + 4 -> tipo 6 -> <class 'int'> - tipo instanceof?
 
@@ -72,6 +78,7 @@ Basics
         listas são mutaveis
 
             len(list1) - tamanho
+            list1.add(1) - adiciona no final
             list1.append(100) - adiciona elemento ao fim, mas não retorna referencia nem cópia
             list1.insert(5, 100) - adiciona na posição 5 100
             list.extend([100, 101]) - append uma outra lista no fim
@@ -99,14 +106,930 @@ Basics
     Dictionary: como se fosse um mapa - estrutura de dados muito parecido com um json - dict
         chave valor
         dictionary = { 'a':1, 'b':2 }
-            dictionary['a']
+            dictionary['a'] - se chave não existir, dá erro
         lista pode ter dicionario, dicionario pode ter lista, é uma terra de ninguem
-    
-    
+        chaves podem ser de qqr tipo possivel de converter em hash e imutavel, não só string (str, bool, int, tuplas pode)
+            dictionary.get('age', 55) retorna None e não dá erro. 55 é valor caso resultado seja None
+        'size' in dictionary - ve se tem a chave no dicionário
+        dictionary.keys - chaves
+        dictionary.values - valores
+        dictionary.items - chaves e valores em formato de lista de tuplas
+        tem clear, copy...
+            pop remove uma chave valor e retorna o valor
+            popitem() - remove ultimo item(chave e valor) aleatório (v3.7 - antes disso remove aletório)
+            update({'age': 55}) - altera item passado pela chave
+            
+    Tuples: listas imutaveis
+        my_tuple = (1,2,3,4,5)
+        performance é melhor q de lista
+        assim como listas, pode fazer subtuplas, etc
         
+    Set: coleção desordenada de objetos unicos
+        tem add, clear, in, len, copy, etc...
+        não dá p pegar por posição no array
+        difference() - diferença entre conjunto e conjunto passado como parametro
+        diference_update - muda set para a diferença entre ele e o q chama
+        discard() - discarta elemento e modifica o set que chama o metodo
+        instersection() - intersecção entre dois sets (atalho: set1 & set2)
+        isdisjoint() - mostra se não existe elementos comuns entre os sets
+        issubset() - mostra se o set está contido pelo set passado como parametro (bool)
+        issuperset() - mostra se o set contem o set passado como parametro (bool)
+        union() - junta dois sets num set novo e retorna ele (atalho: set1 | set2)
+        
+    identação no python costuma ser 4 espaços. e é usada como definidor de escopo, tipo {} em javascript, java, etc        
+    
+    Logica condicional
+        
+        if boolean_statement:
+            print('need to be idented to be in the block')
+        elif boolean_statement:
+            print('ident as well')
+        else:
+            print('need to ident as well')
+        
+        if boolean_statement and other_statement: (condição && - 'e')
+        if boolean_statement or other_statement: (condição || - 'ou')
+            essas operações são short circuit, se acha um true no or ou um falso no and para na hora
+        
+        outros tipos são convertidos para booleano para usar em condições
+            inteiros e floats não zero, strings e listas não vazias são convertidos para True. o resto resulta em falso - tipo C
+            
+        Ternary -> can_message = "yes" if is_friend else "not"
+        
+        'a' > 'A' é true -> strings são comparadas caracter a caracter, e o valor usado é o valor unicode
+        1 < 2 < 3 < 4 é uma expressão condicional válida
+        
+        not é keyword e function -> not(true)
+        
+        == checa igualdade de valores ( equals do java)
+        is checa local de memória  ( == do java)
+        
+        toda lista é criada em um local diferente de memória então se fizer [] is [] dá falso pois são criadas duas listas (dicionarios, sets, tuplas tb)
+        
+        python aceita coisa do tipo 0 < int(guess) < 10
+        
+    Laços
+    
+        itera em um iteravel. se iterar string, itera em cada caracter.
+            iterable 
+        bloco definido por identação
+        variavel que itera fica definida após o loop
+        
+        item in iterable:
+            print(item)
+            
+        range(): gera um iteravel entre dois numeros, com terceiro parametro sendo o incremento / passo.
+        for i,char in enumerate(iteravel): itera iteravel atribuindo iteravel em char e indice em i
+            
+        para iterar dicionarios: for item in user.items():   (retorna tupla chave e valor. tem metodo .values que volta só valor, tem método keys que volta só chaves, deixar em branco volta só chaves tb)
+            for key, value in user.items(): -> faz o unpack
+        
+        whiles podem ter else, que roda quando ele termina o loop (condição fica falsa) -> se tiver break, ele pula o else        
+        
+        while i < 50:
+            print(i)
+            i++
+        else:
+            print('loop done')
+            
+        break: mata o laço mais interno
+        continue: passa para próxima iteração
+        pass: pula pra proxima linha. num faz nada mesmo, mas serve de placeholder
+        
+    Funções
+    
+        funções devem ser definidas antes de serem chamadas (interpretador vai linha a linha)
+        
+        argumentos são os valores passados para a função
+        parametros são os nomes de variaveis que recebem os valores definidos na definição da função
+        parametros podem ser posicionais (respeitam a posição definida - say_hello(argumento1, argumento2)) ou keyword (say_hello(argumento2:isso, argumento1:aquilo) - menos legivel)
+    
+        def function_name(name, emoji):
+            print(f"respeitar identação {name} {emoji}")
+            
+        def function_name(name="valor padrão", emoji="valor padrão"):
+            print(f"respeitar identação {name} {emoji}")
+        
+        funções que não retornam nada retornam none
+        return mata função assim como java e c
+        é possível definir uma função dentro de outra
+        
+        metodos tem dono, função não tem
+        docstring é tipo javadoc
+        print(testFunction.__doc__) -> imprime docstring de testFunction
+        
+        def functionInfiniteArguments(*args) -> recebe infinitos argumentos, como java -> void main (String arg1 ...)
+        def functionInfiniteArguments(**kwargs) - > recebe infinitos argumentos como keywords
+            convenção de ordem de definição de parametros: parametros, *args, parametros default, **kwargs
+        
+        walrus operator (assignment expression) - := - if( (a:=len(string)) > 10) -> atribui resultado no meio de uma expressão
+        
+        phyton só limita escopo dentro de funções? num tem por bloco e loop
+            escopos: local (função) (parametros são parte do escopo local) > pai do local > global > funções embutidas no python
+            
+            palavra chave global força o uso da variavel global. usar sem atribuir valor (ex: global total) - melhor passar por parametro
+            palavra chave nonlocal força referencia ao pai do local
+            
+        
+Orientação a Objeto
+
+    Pilares: abstração, herança, polimorfismo, encapsulamento
+
+    Tudo em python é objeto e herda de classe base object igual java
+    igual em java: classe é projeto e instancia/objeto é execução do projeto
+    
+    metodo com __ ao redor é chamado magic ou dunder
+    função help mostra a classe no console
+    
+    class BigObject:
+        def __init__(self, name) // construtor - metodo dunder __init__ -> chamado sempre ao instanciar nova classe
+                                 // self -> como se fosse this. auto-referencia - parametro default na primeira posição em metodos. é omitido na chamada do método
+                                 
+                                 
+    é possível definir parametros com valor default -> estáticos
+    
+    @classmethod : anota metodo onde metodo tem q ter primeiro parametro (convenção nomeado como cls) como classe. isso chama coisas estáticas, que existem mesmo sem instancia
+    @staticmethod: não tem acesso ao cls acima, mas de resto igual acima
+    
+    é possivel mudar o tipo das coisas, por exemplo, uma função vira uma string e num dá mais p chamar ela como função
+    
+    private: python não tem variaveis privadas enforçadas, mas tem uma convenção de iniciar variavel com _ (_name) essa variavel deve ser tratada como privada
+    
+    herança: 
+        class Wizard(User): -> classe Wizard herda de user
+            User.attack(self) -> chama metodo do pai User dentro do filho Wizard
+            
+            User.__init__(self, email) -> chama construtor do pai User dentro do filho wizard
+            super().__init__(email) -> chama cosntrutor igual acima e não precisa do self
+    
+    isinstance(classe1, classe2) vê se classe 1 é instancia de classe 2 - instanceof do java
+    
+    função dir -> tipo help, mas mais compacto -> dir(wizard1) - instrospection -> reflection?
+    
+    metodos dunder -> herdados de objeto
+        __str__() - toString()
+        __del__() - apaga da memória?
+        __call__() - transforma objeto em função, torna ele chamavel
+        __getitem__() - trata chamada por indice tipo lista, torna objeto lista
+        
+    funções chamam metodos dunder?
+    
+    issubclass(SuperList, list) -> ve se classe Superlist é subclasse de list
+    
+    herança multipla:
+        class Chimera(Cat, Dog) - herda de Cat e Dog - construtores se sobrepõem - criar um construtor com todos os parametros e chamar os construtores do pai (sem super)
+        
+    Method Resolution Order (MRO) - ordem de metodos executados na cadeia de herança -> metodo mro() -> imprime MRO no console
+        Classe base, ultimo pai, penultimo pai, primeiro vô, segundo vô... classe objet -> algoritmo depth search
+    
+    
+Functional Programming
+
+    separa dados e funções
+        
+    pilares: funções puras -> mesma entrada, mesma saida / sem efeitos colaterais, função age isolada nas entradas
+    
+    map(function, iterable) -> list(map(multiply_by2, [1,2,3])) -> função age em um unico item/parametro, não iteravel. não altera entrada, produz nova saída
+    filter(function, iterable) -> list(map(is_odd, [1,2,3]))
+    zip(iterable1, iterable2, ...) -> costura iteraveis juntas, onde cada elemento é uma tupla de um item (em ordem) de cada iteravel passado
+    reduce(function, sequencia (iteravel)) -> reduce(accumulate, list, 0) // 0 é o valor inicial, q vai ser transformado a cada item da lista, q será reduzida a um valor nesse caso - não retorna iteravel
+        // retorna elemento
+        //tem q ser importado de outro modulo, no caso functools (from functools import reduce)
+        
+    Lambda: funções anonimas(não definidas, não persistidas em memória) para executar uma vez só
+        lambda parameter: function(parameter) -> list(map(lambda item: item*2, [1,2,3]))
+        lambda parameter, otherparam: function(parameter) -> list(reduce(lambda item, item2: item*item2, [1,2,3]))
+        
+    list.sort(key=lambda x: x[1]) -> ordena por segundo item de tupla list
+
+    List Comprehensions: cria lista sem loop ou ficar dando append na lista
+        my_list = [param for param in iterable] -> my_list = [char for char in 'hello']
+        my_list = [param for param in iterable] -> my_list = [num*2 for num in range(0,100)]
+        my_list = [param for param in iterable] -> my_list = [num**2 for num in range(0,100) if num % 2 == 0]
+    
+    Set Comprehensions: my_list = {char for char in 'hello'}
+    Dictionary Comprehensions: my_dict = {key:value**2 for key, value in example_dictionary.items()} - items contem key e value
+    
+Decorators
+
+    similar a anotações em java - @classmethod, @staticmethod
+    
+    def hello(): print ('helloooooo') ...
+    greet = hello -> recebe endereço de memoria
+    greet = hello() -> recebe resultado de hello
+    
+    del hello -> deleta hello, nesse caso greet ainda funciona pois só apaga o ponteiro. se tem outro ponteiro, ele ainda funciona
+    
+    funções podem ser passadas por parametro e chamadas chamando o parametro como se fosse função
+    
+    higher order function (HOC): função que aceita função como parametro OU que retorna outra função
+    
+    @decorator -> função que age como wrapper -> função de higher order -> pode adicionar funcionalidades novas, enriquecendo a função.
+        pode servir como um @before, @after do java orientado a aspecto        
+        
+        def my_decorator(func):
+            define wrap_func():
+                func()
+            return wrap_func
+        ...
+        @my_decorator
+        def hello():
+            print('hellooooo')
+        
+        hello()
+
+    wrappers podem servir para tratar parametros a mais, a menos, default. pode usar keyword args e * args
+        def my_decorator(func):
+            define wrap_func(*args, **kwargs):
+                func(*args, **kwargs)
+            return wrap_func
+    
+Tratamento de Erros
+
+    try:
+    except: igual catch do java -> pode ter tipo de exceção definido: except ValueError: -> pegar o erro - except TypeError as err:
+    else: tipo um finally? não
+    finally: executa sempre após de tudo
+    raise ValueError('message') -> funciona como throw -> pode usar com Exception tb
+    
+    pode ter vários blocos de except igual de catch no java
+    
+Generators
+
+    gera sequencia de valores ao decorrer do tempo
+    são iteraveis
+    são funções que não retornam, mas yeld, criando um tipo de stream? - pausa a função, retorna valor e espera para continuar -> usar a função generator como lista
+        yeld retorna objeto generator que é como se fosse um iterator de java. função next retoma a função pausada
+        presença de yeld que torna função como generator
+        
+    range é um generator
+    
+    range cria elemento a elemento, lista cria tudo de uma vez na memória
+    
+    generators são rápidos (por exemplo, um generator iterado é mais rapido que lista, pois a lista instancia, aloca tudo na memória primeiro e percorre tudo, generator instacia e percorre junto)
+        muito úteis para loops longos
+    
+    função iter também permite uso de next, dentro de try igual java
+    
+    metodo __iter__(self) retorna iterator. se quiser mudar, sobrescrever/sobredefinir
+    meotod __next__(self) define próximo iterador
+    
+Modules
+
+    comando import -> import utility //sem extensão mesmo
+        import retorna modulo e caminho ao arquivo py
+        gera pasta __pycache__ com binário do arquivo importado. a depender do interpretador
+        
+        se utility for importado, utility.metodos podem ser usados       
+    
+    pacote: diretório
+        importar de pacote: import shopping.shopping_cart (pacote.pacote...pacote.modulo) -> usar tem que usar igual, pacotes...pacote.modulo.metodo/funcao
+        pacote precisa ter na raiz __init__.py vazio para ser identificado como pacote
+        importar sem o nome do pacote inteiro:
+            from pacote import metodo, funcao -> usa sem o nome qualificado inteiro
+        importar modulo inteiro -> from pacote import modulo, ai é só modulo.funcao ou metodo
+        
+        import random as aleatorio -> alias
+        
+        usar modulo.funcao pode evitar colisão de nome de mesmos objetos entre modulos diferentes
+            from pacote import * importa tudo do pacote
+        
+        __name__ -> nome do modulo sendo executado agora
+            modulo principal -> arquivo executado, começo da execução, sempre chama __main__
+            
+    Python Module Index - pacotes que vem com o python - standard library - https://docs.python.org/3/py-modindex.html
+        modulo sys -> sys.argv - argumentos passados pro interpretador script -> primeiro (0) é o script rodado
+        
+    Python Package Index - pypi.org - bibliotecas externas
+    
+    pycharm (intellij) - procura pacotes e instala
+        terminal: pip3 install pyjokes
+            pip3 list -> pacotes instalados
+    
+    virtual environment - isola bibliotecas das instalações raizes, podendo usar versões diferentes do ambiente real
+    
+    modulo collections
+        Counter - cria um dicionario que conta quantos elementos de cada existem numa lista.
+        defaultdict - dicionário com valor padrão se a chave não existir -> primeiro parametro é a função que retorna o valor padrão
+        OrderedDict - guarda a ordem que as coisas foram inseridas no dicionário - já incorporado no python 3.7 ou mais recente
+        
+    modulo datetime
+        datetime.time(5,45,2) - tempo q começa em 00:00 adicionado a 5h , 42minutos e 2 segundos
+        datetime.date.today() - data atual
+    
+    modulo array
+        array(tipo, iteravel) - mais performavel que listas
+        
+Debug
+
+    modulo builtin - pdb
+        pdb.set_trace() -> para o codigo e deixa colocar comando, tipo um inspect das ides do java
+            step - avança uma linha
+            a - argumentos da função atual
+            w - contexto da linha atual
+            
+File IO
+
+     file = open('filename.txt') -> retorna objeto textIoWrapper
+     print(file.read()) -> imporime conteudos do arquivo e move o cursor até o fim.
+     file.seek(0) -> reseta cursor
+     file.readline() -> uma linha por vez
+     file.readlines() -> devolve todas as linhas em listas
+     
+     file.close() -> fecha arquivo
+     
+     outra forma -> fecha sozinho depois do bloco with
+         try:
+            with open("test.txt", "r") as myfile:
+                print(myfile.readlines())
+                myfile.write("escrevendo no arquivo") // retorna posição resultante do cursor
+         except FileNotFoundError as err: //IOError tb é um bom p usar
+            print("file not foubd")
+            raise err
+     
+     open tem parametro de modo -> leitura (r) , escrita (w), os dois (r+), append (a)
+     
+     ao abrir o arquivo o arquivo, o cursor vai pra zero e pode sobrescrever coisas por cima
+     ao usar append, o cursor fica no final
+     
+     se rodar com modo w, ele ignora o arquivo e escreve por cima. r+ ele le e coloca o cursor no zero, sobrescrevendo outras coisas
+     com modo w, escreve em arquivos inexistentes. com modo r+ e a dá filenotfounderror
+     
+     open usa pasta do script em execução. passar o caminho para o open
+     
+     modulo pathlib - cuida dos paths e abstrai SO
+     
+Regular Expressions - https://www.w3schools.com/python/python_regex.asp | https://regexone.com/
+
+    modulo re
+    
+    pattern = re.compile('pattern')
+        re.compile(r"string") -> string crua, ignorar \ns e afins
+    
+    pattern.search(pattern, string, flags) retorna um match object
+        objeto tem metodos como start(retorna index) , end (retorna index), group (onde aconteceu o match), match
+        
+    pattern para senhas: #([A-Za-z0-9$%#@]{7,}[0-9])
+        
+Testing
+
+    import unittest
+    import main (classe a ser testada)
+    
+    class TestMain(unittest.TestCase):
+        def test_do_stuff(self): //define o teste
+            num = 10
+            result = main.do_stuff(num)
+            self.assertEqual(result, 15)
+            
+    unittest.main() //executa o teste - todos os testes definidos nessa classe - pois ao executar esse arquivo de teste, __name__ dele é __main__
+    
+    testar exeção
+        self.assertTrue(isinstance(result, ValueError))
+        
+    python3 -m unittest -v roda todos testes unitários da pasta atual com verboso?
+    metodo setUp(self): -> roda antes de cada teste -> tipo @before
+    metodo tearDown(self): -> tipo @after - depois de cada teste
+    
+Scripting
+
+    Image Processing
+        biblioteca Pillow (from PIL import Image, ImageFilter)
+        img = Image.open("./Pokedex/pikachu.jpg") retorna metadados da imagem
+        propriedades format, size, mode (lembrete, função dir volta tudo que o objeto tem)
+        
+        filtered_img = img.convert("L") // grayscale - muda formato
+        filtered_img = img.rotate(90) //rotaciona
+        filtered_img = img.resize((300, 300)) //rotaciona - aceita tupla
+        img.thumbnail((300, 300)) //modifica imagem atual e mantem aspect ratio - aceita tupla -
+        
+        box = (100, 100, 400, 400)
+        filtered_img = img.crop(box) //rotaciona       
+        
+        filtered = img.filter(ImageFilter.BLUR) // desfoca
+        filtered = img.filter(ImageFilter.SMOOTH)
+        filtered = img.filter(ImageFilter.SHARPEN)
+        filtered.save("blur.png", "png")
+
+    PDFs: PyPDF2 -- pode ter diferenças de versão
+        import PyPDF2
+        with open('pdffile.pdf', 'rb') as file: //rb é read binary
+            reader = PyPDF2.PdfFileReader(file)
+            print(reader.numPages)
+            writer = PyPDF2.PdfFileWriter()
+            writer.addPage(reader.getPage(0).rotateClockwise(90))
+            with open('crooked.pdf', 'wb') as newFile:
+                writer.write(newFile)
+            
+        metodos incluem getPage(numPage), rotateClockwise (que roda pagina) ou outro objeto dentro da pagina, scaleTo ...
+        tem um PdfFileMerger que dá p fazer append de pdf igual string num buffer
+        
+    Emails: smtplib
+        import smtplib
+        from email.message import EmailMessage
+        
+        email = EmailMessage()
+        email['from'] = 'Pedro'
+        email['to'] = 'caco@gmail.com'
+        email['subject'] = 'click on this'
+        email.set_content('Test')
+        
+        with smtplib.SMTP(host='smtp.gmail.com', port=587) as smtp:
+            smtp.ehlo() //tipo um ack
+            smtp.starttls() //encryption
+            smtp.login('caco@gmail.com', 'dummypassword')
+            smtp.send_message(email)
+            print('done')
+       
+       
+       Template: texto com variaveis q pode ser substituido via kw parameters     
+       
+    Requests: biblioteca requests
+        passwords: hash com biblioteca hashlib
+        
+    Twitter API - biblioteca Tweepy
+    
+    SMS - biblioteca Twilio ou Ntfy
+    
+Web Scraping
+
+    download de pagina, limpeza e adequação (ETL - extract, transform, load)
+    
+    url/robots.txt: dados para crawlers e scapes - allow e disallow dando limites - especifica delay e pause para evitar sobrecargas e sobrecustos
+        tem que explicitar os disallowed, calou, permitiu
+        
+    requests faz download
+    BeautifulSoup (from bs4 import BeautifulSoup) faz a limpeza (parse)
+        soup = BeautifulSoup(response.text, 'html.parser') //tem xml tb, lxml, html5
+        soup.find_all('a') -> procura todos <a> - find acha o primeiro
+        soup.a mostra primeiro <a> tb
+        soup.find(id='id')) procura ids 
+        soup.select() // css selector
+            soup.select('a') -> 'a' tags
+            soup.select('.score') -> procura elementos com classe score
+            
+        pode fazer um select do select anterior (encadear)        
+        
+        pprint -> pretty print -> pprint.pprint(string) -> impressão de json
+        
+        tem um framework -> scrapy
+        link para favicon -> <link rel="blalbalba" href="{{ url_for('static', filename='favicon.ico'}}">
+        
+Web
+
+    web server: flask / django
+    modulo http.server.HTTPServer
+    
+    sample
+        from flask import Flask
+
+        app = Flask(__name__)
+
+        @app.route("/")
+        def hello_world():
+            return "<p>Hello, World!</p>"
+            
+    /sample
+    
+    nomear arquivo como qqr coisa menos Flask.py
+    
+    precisa exportar o FLASK_APP e rodar flask run (ou python -m flask run)
+    
+    se tem dois endpoints iguais, devolve o primeiro q acha
+    
+    flask templates: render_template (from flask)
+        endpoitn retorna render_template('index.html') //pasta templates no caminho relativo ao main do server
+        
+    static files - pasta static - css e js
+    
+    pythonanywhere - host de python
+    
+    pip3 freeze > requirements.txt : lista de dependencias - python anywhere consegue instalar os requisitos por esse arquivo
+    
+CSV
+
+    with open('database.csv', newline='', mode='a') as database:
+    writer = csv.writer(database, delimiter=',', quotechar='', quoting = csv.QUOTE_MINIMAL)
+    writer.writerow(email,subject,message)
+        
+Selenium
+
+    pip3 install selenium
+    
+    selenium precisa de um driver pra cada navegador
+    
+    chrome_browser = webdirver.Chrome('./drive_file') -> abre o uma instancia nova do navegador - cuidado com versão do driver e versão do chrome
+    
+        browser.maximize_window()
+    
+    versão 4+
+        from selenium import webdriver
+        from selenium.webdriver.chrome.service import Service
+         
+        service = Service(executable_path='./chromedriver')
+         
+        chrome_browser = webdriver.Chrome(service=service)
+    
+    seleniumeasy.com
+        
+Machine Learning
+
+    AI contem Machine Learning que contem Deep Learning
+    
+    programação normal: fornece entrada e função transformadora, obtem resultado
+    machine learning: fornece entrada e resultado, e maquina descobre como chegar no resultado
+    
+    machine learning -> prever resultados de acordo com dados fornecidos
+        supervisionado: dados categorizados ou regredidos (pega os inputs - ?)
+        não supervisionado: dados não categorizados, a maquina tem que criar os grupos ou por associação
+        reforçado: tentativa e erro, recompensa e punição
+    
+    passos
+        1 - importar dados - parte mais dificil
+        2 - limpar / ajustar dados - parte mais dificil
+        3 - organizar os dados entre dados de treino (calibração) e dados de teste (resposta para ver se a calibração deu certo?)
+        4 - criação de modelo
+        5 - conferir resposta
+        6 - melhorar modelo
+        
+    NumPy - biblioteca auxiliar de listas e arrays - uni e multi dimensionais
+    Pandas - analise de dados - cria data frames e transforma eles
+    
+    sickit-learn.org -> algoritimos de modelos de machine learning (é biblioteca tb)
+    
+    matplotlib - transformação de dados de forma visual
+    
+    jupyter notebooks - visualização de linha a linha
+        seaborn -> visualização de dados no jupyter
+        bokeh -> visualização interativa
+    
+    kaggle - comunidade de machine learning - tem dados de tudo q é especie - de golf a dark souls
+    
+    data_frame = pandas.read_csv('file.csv')
+    dataframe.shape -> dimensões em linhas e colunas
+    data_frame.describe()
+    data_frame.values
+    data_frame[data_frame["age"] > 40].head() -> filtra por parametro age
+    data_frame_1 = pd.DataFrame(dafa_frame, columns=["name","value"]) // data frame filtrado ?
+    data_frame_1["difference"] = dataframe_1["value"] - dataframe_1["wage"] //cria novo campo com a diferença entre os dois dinamicamente - cuidado com os tipos
+    
+    seaborn.set()
+    graph = seaborn.scatterplot(x="wage", y="value", data=data_frame_1
+    graph // imprime no jupyter
+    
+    sklearn.datasets import load_iris // iris dataset -> fazer modelo p maquina descobrir qual tipo de flor iris a entrada é
+    iris.data -> entrada
+    iris.target -> saida desejada
+    
+    from sklearn.model_selection import train_test_split // isso aqui divide dados de teste e é possivel passar o tamanho
+    
+    nearest neighbor -> divide dados em vizinhanças - tudo tem muito modelo disponivel
+        from sklearn.neighbors import KNeighborsClassifier
+        usar meotod fit e retorno de função predict p conferir saida -> fit leva mto tempo, é pesado
+        
+        metrics.accuracy_score(test_values, prediction_value) -> retorna porcentagem de acerto do modelo
+    
+    from joblib import dump, load -> salvar versão atual do modelo treinado
+    
+    
 ----------------
 #!/usr/bin/env python3
 
 print('Well this is weird')
 text = input('this is weird still... ')
 print(text + ', i agree')
+
+
+------------------
+
+#performance decorator.
+from time import time
+def performance(fn):
+  def wrapper(*args, **kwargs):
+    t1 = time()
+    result = fn(*args, **kwargs)
+    t2 = time()
+    print(f'took {t2-t1} ms')
+    return result
+  return wrapper
+
+@performance
+def long_time():
+    for i in range(10000):
+        i*5
+
+long_time()
+
+-------------------------------
+# Create an @authenticated decorator that only allows the function to run is user1 has 'valid' set to True:
+user1 = {
+    'name': 'Sorna',
+    'valid': True
+}
+
+def authenticated(fn):
+  def wrapper(*args, **kwargs):
+    if args[0]['valid']:
+        return fn(*args, **kwargs)
+  return wrapper
+
+@authenticated
+def message_friends(user):
+    print('message has been sent')
+
+message_friends(user1)
+---------------------------------------------
+def special_for(iterable):
+  iterator = iter(iterable)
+  while True:
+    try:
+      iterator*5
+      next(iterator)
+    except StopIteration:
+      break
+
+
+class MyGen:
+  current = 0
+  def __init__(self, first, last):
+    self.first = first
+    self.last = last
+    MyGen.current = self.first #this line allows us to use the current number as the starting point for the iteration
+
+  def __iter__(self):
+    return self
+
+  def __next__(self):
+    if MyGen.current < self.last:
+      num = MyGen.current
+      MyGen.current += 1
+      return num
+    raise StopIteration
+
+gen = MyGen(1,100)
+for i in gen:
+    print(i)
+--------------------------------------------------
+# Here is an example generator which calculates fibonacci numbers:
+# generator version
+def fib(number):
+    a =  0
+    b = 1
+    for i in range(number):
+        yield a
+        temp = a
+        a = b
+        b = temp + b
+
+for x in fib(100):
+    print(x)
+
+
+
+def fib2(number):
+    a =  0
+    b = 1
+    result = []
+    for i in range(number):
+        result.append(a)
+        temp = a
+        a = b
+        b = temp + b
+    return result
+
+print(fib2(100))
+
+------------------------------------------------------------
+import unittest
+import main
+
+class TestGame(unittest.TestCase):
+    def test_input(self):
+        result = main.run_guess(5, 5)
+        self.assertTrue(result)
+
+    def test_input_wrong_guess(self):
+        result = main.run_guess(5, 0)
+        self.assertFalse(result)
+
+    def test_input_wrong_number(self):
+        result = main.run_guess(5, 11)
+        self.assertFalse(result)
+
+    def test_input_wrong_type(self):
+        result = main.run_guess(5, '11')
+        self.assertFalse(result)
+
+if __name__ == '__main__':
+    unittest.main()
+--
+def do_stuff(num=0):
+  try:
+    if num: # try to test for when input is 0. How can you fix this?
+      return int(num) + 5
+    else:
+      return 'please enter number'
+  except ValueError as err:
+    return err
+----------------------------------------------------------------------------- converte jpeg para png
+import sys
+import os
+from PIL import Image
+
+path = sys.argv[1]
+directory = sys.argv[2]
+
+if not os.path.exists(directory):
+    os.makedirs(directory)    
+
+for filename in os.listdir(path):
+  clean_name = os.path.splitext(filename)[0]
+  img = Image.open(f'{path}{filename}')
+  #added the / in case user doesn't enter it. You may want to check for this and add or remover it. 
+  img.save(f'{directory}/{clean_name}.png', 'png')
+  print('all done!')
+  
+------------------------------------------------------------------------------------------- watermark pdfs
+import PyPDF2
+
+template = PyPDF2.PdfFileReader(open('super.pdf', 'rb'))
+watermark = PyPDF2.PdfFileReader(open('wtr.pdf', 'rb'))
+output = PyPDF2.PdfFileWriter()
+
+for i in range(template.getNumPages()):
+  page = template.getPage(i)
+  page.mergePage(watermark.getPage(0))
+  output.addPage(page)
+
+  with open('watermarked_output.pdf', 'wb') as file:
+    output.write(file)    
+
+-------------------------------------------------------------------------------------------- mail sender
+import smtplib
+from email.message import EmailMessage
+from string import Template
+from pathlib import Path 
+
+html = Template(Path('index.html').read_text())
+email = EmailMessage()
+email['from'] = 'Pedro'
+email['to'] = 'caco@gmail.com'
+email['subject'] = 'test'
+
+email.set_content(html.substitute({'name': 'caco'}), 'html')
+
+with smtplib.SMTP(host='smtp.gmail.com', port=587) as smtp:
+  smtp.ehlo()
+  smtp.starttls()
+  smtp.login('caco@gmail.com', 'caco12345')
+  smtp.send_message(email)
+  print('K')
+------------------------------------------------------ password checker online - lição de request
+#You will not be able to run this file here and will need to copy it onto your computer and run it on your machine. não passar o hash inteiro.
+#You will also need to make sure you have installed the requests module from PyPi (pip install)
+import requests
+import hashlib
+import sys
+
+def request_api_data(query_char):
+  url = 'https://api.pwnedpasswords.com/range/' + query_char
+  res = requests.get(url)
+  if res.status_code != 200:
+    raise RuntimeError(f'Error fetching: {res.status_code}, check the api and try again')
+  return res
+
+def get_password_leaks_count(hashes, hash_to_check):
+  hashes = (line.split(':') for line in hashes.text.splitlines())
+  for h, count in hashes:
+    if h == hash_to_check:
+      return count
+  return 0
+
+def pwned_api_check(password):
+  sha1password = hashlib.sha1(password.encode('utf-8')).hexdigest().upper()
+  first5_char, tail = sha1password[:5], sha1password[5:]
+  response = request_api_data(first5_char)
+  return get_password_leaks_count(response, tail)
+
+def main(args):
+  for password in args:
+    count = pwned_api_check(password)
+    if count:
+      print(f'{password} was found {count} times... you should probably change your password!')
+    else:
+      print(f'{password} was NOT found. Carry on!')
+  return 'done!'
+
+if __name__ == '__main__':
+  sys.exit(main(sys.argv[1:]))
+------------------------------------------------------ twitter bot
+#You will need to PIP INSTALL tweepy for this to work and also create a twitter API. Run this on your own machine, not in this Repl. 
+import tweepy
+import time
+
+consumer_key = ''
+consumer_secret = ''
+access_token = ''
+access_token_secret = ''
+auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
+auth.set_access_token(access_token, access_token_secret)
+api = tweepy.API(auth)
+
+user = api.me()
+print (user.name) #prints your name.
+print (user.screen_name)
+print (user.followers_count)
+
+search = "zerotomastery"
+numberOfTweets = 2
+
+def limit_handle(cursor):
+  while True:
+    try:
+      yield cursor.next()
+    except tweepy.RateLimitError:
+      time.sleep(1000)
+
+#Be nice to your followers. Follow everyone!
+for follower in limit_handle(tweepy.Cursor(api.followers).items()):
+  if follower.name == 'Usernamehere':
+    print(follower.name)
+    follower.follow()
+
+
+# Be a narcisist and love your own tweets. or retweet anything with a keyword!
+for tweet in tweepy.Cursor(api.search, search).items(numberOfTweets):
+    try:
+        tweet.favorite()
+        print('Retweeted the tweet')
+    except tweepy.TweepError as e:
+        print(e.reason)
+    except StopIteration:
+        break
+---------------------------------------------------- scrape news.ycombinator.com
+import requests
+from bs4 import BeautifulSoup
+import pprint
+
+res = requests.get('https://news.ycombinator.com/news')
+res2 = requests.get('https://news.ycombinator.com/news?p=2')
+soup = BeautifulSoup(res.text, 'html.parser')
+soup2 = BeautifulSoup(res2.text, 'html.parser')
+
+links = soup.select('.titleline > a') #heads up! .storylink changed to .titleline
+subtext = soup.select('.subtext')
+links2 = soup2.select('.titleline > a') #heads up! .storylink changed to .titleline
+subtext2 = soup2.select('.subtext')
+
+mega_links = links + links2
+mega_subtext = subtext + subtext2
+
+def sort_stories_by_votes(hnlist):
+  return sorted(hnlist, key= lambda k:k['votes'], reverse=True)
+
+def create_custom_hn(links, subtext):
+  hn = []
+  for idx, item in enumerate(links):
+    title = item.getText()
+    href = item.get('href', None)
+    vote = subtext[idx].select('.score')
+    if len(vote):
+      points = int(vote[0].getText().replace(' points', ''))
+      if points > 99:
+        hn.append({'title': title, 'link': href, 'votes': points})
+  return sort_stories_by_votes(hn)
+ 
+pprint.pprint(create_custom_hn(mega_links, mega_subtext))
+----------------------------------------------------------------- selenium 4+ bs
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+import time
+ 
+chrome_browser = webdriver.Chrome()
+chrome_browser.maximize_window()
+chrome_browser.get('https://demo.seleniumeasy.com/basic-first-form-demo.html')
+ 
+# This solves the issue with the Popup for those that encounter it:
+chrome_browser.implicitly_wait(2)
+popup =chrome_browser.find_element(By.ID, 'at-cv-lightbox-close')
+popup.click()
+ 
+ 
+ 
+user_message = chrome_browser.find_element(By.ID, 'user-message')
+user_message.clear()
+user_message.send_keys('I AM EXTRA COOOOL')
+ 
+time.sleep(2)
+show_message_button = chrome_browser.find_element(By.CLASS_NAME, 'btn-default')
+show_message_button.click()
+ 
+output_message = chrome_browser.find_element(By.ID, 'display')
+assert 'I AM EXTRA COOOOL' in output_message.text
+
+
+-----------------------------------------------------------------
+unsplash.com
+haveibeenpwned.com
+news.ycombinator.com
+https://realpython.com/intro-to-python-threading/
