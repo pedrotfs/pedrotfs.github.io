@@ -1,0 +1,1154 @@
+MAVEN
+
+    2023 - mvn tem 70% do mercado contra 20% gradle e 10% ant
+    suportado por IDES, robusto e estavel
+    setup rapido, modular, cilco de vida e gerencia de dependencia maduros, muitos plugins
+    maven é padrão de diretórios, nomenclatura de artefatos e repositórios - usado por gradle
+    pom.xml -> xml é considerado obsoleto, gradle tem dsl q é mais flexível porém a flexiblidade nem sempre é necessária
+    
+Compilar Java
+
+    arquivos fonte (java, groovy, scala, kt, ... jvm languages) -> arquivos compilados (.class)
+        .class são independentes de plataforma
+       
+    empacotamento: .class -> compressão zip -> .ear, .jar, .war
+        jar - java archive - comum, simples, .class
+        war - web app archive - .class, recursos webs, jar - aplicações completas - rodam em um servidor
+        ear - enterprise archive - um ou mais wars - aplicações completas - rodam em um servidor
+        fat jar (uber jar) - jar executavel e dependencias (usado por spring boot) - aplicações completas stand alones - servers inclusos - se tornando mais comum
+        docker container - imagem contendo ambiente de execução, jvm e pacote java - stand alone
+        
+    jar -cf myjar.jar myclass.class
+    java -classpath myjar.jar myclass
+    
+Maven
+
+    pom.xml é a base (minimo: coordenadas (projeto) e propriedades)
+    dependencias: bloco de <dependencies><dependency></dependency></dependencies>
+    dependencia tem (coordenadas?) groupId, artifactId, versão
+    
+    Maven Coordinates:
+        identifica artefatos, juntas identificam repositórios
+        groupId: organização
+        artifactId: projeto
+        version: versão
+        
+        groupId e version podem ser herdados do pom pai     
+        
+        versões:
+            major version. minor version. incremental version (patch) build number . qualifier
+            mais usado é major minor incremental (3.2.1)
+            
+            qualifier snapshot - versão instavel, maven tenta pular (configuravel)
+            
+            maven tem repositório local no .m2 e depois no remoto. tem comando p force update
+            
+
+    Repositorios:
+        local: .m2
+        central: repo1.maven.org/maven2
+        remoto: outros locais
+        
+        se não for snapshot, é guardado no .m2
+        no repositório local mvn baixa o jar e o pom caso precise de dependencias da dependencia
+        
+    Wagon:
+        api unificada - transporte de artefatos de local para central.
+        aceita provedores (protocolos) diferentes
+        maioria é http https sem precisar configurar
+        as vezes precisa configurar o wagon com proxy - raro
+        
+    POM - project object model
+        xml descritor de projeto maven
+        tem q obedecer o maven 4 xsd (schema)
+        
+        pom pode herdar de pom pai (submodulos tb)
+        
+        pom effetivo é o pom com propriedades herdadas (mvn help:effective-pom) - gerado em tempo de execução
+        
+    Dependencias:
+    
+        artefato que o projeto depende
+        dependencia transitiva - dependencia da dependencia
+        dependencias ciclicas quebram maven
+        é possível especificar qual versão querem usar
+        
+        mediação de dependencia: dependencia mais próxima da raiz da arvore de dependencia é usada
+        
+        é possível excluir dependencias especificas, e opcionais ie excluida por projetos que usam o seu como dependencia
+        
+        escopo:
+            compile - padrão - propagado para filhos - disponivel p todas as classes do projeto
+            provided - tem q ser provido pela jdk ou container em tempo de execução
+            runtime - não precisa p compilar mas precisa para rodar
+            test - só disponivel para classpath de teste, não transitivo - erro comum
+            system - adicionado pelo sistema de arquivos
+            import - importa as dependencias dos poms
+        
+        dependency plugin:
+            dependency:tree - mostra arvore, util p resolver conflitos
+            dependency:go-offline - prepara p ter tudo local
+            dependency:purge-local-repository - limpa local
+            dependency:sources - pega os fontes p todas dependencias
+            
+    Estrutura de pastas:
+        src/main/java	Application/Library sources
+        src/main/resources	Application/Library resources
+        src/main/filters	Resource filter files
+        src/main/webapp	Web application sources
+        src/test/java	Test sources
+        src/test/resources	Test resources
+        src/test/filters	Test resource filter files
+        src/it	Integration Tests (primarily for plugins)
+        src/assembly	Assembly descriptors
+        src/site	Site
+        LICENSE.txt	Project's license
+        NOTICE.txt	Notices and attributions required by libraries that the project depends on
+        README.txt	Project's readme
+    
+    Build Lifecycles:
+        grupo de fases (phases)
+        cada fase pode ter um ou mais objetivo de plugin
+        tudo é feito por plugin
+        lifecicle é sequencia de de phases para chamar plugins em sequencia
+        
+        clean: apaga artefatos
+        default: build e deploy - plugins nesse caso são por pacote - goals (valide - compile - test - package - verify - install - deploy)
+            tem mto mais, mas são pouco alteradas e pouco referenciadas
+        
+        site - cria site - pouco usado
+        
+    Wrapper
+        aplicação que permita q trabalhe com maven ser ter instalado, instalação mini, embedded, etc
+        depois de rodar o goal do wrapper, cria pasta .mvn com propriedades do wrapper (mvnw)
+        parametro Dmaven=3.6.0 na geração do wrapper rodando o goal determina versão do wrapper
+        util p quando não se tem controle do ambiente que roda ci e cd
+        
+    Archetypes
+        template de projeto
+        
+Plugins
+
+        clean: limpa artefatos gerados nos builds no projeto e submodulos
+        default: compile e testCompile (compila classes de testes) - usa javax.tools.javaCompiler, não do java instalado - default é 1.6, mudar para versões mais atuais
+        resources: maneja os recursos, como properties, textos, etc... default ootb costuma ser suficiente
+        surefire: rodar test surefire -> rodar testes unitários - default junit 3 4 5 e testng - cucumber roda no junit e spock compila para byte code junit
+        jar: jar:jar e jar:test-jar - cria jars - bom ootb
+        deploy: deploy artefatos para repositórios - usado em integração continua - no pom
+        site: tem mtos goals como qual servidor roda, bla bla bla - ele faz o site, roda local ou deploya num servidor - POUCO USADO
+        mvn clean:clean (plugin:goal)
+        install - copia artefatos para repositório local
+        mvn dependency:tree -> mostra arvore de dependencias para resolver problemas
+        
+Generate sources with Maven
+
+    XSD to java - ver no sample - empacota o xsd no jar e gera no target
+        jaxb não é mais parte do java desde java 9
+        autolimpar: em build - plugins -> adicionar plugin maven-clean-plugin com phase initialize e goals com goal clean
+        
+    json - jsonschema2pojo
+        arquivo em main/resourec/schema/*json
+        configurado em <configuration> <sourceDirectory> </...> <targetPackage></...> <useCommonsLang3>true</...> </...>
+        classes só são limpas no clean, e são geradas com o nome do json.
+        
+    lombok
+        <dependencies>
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>1.18.4</version>
+                <scope>provided</scope>
+            </dependency>
+        </dependencies>
+        
+    Mapstruct - ver sample. precisa de interface java usando ele p funcionar
+    
+Alternate JVM Languages
+
+    groovy, kotlin, scala, etc
+    plugins na fase compile
+    não é bom usar mais de uma linguagem adicional com java
+    
+    Groovy: importante ser mesma versão no compilador e no pom
+    
+
+Testing
+
+    Unit tests - maven surefire plugin
+    Integration test - maven failsafe plugin
+    
+    pojo, junit 3 - 4 - 5
+    testNG
+    Spock (groovy?) - spock-core - versão do seu groovy ou menor
+    
+    test reports - plugin maven-surefire-report-plugin - mesma versão q surefire - rodar fase site
+    failsafe plugin - testes de integração - não é por padrão - goal integrated-test
+    jacoco - cobertura de codigo    
+    mudar versão maven no intellij - maven properties - maven home directory - tirar bundled e por o seu
+    
+    é possivel pular teste usando tags no pom além de parametros
+
+    
+Multi-Module
+
+    pom pai - modulos herdando do pom pai - cada modulo é um projeto maven a parte
+    modulos podem ter filhos
+    
+    reator - constroi cada modulo, determina ordem dos modulos, costuma ser sequencial (pode ser paralelo(multi thread) mas pouco usado)
+        ordem costuma ser definida por dependencias, declaração de plugin e ordem de modulos na seção modules do pom
+    
+    usar modulos só quando necessário, muitos tornam o build mais lento
+    bandeiras vermelhas: uma classe ou interface por modulo, modulos pequenos q podem ser combinados, modulos feitos caso alguem precise (ninguem precisa ainda)
+    
+    parte <parent> determina quem é o pai dos submodulos
+    
+    dependencias entre modulos:
+        maven procura primeiro no .m2, não entre modulos do próprio projeto. instalar modulos no repositório local primeiro
+        
+    pode se criar variáveis em <properties> do pom pai e isso pode ser consumido pelos modulos, evitando repetição
+        <properties>
+            <revision>1.0-RC</revision>
+            ...
+        </properties>
+        ...
+        outro pom de outro modulo:
+        <parent>
+            ...
+            <version>${revision}</version>
+        </parent>
+        <dependencies>
+            <version>${project.version}</version> - lembrete: project engloba tudo
+            ...
+        </dependencies>
+        
+    flatten plugin - flatten mode bom - process resource phase goal flatten -> resolve configurações e substitui pom com variaveis dos pais
+    
+    mvn enforcer - regras para quebrar builds de acordo com duplicatas, versões, etc
+    <executions>
+        <execution>
+            <id>enforce</id>
+            <goals>
+                <goal>enforce</goal>
+            </goals>
+            <configuration>
+                <rules>
+                    <banDuplicatePomDependencyVersions/>
+                </rules>
+            </configuration>
+        </execution>
+    </executions>
+    
+    BOM - bill of material - receita de componentes - dependencias declaradas na area dependencyManagment do pom NÃO VIRAM dependencias transitivas para o artefato.
+        herdam versões de dependencymanagment
+        springboot usa isso (como pom pai remoto )
+        springcloud usa isso (com pom importado para dentro do dependenciesmanagement)
+        
+
+Maven for SpringBoot
+
+    Herança: Pom projeto --> Springboot Starter Parent --> SpringBoot Dependencies -> Springboot build -> maven super pom
+    spring web e spring mvc são trazidos automaticamente pelo spring starter
+    fat/uber jar -> jar com todas as dependencias de compilação execução, não testes
+    
+    mvn spring-boot:run - usar principalmente para verificar ambiente. as vezes IDE tá errado
+        mvn spring-boot:start - sobe e desce só p teste mesmo
+    
+    Adicionar objetivos customizados - build info . properties - pode ser lido durante a execução por rest por exemplo
+    <build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>build-info-goal</id>
+						<goals>
+							<goal>build-info</goal>
+						</goals>
+						<configuration>
+							<additionalProperties>
+								<java.version>${java.version}</java.version>
+								<some.custom.prop>${some.custom.prop}</some.custom.prop>
+                            </additionalProperties>
+						</configuration>
+					</execution>
+					<execution>
+                        <id>pre-it</id>
+                        <goals>
+							<goal>start</goal>
+						</goals>
+                    </execution>
+					<execution>
+						<id>post-it</id>
+						<goals>
+							<goal>stop</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+	
+	adicionar coisas do git no build: pom pai do spring boot: adicionar plugin <groupId> pl.project13.maven <artifactId> git-commit-id-plugin
+	    isso tambem adiciona coisas no actuator. se quiser mais coisa usar a propriedade management.info.git.mode=full
+    
+    spring-boot.repackage.skip pode evitar problemas em projetos multi modulo springboot
+    
+    
+Repositories
+
+    resolver artefato: olhar local m2, olhar maven central, olhar repos adicionais
+        repos adicionais olhados por ordem alfabetica dos id
+    
+    mirrors sobresvrevem repos no projeto
+        settings.xml
+        aumenta performance usando servidores regionais
+        pode redirecionar p repo interno
+        settings.xml sobrescreve todos os projetos q roam nessa instalação
+        
+    POM pode definir repos por projeto
+    
+    repos tem id(unico obrigatorio) , name, url(deveria ser tb), layout(antigo, compatibilidade), releases, snapshots
+    
+    configurar mirror no repo: <mirrors><mirror><id>...<name>...<url>...<mirrorOf>...
+    
+    sonatype - repositorio staging - caminho p release p maven central
+    
+    jcenter - repo publico e padrão para gradle e android studio - suporta https. usa cdn diferente do central, pode ter mais performance dependendo do local
+    
+    jboss - artefatos jboss
+    
+    atlassian - plugins p ecossistema
+    
+    oracle - produtos oracle, jdbc, etc - precisa de registro
+    
+    repo.spring.io - tambem alimenta maven central
+    
+    settings.xml
+        user - home/.m2/settings.xml
+        global - m2_home/conf/settings.xml - raramente usado
+        
+        localRepository - local .m2
+        interactiveMode - default. pode mudar p batch onde num espera input
+        usePluginRegistry - coisa do m2 2.0 - não usado mais
+        offline - false, se true maven não conecta com repositorios remotos
+        pluginGroups - permite abreviações a nomes qualificados de plugins
+        servers - autenticação
+        mirrors - mirrors
+        proxies - proxies
+        profiles- profiles
+        activeProfiles - define profiles ativos
+        
+    mvn install:install-file -Dfile=./jarFile.jar -DgroupId=com.groupId -DartifactId=artifactId -Dversion=1.0.0 -Dpackaging=jar - instala arquivo jar com coordenadas no .m2
+    
+    
+Deploy to package cloud
+
+    <build>
+        <extensions>
+            <extension>
+                <groupId>io.packagecloud.maven.wagon</groupId>
+                <artifactId>maven-packagecloud-wagon</artifactId>
+                <version>0.0.6</version>
+            </extension>
+        </extensions>
+    </build>
+
+    <distributionManagement>
+        <repository>
+            <id>packagecloud.release</id>
+            <url>packagecloud+https://packagecloud.io/springframeworkguru/release</url>
+        </repository>
+        <snapshotRepository>
+            <id>packagecloud.snapshot</id>
+            <url>packagecloud+https://packagecloud.io/springframeworkguru/snapshot</url>
+        </snapshotRepository>
+    </distributionManagement>
+
+Deploy to nexus
+
+    tem pago e open source
+    suporta rubygems, nexus, npm, yum, além de maven
+    
+    nexus consegue ser proxy de outros servidores do maven
+    
+    nexus consegue agrupar repositórios
+    
+    mto parecido com artifactory
+    
+
+Build Profiles
+
+    conjunto de configurações
+        pode adicionar ou substituir configuraçẽos no pom
+        mais de um ao mesmo tempo pode ser usado, mas não tem prioridade, pode ser imprevisivel
+        
+    pode ser por projeto(pom - profiles) ou -S caminho para arquivo com profile
+    por usuario (.m2/settings.xml)
+    global (m2_home/settings.xml)
+    
+    settings.xml deve ser usado quando deseja aplicar p multiplos projetos, config de gerenciador de repos, proteção de segredos(tokens, senhas) , variaveis de ambiente
+    
+    ativar:
+        propriedade activeByDefault: true
+        ativação padrão por OS, JDK
+        propriedades de sistema
+        valores especificos
+        arquivos "faltantes"
+        linha de comando -P profile1,profile2...
+        settings.xml - seção de profiles
+        
+        mvn help:active-profiles -P profile mostra se tá ativo
+        
+        
+Release Plugin
+
+    releases: 1.0-snap, 1.0, 1.1-snap...
+    melhor pratica é tagear releases para ter ctza de qual codigo tá rodando
+    releases não devem depender de snapshots
+    testes:
+        prepare release: no uncommited changes, no snapshots, update para versão do release, testes, tag, próxima versão snapshot, commit
+        perform release: checkout da tag, rodar goals da release (com deploy para site default), remoção de arquivos da release, checkout da master
+        
+        goal release rollback: remove tag
+        goal update-versions atualiza todos os poms (mvn release:update-versions -DautoVersionSubmodules=true)
+        
+    
+Enterprise Management    
+
+    pai pom spring bem parecido com BOM, mas não tem dependencia comum, não tem plugin comum, não tem configuração comum de plugin
+    
+    bom pode ter varias coisas comuns (propriedades mavenm, plugins, versões de dependencias, dependencias, build profiles, propriedades herdaveis)
+    
+    
+----------------------------------------Samples
+
+*classpath using pom
+
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>guru.springframework</groupId>
+    <artifactId>hello-world</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <java.version>11</java.version>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.8.1</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-clean-plugin</artifactId>
+                <!--<version>3.1.0</version>-->
+                <executions>
+                   <execution>
+                       <id>auto-clean</id>
+                       <phase>initialize</phase>
+                       <goals>
+                           <goal>clean</goal>
+                       </goals>
+                   </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                            <mainClass>HelloWorld</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+        
+*
+        
+Xsd to java
+[XSD - src/main/resources/jaxb.xsd]
+<?xml version="1.0"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            xmlns:jaxb="http://java.sun.com/xml/ns/jaxb" jaxb:version="2.0">
+
+    <!--This tells JAXB what package to create the Java classes in-->
+    <xsd:annotation>
+        <xsd:appinfo>
+            <jaxb:schemaBindings>
+                <jaxb:package name="guru.springframework.domain"/>
+            </jaxb:schemaBindings>
+        </xsd:appinfo>
+    </xsd:annotation>
+
+    <xsd:complexType name="Product">
+        <xsd:sequence>
+            <xsd:element name="productId" type="xsd:integer"/>
+            <xsd:element name="productDescription" type="xsd:string"/>
+            <xsd:element name="productPrice" type="xsd:decimal"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="CreateProductRequest">
+        <xsd:complexContent>
+            <xsd:extension base="Product">
+                <xsd:attribute name="apikey" type="xsd:string"/>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+</xsd:schema>
+[POM]
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>guru.springframework</groupId>
+    <artifactId>mb2g-jaxb</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <java.version>11</java.version>
+        <jaxb.version>2.3.0</jaxb.version>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+            <version>${jaxb.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-core</artifactId>
+            <version>${jaxb.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-impl</artifactId>
+            <version>${jaxb.version}</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.jvnet.jaxb2.maven2</groupId>
+                <artifactId>maven-jaxb2-plugin</artifactId>
+                <version>0.14.0</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
+
+* mapstruct pom
+
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>guru.springframework</groupId>
+    <artifactId>mb2g-mapstruct</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <java.version>11</java.version>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
+        <mapstruct.version>1.2.0.Final</mapstruct.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct</artifactId>
+            <version>${mapstruct.version}</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.0</version>
+                <configuration>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.mapstruct</groupId>
+                            <artifactId>mapstruct-processor</artifactId>
+                            <version>${mapstruct.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+
+* compile groovy
+
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>guru.springframework</groupId>
+    <artifactId>mb2g-alt-jvm</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <java.version>11</java.version>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.codehaus.groovy</groupId>
+            <artifactId>groovy-all</artifactId>
+            <version>3.0.8</version>
+            <type>pom</type>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.0</version><!-- 3.1 is the minimum -->
+                <configuration>
+                    <compilerId>groovy-eclipse-compiler</compilerId>
+                    <compilerArguments>
+                        <indy/><!-- optional; supported by batch 2.4.12-04+ -->
+                        <configScript>config.groovy</configScript><!-- optional; supported by batch 2.4.13-02+ -->
+                    </compilerArguments>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.codehaus.groovy</groupId>
+                        <artifactId>groovy-eclipse-compiler</artifactId>
+                        <version>3.7.0</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.codehaus.groovy</groupId>
+                        <artifactId>groovy-eclipse-batch</artifactId>
+                        <version>3.0.8-01</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+
+*kotlin
+
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>guru.springframework</groupId>
+    <artifactId>mb2g-alt-jvm</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <java.version>11</java.version>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
+        <kotlin.version>1.3.11</kotlin.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-stdlib</artifactId>
+            <version>${kotlin.version}</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>kotlin-maven-plugin</artifactId>
+                <groupId>org.jetbrains.kotlin</groupId>
+                <version>${kotlin.version}</version>
+                <executions>
+                    <execution>
+                        <id>compile</id>
+                        <goals> <goal>compile</goal> </goals>
+                        <configuration>
+                            <sourceDirs>
+                                <sourceDir>${project.basedir}/src/main/kotlin</sourceDir>
+                                <sourceDir>${project.basedir}/src/main/java</sourceDir>
+                            </sourceDirs>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>test-compile</id>
+                        <goals> <goal>test-compile</goal> </goals>
+                        <configuration>
+                            <sourceDirs>
+                                <sourceDir>${project.basedir}/src/test/kotlin</sourceDir>
+                                <sourceDir>${project.basedir}/src/test/java</sourceDir>
+                            </sourceDirs>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.5.1</version>
+                <executions>
+                    <!-- Replacing default-compile as it is treated specially by maven -->
+                    <execution>
+                        <id>default-compile</id>
+                        <phase>none</phase>
+                    </execution>
+                    <!-- Replacing default-testCompile as it is treated specially by maven -->
+                    <execution>
+                        <id>default-testCompile</id>
+                        <phase>none</phase>
+                    </execution>
+                    <execution>
+                        <id>java-compile</id>
+                        <phase>compile</phase>
+                        <goals> <goal>compile</goal> </goals>
+                    </execution>
+                    <execution>
+                        <id>java-test-compile</id>
+                        <phase>test-compile</phase>
+                        <goals> <goal>testCompile</goal> </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+
+* scala - procurar versão mais atual
+
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>guru.springframework</groupId>
+    <artifactId>mb2g-alt-jvm</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <java.version>11</java.version>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-library</artifactId>
+            <version>2.11.7</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>net.alchim31.maven</groupId>
+                    <artifactId>scala-maven-plugin</artifactId>
+                    <version>3.4.4</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>2.0.2</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+        <plugins>
+            <plugin>
+                <groupId>net.alchim31.maven</groupId>
+                <artifactId>scala-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>scala-compile-first</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>add-source</goal>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>scala-test-compile</id>
+                        <phase>process-test-resources</phase>
+                        <goals>
+                            <goal>testCompile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+
+* junit 4 e 5 juntos
+
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>guru.springframework</groupId>
+    <artifactId>mb2g-testing</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <java.version>11</java.version>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
+        <junit.version>5.3.2</junit.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.vintage</groupId>
+            <artifactId>junit-vintage-engine</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.22.0</version>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+
+* pom com submodulos
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>guru.springframework</groupId>
+    <artifactId>mb2g-mm-maven</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>web-app</module>
+        <module>jpa-entities</module>
+        <module>from-intellij</module>
+        <module>web-api</module>
+        <module>converters</module>
+    </modules>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <java.version>11</java.version>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
+    </properties>
+
+</project>
+
+-
+
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>mb2g-mm-maven</artifactId>
+        <groupId>guru.springframework</groupId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>converters</artifactId>
+
+    <properties>
+        <mapstruct.version>1.2.0.Final</mapstruct.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>guru.springframework</groupId> outro modulo
+            <artifactId>jpa-entities</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>guru.springframework</groupId> outro modulo
+            <artifactId>web-api</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct</artifactId>
+            <version>${mapstruct.version}</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.0</version>
+                <configuration>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.mapstruct</groupId>
+                            <artifactId>mapstruct-processor</artifactId>
+                            <version>${mapstruct.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+-
+
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>mb2g-mm-maven</artifactId>
+        <groupId>guru.springframework</groupId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>from-intellij</artifactId>
+
+    <packaging>jar</packaging>
+
+</project>
+-
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>guru.springframework</groupId>
+        <artifactId>mb2g-mm-maven</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>jpa-entities</artifactId>
+
+    <packaging>jar</packaging>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-core</artifactId>
+            <version>5.4.0.Final</version>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.4</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
+
+</project>
+-
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>mb2g-mm-maven</artifactId>
+        <groupId>guru.springframework</groupId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>web-api</artifactId>
+
+    <properties>
+        <jaxb.version>2.3.0</jaxb.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+            <version>${jaxb.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-core</artifactId>
+            <version>${jaxb.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-impl</artifactId>
+            <version>${jaxb.version}</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.jvnet.jaxb2.maven2</groupId>
+                <artifactId>maven-jaxb2-plugin</artifactId>
+                <version>0.14.0</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
+-
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>mb2g-mm-maven</artifactId>
+        <groupId>guru.springframework</groupId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>web-app</artifactId>
+
+    <dependencies>
+        <dependency>
+            <groupId>guru.springframework</groupId>
+            <artifactId>jpa-entities</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>guru.springframework</groupId>
+            <artifactId>web-api</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>guru.springframework</groupId>
+            <artifactId>converters</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
+
+</project>
+
+*
+
+
+
+
+
+
+
+
+
+
+        
+    
+    
+    
