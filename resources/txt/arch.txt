@@ -1,0 +1,1541 @@
+Architecture
+
+    system requirements: performance, scalability, reliability, security, deployment, stack
+    
+Performance
+
+    medida de quão rápido o sistema responde sob certo trabalho(dados, volume) e sob certo hardware.
+    todo problema de performance é resultado de gargalo em algum lugar, OS, IO, DB, network, etc - causado por processamento lento, poucos recursos, acesso limitado a recursos
+    
+    Principios:
+        Eficiencia:
+            uso eficiente de recursos
+            uso eficiente de logica (algoritmos e queries)
+            uso eficiente de dados
+            cache
+        Concorrencia:
+            hardware
+            software
+                queue
+                coerencia
+        Capacity (hardware)
+        
+    se um request paralelo for executado como singular, sinal de otimização
+    
+    objetivos de performance: minimizar latencia (tempo, depende de tempo vago e tempo de processamento) e maximizar throughput(taxa de processamento) (depende de latencia e capacity)
+    
+    Metricas de performance
+        latencia: afeta uex, menor possivel desejado - mais importante
+        throughput: afeta numero de usuarios, maior q demanda desejado
+        erros: funcional, nenhum desejado
+        saturação de recursos: desejado eficiencia, afetado por hardware
+        tail latency: requests com latencia mais alta, minoria. piora com alta demanda. deve ser menor q 1% do total
+    
+    Single Requests
+
+        Latencia de rede:
+            latencia de internet é diferente de latencia de intranet
+            lembrete - tcp é mais confiavel, udp é mais rápido pois aceita perda de pacotes
+            
+            ssl/tsl é em cima de tcp ou seja, mais custoso
+            
+            diminuir latencia de rede: reuso de conexões (via pool), cache de sessão, compressão de dados (lado servidor) e lado cliente (browser) - conexões persistentes e cache de dados estaticos
+                pode usar protocolos rpc (tipo grpc, binarios)
+        
+        Latencia de memoria
+            heap finito
+            heap grande - pode deixar garbage collector mais lento, por conta da dificuldade de percorrer tudo
+            garbage collector - 2 tipos (1 para processos batches, mas tem pausa entre batches. só limpa os processos relacionados? - 2 - execução constante)
+            buffer finito em db - garantir memoria buffer - normalização (remover reptições) - denormalização pode ajudar performance com queries grandes ou views - preferir normalização
+            
+            memory bloat - processos devem ocupar o minimo de memoria possível
+            weak/soft references - usados ao alocar objetos grandes para que sejam mais "vulneraveis" garbage collector ?
+            multiplos processos menores são melhores para memória que um processo grande
+            
+        Latencia de acesso a disco
+        
+            logging - não é tão pesado
+            custo maior em DB e aplicação web (estáticos)
+            
+            web - cache, cache de página (arquivos já lidos fica na ram), zero copy(evitar copiar dados de uma região de memória para outra)
+            Db - otimizar schema(indices, denormalizar) , aumentar IO per second, RAID, SSD
+            log - optmizar queries, cache de dados, batch IO é mais rápido, log assincrono (usar outra thread para logar ao invés do worker - cuidado com crashes -> não tem garantia)
+            
+        latencia de CPU
+        
+            algoritmos ineficientes
+            mudança de contexto - salvar estados entre processos (salvar estado em um processo e restaurar estado em outro processo)
+            
+            usar algoritmos e queries eficientes
+            IO assincrono / em batch - evitar mudança de contexto
+            Thread Unica - usado no chrome, nodejs, nginx etc - uma thread principal que recebe todos os requests e delega processos assincronos para outra thread
+            Thread Pool size - não deve ser mto grande (deve ser relativo ao numero de cpus) - se for alto tem muita mudança de contexto
+            Multiprocesso em ambiente virtual - impede processos de competir por recursos - limita cada ambiente com seu capacity
+            
+        Custos comuns de latencia - estimativas 2020
+        
+            cpu - 0.5 nanosegundos a 7 ns (25 com lock)
+            mudança de contexto usa memória - 100 ns - dados que não mudam muito devem estar em memória
+            
+            ler 1mb sequencial em memória - 250.000 ms
+            
+            procurar em disco não ssd - 10.000.000 ns
+            
+            intranet - 500.000 ns
+            internet intercontinental - 150.000.000 ns por pacote tcp
+        
+    Paralell Requests
+    
+        Lei de Amdhal para tarefas concorrentes: C(N) = N / (1 + a(N - 1)) - concorrencia / fila
+            C é capacity
+            N é dimensão de escala (CPU, carga...)
+            a é contenção de recursos (a = 0 para performance linear)
+            
+            se processo for perfeitamente paralelo, velocidade sobe linearmente de acordo com numero de threads
+            mas nunca é, logo quanto mais paralelo, mais rapido mas uma hora é vencido e desacelera (procurar gráfico de ahmad law)
+            se tem uma parte serial, o grafico vai desacelerar e vai ficar reto. 90% paralelo e 10% serial tem METADE da velocidade total de 95% paralelo e 5% serial
+            50% paralelo é muito próximo de 0% paralelo
+            
+        Lei Universal de escalabilidade de gunther: C(N) = N / (1 + a(N-1) + BN(N-1)) - concorrencia / fila e coerencia (tipo volatile em java)
+            C é capacity
+            N é dimensão de escala (CPU, carga...)
+            a é contenção de recursos (a = 0 para performance linear)
+            B é delay de coerencia
+        
+            variaveis volateis em java quando mudam, forçam refresh de cache em outras threads e isso tem um custo - acoplamento?
+                processamento para de crescer e cai quando esses custos são levaos em conta (procurar grafico lei de gunther)
+                
+            para sistemas bons paralelos, minimazar queueing (execuções seriais) e coerencia (variaveis e caches entre processos)
+        
+        Contenção / Gargalo? / Disputa? de recursos compartilhados
+        
+            contention e ocurrency são os maiores inimigos de concorrencia?
+            contenção: recurso sobrecarregado? disputado?
+            microserviços causam carga maior em intranet
+            
+            cuidado com locks: sincronia para codigo rodado de forma serial costumam ser gargalos
+            
+            abordagens para gargalos
+            
+                cpu/hd/rede : garantir latencia serial (single requests) , se sim, escalagem vertical (melhor conexão de rede, melhor disco, raid, mais memoria, melhor processador)
+                thread pool size: provido pelo container - se for curto, causa muita fila de thread sem worker. se for longa, não terá cpu o bastante, gerando muita fila
+                listen queue: depende de thread pool size, vira problema só em extremos - parametros do OS
+                connection pool size: depende de thread pool size - deve ser o mesmo valor ou maior que thread pool size
+                
+        Mitigando contenção relativo a locks
+        
+            reduzir duração do lock
+                minimo de código sincronizado, especialmente IO
+                dividir locks em locks menores
+                dividr locks para cada partição de dados
+                
+            remover locks exclusivos e substituir por mecanismos de coordenação
+                readWriteLock/Stamped Locks - separar locks por tipo (escrita ou leitura) - se tem lock de leitura, outros leitores podem ler pois garante q não será modificiado.
+                    quando writer tem lock, ninguem mais pega lock
+                variáveis atômicas - protegidas por CAS (compare and swap - funciona como lock otimista)
+
+        Locks 
+            evitam mudanças em dados com acesso concorrente, evitando corrupção de dados
+        
+        Lock Pessimista
+            
+            usado quando conteção (gargalo?) é alta.
+            threads devem esperar para obter lock.
+            pode resultar em deadlock
+            
+            fetch lock & records -> process records -> update records -> commit (locks do começo ao fim, longo)
+            
+        Lock Otimista
+        
+            não espera lock
+            threads param quando descobrem gargalo / contenção / disputa
+            usada quando contention é baixa ou moderada
+            pode resultar em starvation -> mudar para pessista
+            
+            fetch data -> process data -> update & verify data (se falha, tenta tudo de novo) -> commit
+            
+        Compare and Swap
+        
+            lock otimista
+            suportado por hardware moderno - boa performance
+            java tem usando classes atomicas
+            
+        Deadlocks
+            relacionados a ordem de locks - adquirir lock dos componentes usados na mesma ordem
+            relacionados a carga - pode ser por threads esperando conexão com banco - esgotam conexão
+                                    pode ser por threads esperando mais threads para efetuar trabalhos - pode esgotar thread pool
+        
+        Demoras de coerencia
+        
+            visibilidade (volatilidade): java garante q objetos volateis são gravados na memoria principal e lidos dela para todos os processos 
+                - delay de coerencia p gravar na memoria principal e não no cache l1 l2 do processador
+            lock (sincronia) - todas variaveis acessadas no dentro de um bloco sincronizado são lidos da memoria principal no começo do bloco
+                todas as variaveis modificas no bloco são escritas na memoria principal quando a thread associada sai do bloco
+                
+            sincronia garante lock e visibilidade
+            volatilidade garante visibilidade não lock
+            
+            essas garantias são dadas por barreiras de memoria que invalidam ou atualizam caches
+            
+        Caching
+        
+            db tem cache interno
+            é possível cache de estaticos, sessões e sessões SSL
+            cache - tirar de memória lenta(mais barata e volumosa) e por em memória rápida (menor, mais custosa)
+            
+            Http cache (dados dinamicos e estaticos) -> static data cache (imagens, css, js - talvez no reverse proxy?) -> session cache (user level) -> object cache (dados do banco)
+            
+            Http Caching (Static)
+            
+                repostas para requisições GET são idempotentes e por isso bons candidatos para cache
+                Headers - cache control - determinam se resposta pode ser cacheada - cliente manda no header dele? - reverse proxy?
+                            no-cache: só usar cache se validar com servidor origem
+                            must-revalidate: igual no-cache mas só precisa validar depois de max-age (mesmo se cliente aceitar dados "vencidos / stale"
+                            no-store: sem cache
+                            public: qualuqe cache pode fazer o cache - proxys podem ser isso
+                            private: só um cache cliente pode fazer cache - reverse proxy podem ser isso
+                            max-age: relativo a hora do request
+                            
+                ETAG: indica versão, invalida versão anterior do cache
+                
+            Http Caching (Dynamic)
+            
+                exclusive:
+                    low latency
+                    without routing can lead to duplication, but usefull for smaller datasets
+                    com routing pode levar a load balancing desbalanceado - session cache
+                    
+                shared:
+                    latencia maior por conta de um request a mais (tem um nó no caminho de onde tá o cache)
+                    pode ser escalado para ser um cache distribuido (mem cache, redis)
+                    para datasets grandes
+                    
+            Problemas com cache
+                limitação de espaço em cache
+                    cache hit ratio = # cache hits / # cache hits + # cache miss
+                    usar cache para objetos mais usados
+                    tamanho de objetos cacheados deve ser o menor possível - não encher cache rápido causando que mais objetos saiam do cache
+                    
+                invalidação e inconsistência de cache
+                    exigir update/delete de caches depois de update - não é opção quando cache tá fora do sistema - não leva a inconsistencia de cache
+                    TTL (time to live) pode ser usado para remover cache antigo - TTL alto causa mais cache hits q leva a inconsistencias
+                        TTL baixo causa menos inconsistencias, mas diminui hits no cache, que diminui performance
+ 
+
+Escalabilidade
+
+    performance vs escalabilidade: 
+        performance: latencia baixa, alta throughput, concorrencia, capacity - carga fixa
+        escalabilidade: alto throuput (abilidade de aumentar isso adicionando capacity) para os dois sentidos (aumentar - performance - ou baixar - diminuir custo) - carga variavel
+        
+    Escalabilidade Vertical e Horizontal
+
+        Vertical: mudar o hardware para mais potente. muda "força" da maquina
+            mais facil de obter - custo alto (exponencial)
+            escalabilidade limitada
+
+        Horizontal: adiciona mais hardware, não necessariamente mais potente. não muda "força", muda número de maquinas
+            dificil de obter - custo mais baixo (linear)
+            escalabilidade não limitada            
+
+    Reverse Proxy
+    
+        cliente só precisa saber do endereço do reverse proxy
+        reverse proxy pode tambem ser load balancer
+        
+    Principios de escalabilidade
+    
+        Decentralização - mais trabalhadores (instancias, threads), trabalhadores especializados (serviços) - monolito é o oposto disso (monolitos só tem escalabilidade vertical)
+        Independencia - multiplos trabalhadores não são melhores q um trabalhador se não conseguem trabalhar independentemente - precisam trabalhar em concorrencia
+            independencia é atrapalhado por recursos compartilhados e dados mutaveis compartilhados
+            
+            se os trabalhadores precisarem de um coordenador, ele vira o gargalo
+            
+        Escalabilidade começa com modularidade - fundação para quebrar aplicação em serviços especializados
+            desacoplar - regra de negocios deve se desacoplar de api e acesso a dados
+            
+    Replicação
+    
+        Stateless - replicação de código
+        Stateful - replicação de código e dados
+        
+        Web Stateful Replication 
+            complexo, usar stateless sempre que possível.
+            baixa latencia
+            sessões ocupam memória
+            sessões ficam validas no cluster para aumentar confiabilidade (reliability)
+            
+            guarda na memória dados do request -> não precisa de ir sempre no db recuperar
+                problemas com dados invalidos e com acesso a nós onde não tem o dado da sessão -> cookie guarda id de sessão e qual nó que tem a sessão persistida
+                
+            limitações para escalabilidade (memória para guardar sessões) 
+                e confiabilidade(se nó com sessão cair, aumenta latencia para recuperar do db até estabelecer caches 
+                E perda de mensagens - GRAVE - sessão no cluster, replicada em todos os nós resolve)
+            
+        Web Stateless replication
+            escalabilidade ao custo de latência
+            
+            armazenar sessão em um cache apartado (cookies no cliente)
+            
+            instancias checam sempre cache primeiro, depois db
+            se cache cair, busca no db
+            
+            mais escalavel q stateful - não tão mais latente
+            
+        Replicação de serviços
+            Stateless
+            pode ter cache dedicado para dados frequentemente lidos e não alterados 
+            replicar componentes adiciona complexidade relativa a recursos compartilhados - locks de OS não funciona - criar tabela de lock no DB para recurso
+            
+        Replicação de DB
+            quando escalar vertical não for opção
+            para mais escalabilidade de leitura
+            para mais disponibilidade
+            
+            replica de leitura (master slave com instancia oficial) e replica de backup
+            
+            Tipos:
+                Master-Slave (primario secundario) - replicação unidirecional
+                
+                    alta disponibilidade e escalabilidade para leitura
+                    sem conflitos para escrita
+                
+                    assincrono: (replica de leitura?)
+                        baixa latencia para escrita.
+                        eventual consistencia
+                        perigo de perda de dados
+                    sincrono: (backup ?)
+                        consistente
+                        alta latência para escrita
+                        baixa disponibilidade para escrita
+                
+                Master-Master (peer to peer) - replicação bidirecional
+                    
+                    alta disponibilidade de leitura e escrita
+                    alta escalabilidade de leitura
+                    problemas com ordenação de transações
+                    
+                    assincrono: (multigeografia)
+                        conflitos na escrita
+                        alta disponibilidade
+                        
+        Necessidade para serviços especializados - micro-serviços
+            desenvolvimento e deploy parcialmente dependentes - camada de comunicação
+            escalabilidade e tecnologias independentes
+            
+            gateway services
+                simplificar contato entre clients e servidores
+                interface interoperavel - aumentar velocidade entre comunicação entre maquinas na intranet - usar protocolos binários como rpc - gateway pode traduzir para fora
+                
+        Serviços assincronos reduzem com eficiencia carga de escrita de um db - message queue (MQs, kafka)
+            message queues:
+                rapidas para receber mensagens
+                escalam mais que dbs
+            
+            Usar assincronia no sentido de informação para banco de dados, de fora (web, client, etc) para dentro (processamento, db...)
+            
+            serviços assincronos precisam de infra para carga padrão, não só em picos - "achata" graficos
+            
+        Db é o mais dificil de escalar, pois outros componentes podem ser stateless, db são puro stateful
+        
+        Particionamento Vertical com microserviços
+            desacopla serviços e bancos de dados para maior escalabilidade
+            serviços representam dominios da regra de negócio -> possível separar banco de dados por serviço -> podem ser escalados de acordo com demanda
+                se tiver tabelas comuns entre os dominios, tem que remover -> se precisa, acessar pelo serviço
+            
+            não é possível ter transações ACID entre serviços diferentes, necessário lidar com consistência
+            
+            partição por domínio? arquitetura de microserviços, altamente escalavel
+            
+        
+        Partição de DB - inviabiliza transações acid
+                    
+            Vertical (serviço - db):
+            
+            Horizontal (serviço - multiplos dbs) - por intervalo - se mudar numero de nós por qqr motivo pode ter q mudar logica de particionamento - não usado por rdbms
+                        - por hash - hash(id) % NodeNumber - algoritmos para minimizar rebalanceamento de dados se numero de nós mudar - mais performatico que intervalos
+                        - aumento consideravel de complexidade de arquitetura
+                        
+            seleção: por id (select id no intervalo), por hash(1 select por id)
+                        
+            
+        Rotas com partição de db
+        
+            por biblioteca - faz o hash e acha o destino no cluster de db
+            componente router (mongo db faz isso - usa um app apartado para isso) e o router determina onde o request será atendido
+            cliente pode contatar qualquer node (dynamo faz isso) - e o node se vira para achar o destino correto
+        
+    Escalando Sistemas de Larga escala
+    
+        Load Balancing - ip unico para componentes. todos os serviços passam a atender o mesmo ip (load balancer direciona request). distribui carga
+        pode ser por tipo de serviço (ex load balancer para estoque, para usuario, etc)
+        muitas vezes o ip unico compensa ter o load balancer mesmo sem ter muita carga
+        
+        discovery service: descobrir quais serviços estão de pé e saudaveis
+            instancias de serviços se registram no discovery server, e mandam heartbeat para indicar saúde
+            load balancer usa discovery service para decidir qual instancia chamar
+            serviços usam discovery service para decidir qual serviço chamar
+        
+        load balancer discovery:
+            clientes externos: usam dns para descobrir o load balancer externo
+            clientes internos: usam registro/configuração local para descobrir loadbalancer interno
+            
+        Hardware Load Balancer vs Software Load Balancer
+            Hardware (hub, aparelho fisico) : l4 e l7 - alguns chegam a 300 MI conexões e 10 MI requests por segundo - costumam ser muito caros
+                l4 - transport layer (udp, tcp...)
+                l7 - app layer - sttp, smtp ftp ...
+            Software (nginx, haproxy...): L7 - alguns chegam a 250k? e 3 MI requests por segundo - mais barato
+            
+        L7 load balancers
+            reverse proxies - quebra conexão (ao invés de conectar direto, conecta no LB e ele abre outra conexão ao destino)
+            roteamento baseado em conteudo de mensagem
+            
+        DNS como Load Balancer
+            pode retornar um ip por vez, ou lista de ips
+            pode se localizar em nuvem e configurar health checks
+            problemas: pode virar um cache indefinido que não respeita TTL (time to live)
+                        TTL baixos ou zero podem sobrecarregar dns
+                        
+        Global Server Load Balancing
+            Dns como load balancer - leva em conta localidade mais em conta muito mais q carga - rotas para sistemas multi locais - escalabilidade
+            performance - localidades para multi locais - latencia ao datacenter
+            disponibiliade - multi locais
+            recuperação de desastres - dr - se região cai direcionar usuários de outras regiões - pode levar tempo alto
+            
+        Global data replication
+            active active - todos lugares ativos
+            master-master ou peer to peer (p2p) - assincrono na maioria das partes
+            failover é rápido
+            possível perda de dados - distancia causa impossibilidade de ser sincrono - latencia
+            
+        Auto Scaling
+            monitoria de serviços
+                carga(cpu, network, disk)
+                health(ping, http)
+            auto scaling service
+                limites de carga configuraveis
+                monitoria de carga
+                capacidade de iniciar e encerrar instancias
+            
+            1 - configura limites de carga - 2 - monitoria - 3 pegar imagem de container - 4 - iniciar instancia e atribuir ip - 5 - registra nova instancia
+
+    Arquitetura de Micro-Serviços
+    
+        externos(decentralização e independencia - deploys frequentes) e independentes - serviços independentes - desenvolvimento independente
+        
+        arquitetura orientada a serviços:
+            precede arquitetura de microserviços
+
+            partes independentes:
+                cada serviço pode ter sua tecnologia
+                cada serviço pode ser escalado diferente
+            partes dependentes:
+                interfaces comuns - mesmo schema xml
+                schema de banco comum - rdbms
+            problemas:
+                desenvolvimento é independente, mas deploy não
+                banco de dados unico tem limitações de escalabilidade
+                
+        arquitetura microserviços
+        
+            arquitetura de não dividir nada: serviços desenvolvidos e deployados independentemente - partição vertical
+            partição vertical/dominio: schema/db independentes - interfaces com baixo acoplamento (rest ao invés de xml/wsdl) - bibliotecas não reutilizaveis (exceção para utilitários)
+            problemas: 
+                não muito uteis para aplicações pequenas
+                base de codigo duplicada
+                falhas de transações
+                rollback de transações
+            
+        Transações em micro-serviços
+            envolvem multiplas maquinas (serviços distribuidos e seus dbs) - transações locais muitas vezes não possíveis
+            
+            Transações distribuidas ACID - não são escalaveis - preferir SAGA
+                2pc/3pc (phase commit) - serviço coordenador de transação (dominio ou novo) - serviços pegam locks e sinalizam p orquestrador - 
+                    orquestrador ao ter todos os ok sinaliza para commit em todo mundo ou sinaliza rollback se não tem oks
+                        locks longos - diminui latencia e bloqueiam recursos                        
+                completamente ACID
+                
+            Transações de compensação
+                padrão SAGA
+                modelo eventualmente consistente - relaxa consistencia e isolamento
+                
+                desfazer logico de transações parcialmente comitadas - fluxo não é necessariamente oposto e partes podem ser paralelizadas
+                compensação pode falhar, logo deve ser capaz de perceber isso e recomeçar
+                assincrono para confiabilidade
+                    passo order -- passo inventory   -- passo shipment
+                    create order -> reserve inventory - create shipment ->
+                        undo order <- undo inventory <- undo shipment
+                nenhum lock foi usado fora do escopo de transação local
+                no desfazer é critico limpar. no prosseguir pode se escolher se prossegue ou desfaz -> evitar estados "sujos"
+                propriedades acid - durabilidade, não atomico mas parece, eventualmente consistente, não isolados por completo
+                
+        Modelo de comunicação entre microserviços
+        
+            processamento sincrono
+                resposta imediata
+                para leitura/query
+                
+            processamento assincrono
+                resposta atrasada - alivia gargalos
+                para escrita/transações
+                mais escalavel, mais confiavel
+                
+        Transações orientadas a eventos (event driven)
+        
+            orquestrador poe evento na fila de mensageria - serviço atende e coloca evento de completo/erro - orquestrador recebe e continua (ou faz rollback)
+                serviço deve resgistrar no banco estados do serviço (criado, terminado, falho, etc) caso caia, consiga voltar e trabalhar sem perder a mensagem
+                
+        Escalabilidade com NoSQL e Kafka
+        
+            Transações com microserviços - ACID internamente ao serviço
+            Transações compensantes (SAGA) - eventualmente consistente
+            
+            NoSQL DB
+                ACID em nível agregado ? reestruturação de tabelas - criar tabela composta por tabela + tabela linhas - todas as informações numa única tabela
+                eventualmente consistente nos agregados?
+                operações de baixa latencia por conta de multiplos nós
+                alta escalabilidade por conta de partição horizontal
+                
+            Kafka
+                partição horizontal de tópicos
+                
+
+Reliability (Confiabilidade)
+
+    Confiabilidade - tolerancia a falhas - falhas parciais
+    
+    redundancia (quente morno frio)
+    detecção de falhas - monitoria, health check
+    recuperação - stateless, stateful
+    
+    estabilidade - timeouts, circuit breakers, fail fast, shed load
+    
+    Falhas em sistemas de grande escala
+    
+        geralmente distribuidos - alto numero de componentes e instancias
+        falhas - parciais, independentes, ponto unico/focal (SPOF)
+        chance maior de falha parcial
+        falhas parciais podem levar a falhas totais/completas
+        
+    Falhas Parciais
+    
+        falhas de rede (lan, wan, load balancer)
+        falha de maquina (cpu, hardware, disco, memoria)
+        software (processos)
+        disastre - datacenter
+        operações - deploy / config / induzida por falha / falha de serviço externo
+        
+        dependendo do estrago, é mais barato recuperar de falha que prevenir a falha
+        
+        falhas frequentes inevitaveis - rede, hardware, update de software, disastre
+        
+        
+    Relibiality
+    
+        sistema consegue funcionar mesmo com falhas parciais e estar disponivel para operações (ex: avião com defeito no ar condicionado)
+        medido como probabilidade de um sistema funcionar corretamente em um intervalo de tempo
+        
+    Disponibilidade
+    
+        probabilidade de sistema funcionar corretamnete em um tempo e ser disponivel
+            tempo: availability = uptime/(uptime+downtime)
+            request: availability = succesfullRequests/totalRequests
+            
+        pode ter tempo fora (downtime) mas o sistema é esperado que se recupere rápido
+        
+    Alta Disponibilidade
+    
+        requisitos de disponibilidade devem vir do impacto no negócio
+        alem de negócio, custo de novas features e custo operacional
+        sistema deve usar downtime permitido por SLA (service-level agreement) / SLO (service level objective)  para instalar novos recursos - novos recursos causam disturbios
+        
+    Tolerancia a Falhas
+    
+        tecnica para aumentar disponibilidade e/ou confiabilidade
+        habilidade do sistema de automaticamente detectar falhas parciais , lidar com falhas parciais, recuperar de falhas parciais
+        serviceability - facilidade de manutenção influencia na disponibilidade
+        
+        redundancia -> detecção de falhas -> recuperação
+        
+    Redundancia
+    
+        replicação de componentes criticos de um sistema para aumentar confiabilidade
+        backup pronto em caso de titular não estar disponível - em caso bom nunca é usada
+        
+        ativo - hotspare (nucleos de processador) - todos os nós processam - ideal para disponibilidade - extras diminuem carga dos atuais
+        passivo - morno (banco de reservas) - só nó ativos processam - ideal para recuperar rápido
+        frio - backup (estepe) - nós reserva só entram em falhas - não tão bom para disponibilidade
+        
+        identificar componentes que podem ser single point of failures (SPOF)
+        
+        Redundancia Stateless - escalar (replicação) - sempre ativo, sempre suando todas as replicas
+        
+        Redundancia Stateful
+            sincrono - ativo - secondario sempre atualizado
+            assincrono - replica sempre atrás - lag
+            redundancia para cache: redis. sem reduncancia para cache: memcache
+            
+        Redundancia de Load Balancer
+            podem virar SPOF se não tiver redundancia
+    
+        Infra como SPOF - tudo como rede, energia elétrica... etv
+        
+        Redundancia de datacenter - clouds
+            isolamento de falha - infra independente
+            redundancia de zona - alta disponibilidade, ativo-ativo
+            redundancia regional - recuperação de desastre, ativo-passivo
+            
+    Detecção de Falha
+    
+        Modelos de falha:
+            response: falha do servidor em receber ou responder mensagens
+            timeout: demora de resposta é maior que tempo aceitavel
+            incorrect response: resposta incorreta
+            crash: para abruptamente de funcionar
+            arbitrary response: segurança comprometida
+            
+        Health Check
+            
+            serviços externos - baseado em ping
+                serviços:
+                    alertas - recuperação
+                    eventos - escalabilidade
+                aplicação:
+                    resposta http e tcp
+                peridicidade:
+                    codigo de resposta
+                    tempo de resposta
+                    numero de retentativas (aumentar ou diminuir)
+                    
+            serviços internos - heartbeat
+                protocolo para comunicação e recuperação
+                util para stateful (NoSql db clusters, load balancers)
+                sem primario e secundario, todos são primarios e secundarios - quem manda heartbeat que tá sendo monitorado, não monitorando
+                
+    Recuperação de falha
+            
+        Stateless
+            usar mecanismo de escalabilidade
+                quente - instancias ativas de redundancia em execução
+                morno - subir novas instâncias quando precisar, encerrar instancias não sadias se não já tiverem mortas (kubernetes?)
+
+        Stateful
+            mecanismos failover: 
+                virtual IP - ip redireciona para outra maquina na rede interna
+                registry/router/dns - levar sempre em conta os TTLs para não ficar com rota invalida - redirecionar para ip atualizado valido
+                melhores praticas:
+                    automação - passos podem ser demorados, necessita de ação manual sujeita a erro ou ninguem disponivel
+                    teste frequente de falhas em produção - sistemas em constante evolução
+            
+            load balancer com alta disponibilidade - dns direciona para ip valido - load balancers se monitoram via heartbeat
+            
+            recuperação de db - hot standby: sincrono, pouquissimo tempo de baixa/queda, sem perda de dados, proximidade necessária (latencia), lento (escritas nos db)
+            recuperação de db - warm standby: assincrono, sempre atrás, possivelmente por muito. alta performance. util p recuperação de desastre. possibilidade de perda de dados
+                feito em lotes
+            recuperação de db - cold: backups de db, custo-eficaz, alto tempo de queda, risco de corrupção (replicas não previnem nem ajuda), processar logs, backups periodicos, updates...
+            
+        Disponibilidade alta em sistemas de larga escala
+        
+            datacenters proximos fazem recuperação de db hot (sincrono). datacenters distantes recebem replica warm (assincrona)
+                proximos são master, distante é secundario/slave
+                mesmo do master tem um titular
+                replicas sempre estão no outro datacenter master
+                reservas não estão em execução, só em caso de queda dos primarios - secundario é recomendado para disaster recovery
+        
+    Estabilidade de Sistema
+    
+        Timeouts: para interface de usuário ou para serviços clientes -> previnem pontos de integração de virar threads bloqueadas - previne falhas em dominó/cascata
+
+        Retries
+            clientes
+            falhas momentaneas (tipo condição de corrida), não permanentes (bug?)
+            erros de sistema (tipo instancia não disponivel, chamar outra) , não erros de aplicação (bug)
+            
+            aumento exponencial de intervalo entre tentativas
+            retornar status http 503 - clientes decidem se e quando tentar de novo
+            
+            usar tokens idempotentes - falhas não reconhecidas, garantir pelo menos um ao invés de um apenas
+        
+        Circuit Breaker
+            clientes
+            degradação deliberada dos serviços quando sistema está sob stress ou problema é detectado
+            registrar sucessos e falhas -> se tiver muitas falhas, mudar rotas para valores padrão e/ou valores cacheados e/ou mensagens de erro -> voltar ao normal quando stress passar
+            (aberto)                       (semi-aberto)                                                                        (fechado)               (aberto)
+            
+            se falhas detectadas, muda de aberto para semiaberto (avaliar falhas) se continua falhas, muda para fechado
+        
+        Fail Fast e Shed Load
+        
+            servidor
+            fail fast: se não conseguir processar request - erro de validação, parametros/variaveis de ambiente faltando, timeout (circuit break aberto) - erro retornado assim que descoberto
+            shed load: falha por excesso de carga - concorrencia (threads, conexões, n de requests) ou SLA não atendido - rejeitar e bloquear requests
+            back pressure: shed load para diminuir "velocidade" de clientes contidos nos limites do sistema (controlados pelo servidor ?) - pode ser feito controlando chamada ajax
+            
+
+Segurança
+
+    preocupações de segurança:
+        controle de acesso (cliente, serviço)
+        identidade do cliente
+        identidade do servidor
+        "homem no meio"
+        single sign on (SSO)
+        armazenamento (grant)
+        privacidade e acesso de dados
+        identificação de armazenagem
+        
+    Segurança de Rede
+    
+        Encriptação simétrica de chave: texto ---(chave)--->texto cifrado---(mesma chave)--->texto .:. só destinatario consegue ler - leva a privacidade e confidencialidade
+            não recomendado para web pois chave é um "segredo" que precisa ser compartilhado - maioria dos clientes web é considerado não confiável
+            
+        Encriptação de chave pública: chave publica e composta são pares, parte de um todo
+            texto ---(chave publica)---> texto encriptado ---(chave privada)---> texto
+            cada destinatário tem a chave privada e compartilham a pública
+            usar chave privada para encriptar a mensagem garante integridade dos dados e identidade do remetente então é melhor ?
+            
+        Protocolo de Rede seguro (SSL/TLS)
+            server: transferir chave publica para client
+            client: gerar e transferir chave simetrica para server (usando certificados)
+            usar chave simetrica para encriptar e decriptar
+            http + ssl = https
+            servidor pode pedir certificado de cliente (opcional)
+            
+        Hashing
+            
+            usa texto base e gera valores usando formulas matematicas
+            MD5 (message digest) - 128 bits, vulnerabilidade de colisão
+            SHA-1 (secure hash algoritm) - 160 bits
+            SHA-2 - 256, 512 bits
+            
+            mesma saida para mesmo texto
+            hash é via de uma mão, não dá para converter hash em texto de volta
+            pequenas mudanças no texto causam grandes mudanças no hash
+            
+        Assinatura digital
+        
+            hash de mensagem encriptado - usando a chave privada do assinante - verificado usando chave publica do assinante
+            mensagem é hashead independentemente e é comparado o hash com o hash presente na assinatura - função hash é mandada junto ?
+            
+        Certificado digital
+            
+            forma de compartilhar chave publica com "mundo" de forma confiavel - todo cliente deve ser capaz de verificar de quem é a chave publica
+            chave publica -> autoridade de certificado verifica id de usuario e encripta com chave privada -> certificado assinado por autoridade digital
+            certificado tem chave publica, validade, e informações de identificação -> isso tudo que é hasheado
+            
+        Cadeia de confiança
+        
+            End-entity certificate ---referencia---> intermediate certificate ---referencia---> root certificate <--
+                            <--------assina---------                          <-----assina------    --autoassina---|
+                            
+            valida toda cadeia
+        
+        Canal seguro de rede
+        
+            certificados e chaves "deployados" nos load balancers externos
+            
+        FireWall
+        
+            filtra acesso (permite/nega)
+            configuração ingress (entrada): ip remetente(intervalo) - ip destinatario (intervalo) - porta destinatário - protocolo
+            configuração egress (saida): ip remetente(intervalo) - ip destinatario (intervalo) - porta destinatário - protocolo
+            
+        Segurança de rede
+        
+            usar firewall para limitar conexões
+            repartir limites de sistema em zonas (subnet)
+            permitir acesso a zonas que podem ser acessadas de fora dos limites (dmz) (ex aplicação web, serviço de notificação) - usando portas e ips
+            bloquear acesso a aplicações que somente intranet possa acessar (ex serviços internos, dbs) - usando portas e ip
+            
+    Gerenciamento de Identidade
+    
+        Autenticação e autorização
+        
+            autenticar: prover identidade (id, nome, org) - quem
+            autorizar: prover direito de acesso(funções/serviços, dados) - poderes
+            
+        Transferencia de credenciais
+        
+            armazenagem de credenciais: cliente - tokens .:. servidor - ldap ou db
+            cliente transfere credenciais para app - serviço autenticador verifica
+            
+            formularios html: post sobre ssl/tsl
+            http basico: challenge response - metodos http sobre tsl/ssl - encode base 64 user:password
+            digest: como básico mas usa senha hasheada - hash = MD5 (user:realm:password)
+            certificate: troca de certificados baseados em chave privada-publica
+            
+        Verificação de credenciais
+
+            sistema de arquivos: não escalavel
+            db: rdbms, nosql (escala melhor q rdbms)
+            
+            ldap/directory server
+                persistir: user auth (id, name, role, group) e user info (org, address, contact...)
+                Arquitetura: dbs hierarquicos para ler, navegar e procurar dados organizacionais - alta performance e escalabilidade para cargas de leitura
+                ambiente: empresarial com multiplas aplicações - interoperabilidade com todos clientes LDAP - armazenamento distribuido/federado
+            
+        Autenticação stateful
+        
+            escalabilidade limitada por conta de sessões e autenticação centralizada
+            sessões podem ser revogadas removendo elas do armazenamento de sessão
+            
+            1 - cliente transfere credencial p app
+            2 - app transfere para auth service
+            3 - auth service verificia no db/ldap
+            4 - auth service retorna ok
+            5 - client recebe session Id
+            6 - client acessa usando id de sessão (cookie)
+            7 - sessão de id é validado contra cache de sessão
+            8 - caso de uso segue
+            
+        Autenticação stateless - melhor
+        
+            tokens assinados ou encriptados com id, name, role
+            autenticação decentralizada é melhor para escalabilidade
+            exige armazenamento central para revogação imediata de token - cache
+            expiração do token costuma ser menor
+            
+            1 - cliente transfere credencial p app
+            2 - app transfere para auth service
+            3 - auth service verificia no db/ldap - usando chave publica
+            4 - auth service retorna token (grant) assinado com chave privada
+            5 - cliente recebe token
+            6 - cliente acessa usando token
+            7 - serviços de negócio verificam token
+            
+        Single Sign On (SSO)
+            
+            stateless autentication
+            ao conectar a primeira vez - gateway usa rota para auth service - obtem token
+            token permite acesso a serviços que validam o token
+            rest: header Authorization: Bearer <token>
+            
+    Gerencia de Acesso
+    
+        Role Based access control model
+        
+            identidade: user id
+            grupo de identidade: conjunto de user ids
+            permissão: o que pode fazer
+            Role: conjunto de permissões -> user groups
+            Resources: API de serviços
+            
+            quem pode fazer o que onde
+            
+            em java, interceptor garante que só quem tem role apropriado pode acessar recurso seguro
+            
+        Autorização
+             
+            Oauth2
+                token grant: oauth grant permite que clientes acessem recursos protegidos - especificações não dizem como autenticação é feita
+                tipos de token: bearer, MAC
+                formatos de token: JWT, SAML
+                
+                resource owner: usuario com acesso a recursos
+                user agent: dispositivo, tipo browser http
+                client: aplicação que precisa de acesso para recursos do usuário
+                authorization server: provedor de indentidade
+                servidor de recurso: host dos recursos do usuario - qqr cliente com o token q tem acesso do usuário pode acessar os recursos do usuário
+                
+                ex
+                usuario -> agente -> client (stack overflow) -> authorization server (google) -> resource server (google)
+                    
+                oath2 grant:
+                    authorization request: url direta
+                    authentication
+                    authorization response - codigo de autorização - ex 302 found
+                    access token request - com codigo de autorização
+                    acess token response - token com acesso
+                    
+                password flow: melhor pois pede menos login ?
+                    cliente é confiado para receber credenciais do usuario (dono do recurso)
+                    cliente manda credencial para auth server
+                    cliente recebe access token com informação de autorização
+                    
+                tipos de token
+                    Bearer: quem tem o token do client pode usar - proteção de integridade apenas - exige TLS para ter confidencialidade (ticket de cinema - qqr um q tiver pode entrar)
+                    MAC(detentor da chave)
+                        proteção da integridade e origem de dados - só o usuário para quem esse token foi emitido pode usar (passagem de avião, tem q comprovar identidade para usar)
+                        pode funcionar sem tls - mas precisa de tls para obter o token de acesso do servidor de autenticação
+                        cliente e servidor precisam de ter uma chave simetrica "secreta"
+                        auth server e resource server concordam em uma chave de encriptação do token
+                
+            API Key
+                quase sempre usado por aplicações de servidores
+                dá acesso para api de outros serviços
+                    propósito é identificar origem de request - valido somente por dominio ou ip - não importa quem usuário é
+                    ex: chave de api para google maps
+                    
+            JSON web tokens - Oauth
+                compacto e "url safe" - seguros via http
+                carregam informação sobre - assunto, quem emitiu, quando foi emitido, onde e quando pode ser usado
+                formato: {header}.{payload}.{assinatura do provedor de identidade - 
+                    pode ser HS256: HMAC com SHA256(chave simetrica, tem q distribuir parte para verificação) 
+                    ou RS256: RSA com SHA256 (assimetrico, só distribuir chave publica) - melhor e usado para ambiente não seguro}
+                podem ou não ser encriptados
+                
+                uma alternativa é token SAML que são mais longos
+                
+                
+            Token Storage
+                clientes web: 
+                    cookies(apenas http, não acessiveis a javascript - vulneraveis a ataque CSRF - frameworks podem prevenir esses ataques)
+                    armazenamento local do browser: acessivel a java script, vulneravel a xss - não usar
+                single page app:
+                    não tem lugar seguro, usar usuario/senha para autenticar e armazenar token de forma temporaria na memoria
+                applicações moveis
+                    keychain IOS ou keyStore no android
+                    
+    Assegurar dados persistidos
+        
+        armazenar hash de senhas com "sal" (somar algo na string antes do hash)
+        encriptação transparente (TDE)
+            encriptar dados do hd - backups são protegidos - dados podem ser consultados por queries - chave encriptada salva no banco, chave para chave encriptada fica em um sistema externo
+        encriptação de dados de cliente
+            camada extra de segurança - dados não podem ser visto por queries - queries não podem ser usadas para filtrar ou atualizar dados - ssn é o dado encriptado - 
+            usa chave para encriptar dados salvos e decriptar
+            
+    Assegurar Software
+    
+        conexões https (tls) - json web tokens - certificados/chaves no load balancer - autenticação stateless - oauth2 clientes internos - transparent data encryption
+        senhas hasheadas com sal - cookies armazenados em cookies/key stores, não em token storage - firewalls limitar conexão para app internos
+        firewall permite acesso a dmz em certas portas
+            
+    Vulnerabilidades comuns
+    
+        Injeção de SQL
+            colocar codigo sql dentro de campo para ser rodado de forma não intencional no servidor
+                usar prepared statements precompilados que só aceitam parametros por meio de substituição de ? (wildcard?)
+        
+        Cross Site Scripting
+            atacante coloca um script como texto, quando servidor rodar/salvar e replicar para outros usuarios (ex bate papo)
+            navegador vai emitir resposta com script e ao renderizar, executa script -> pode roubar cookies
+                validar input para remover sintaxe suspeita cross site scripting como < > etc
+        
+        Cross Site Resource Forgery CSRF attack
+            usuario loga, server responde com cookie com token. ao visitar site malicioso disfarçado
+            site malicioso esconde comando (ex execução de api) em outra coisa, como imagem
+            destrave do psp usa isso
+                usar token CSRF -> servidor manda token CSRF na resposta junto com o token - cookie de login é só http - csrf é acessivel para javascript do servidor
+                pagina do servidor extrai token e manda token com header X-XSRF-Token - quem não mandar é malicioso
+        
+        
+Deploy
+
+    atividade continua - evolui
+
+    app - infra - operações
+    larga escala: maquinas virtuais (vm) - docker containers - kubernetes(k8)
+    system upgrades: rolling upgrades - blue green - recreate deployments - canary deployment
+    
+    desafios: app(dev) - infra(host) - operações(manutenção, escala, etc)
+    
+    App Deployment
+        
+        Web Apps - replicas
+        Services - Microservices & replicas
+        Dbs - Replicas e partições
+        Mensageria - Replicas e partições
+        Caches
+        Directory Server / LDAP
+        Content Storage
+        Log File Storage
+        Busca e analytics
+    
+    Infra Deployment
+    
+        Vms - CPU, Ram, Disk
+        Rede - rotas, dominios - data centers - internet, segurança - firewall, certificados
+        Load Balancers - Hardware, Software
+        DNS e serviços de descoberta
+        Armazenamento - Conteudo, VM, container, backups, logs
+        Servidores de email
+        CDN
+        Ambientes - dev - test - staging - prod
+        
+    Operações sistêmicas: logs, monitorias, escala, recuperação contra falhas, backups quentes e frios - imagens de app -> ciclo de desenvolvimento
+    
+    Soluções Modernas para deploy
+    
+        Application - Containers - Docker
+        Infra - Cloud - aws, azure, google cloud
+        operations - kubernetes
+        automação - devops - ansible, vagrant, chef, etc...
+        
+    Application Deploy
+    
+        Ambiente java: hardware -> OS -> JVM -> container web -> app web
+    
+        Component Deploy
+            
+            processo java - instalar jvm - instalar container web e configurar - deploy web app e configurar
+                problemas: sensivel a erro, pode ser demorado, repetitivo
+            automação: script: mais confiavel, repetivel, demora menos, idempotente, declarativo, remoto - chef e ansible fazem isso?
+            deploy com vm: muito confiavel, mais eficiente em reptição, mais rapido ainda - vmware, hyper-v
+                isolamento entre vms - não compartilham recursos mesmo se rodam na mesma maquina
+            
+        Containers
+        
+            maquinas virtuais minimas, leves que iniciam rapido - roda em cima de um runtime de container - converte chamadas de os internas ao container para chamadas para os nativo
+            ao invés de armazenar uma maquina inteira, apenas instruções de como criar uma maquina virtual
+            
+        Docker containers - controle de versão para versões de imagens de container
+        
+    Infrastructure Deploy
+    
+        garantir maquinas disponiveis para rodar aplicações e garantir conexões de rede
+        
+        provisionamento (hardware, jvm, containers, aplicação, Os) e configuração (ambiente) : vagrant, chef, bash, ansible -> on premises - configuração de rede
+            na nuvem não tem hardware, rede é virtual e contem maquinas virtuais -> mais simples -> vms criadas por comandos
+            replicas de ambientes são mais faceis na nuvem tb
+            
+        Deploy com stack de nuvem
+        
+            Vms: sob demanda, em multiplas regiões
+            Serverless - funções simples -> sem pacotes, versões de aplicações, etc
+            Redes globais e firewalls
+            Gerenciados pela nuvem: load balancers internos e externos, Dbs relacionais e não, Armazenamento e backups, Logs e monitoria
+            
+            Coisas AWS: s3 - dados estaticos , EC2 - vms, SNS - notificação/emails etc, SQS - queue, Elasticache - cache, Dynamo e RDS - bancos
+            
+        Deploy com Kubernetes (K8s)
+        
+            multiplas implementações - suporte amplo
+        
+            Ciclo de vida K8s: iniciar containers, parar containers, monitorar containers, reiniciar containers que pararam por erros
+            Nomes e endereçamento IP de cada container: nomes abstraem endereços de codigo e configurações - nomes resolvidos por dns
+            Escalar para multiplas instancias, stateless e stateful
+            Load Balancing
+            Alta disponibilidade - detectar e substituir instancias com erros por instancias saudaveis
+            Rolling upgrades - adicionar instancias de proxima versão e remover instancias com versão obsoleta de forma gradual até substituir tudo
+            
+            Capacidades do K8s
+                Service naming & discovery: dns
+                Container lifecycle: health check, restart, substituição de instancias não saudaveis
+                Load balancing
+                Rollouts e rollbacks automatizados
+                gestão de bin packing Automatico - especificar recursos como cpu, memoria como requisitos para containers
+                montagem de armazenamentos automatizada
+                
+            Deployment - 1 container principal por porta - isomento de aplicação de infra
+            
+            Serviços e Cargas - pods rodam containers, q podem ser serviços, dbs, load balancers, etc
+            
+            Arquitetura K8
+            
+                cria cluster: aloca vms - instala master e proxy - cria rede onde pods podem interagir - cria config - opera (pega imagens, inicia pods, atualiza config, lida com eventos)
+                Api server - Controller (determina o que fazer para alcançar o desejado) - Scheduler - Db (config desejada e config atual) - configuração de repo docker de onde tirar as imagens
+
+    Deploy de pacotes / correções
+    
+        Rolling update - quando for ok ter duas versões ao mesmo tempo, substituição gradual de versões em execução - sem tempo de queda
+        Canary Deployment - versão nova não tem mta confiança - sem tempo de queda - poucos requests são atendidos por versão nova e aumento gradual
+        Recreate Deployment - derruba tudo da anterior e transfere/migra configs/dados - tem tempo de queda
+        Blue Green Deployment - muda todo ambiente usando proxy reverso. se erro, muda rapido para anterior - evita tempo de queda usando hardware/vms extras
+        A/B testing - tipo canary, mas pode rastrear usuarios nas versões - compara usuarios nas variantes - testa configs, flags etc, direciona por flag
+        
+
+Tech Stack
+         
+    Web
+    
+        Apache
+            conteudo estatico (imagens, css, js, html, documentos) - le para a memória e mantem na memória - exige mta RAM
+            conteudo dinamico (php, perl, python, NÃO JSP/SERVLETS) - usa mto ram e cpu
+            reverse proxy (mas não é bom)
+            
+            arquitetura
+                request response
+                escalabilidade: como webserver é limitado por CPU. como reverse proxy, por IO
+                
+                thread pool para atender requisitos - memoria dividida entre workers
+                
+        Nginx
+            conteudo estatico
+            conteudo dinamico (não é dos melhores)
+            reverse proxy: excelente desempenho
+            cache: bom cache
+            
+            oritentado a eventos
+            IO assincrono
+            
+            thread unica que não muda de contexto, delega para outra threads assincronas acesso a arquivos ou por rede a serviços e dbs - toda memoria para thread unica
+            
+            Como reverse proxy e cache
+            usuario - nginx (load balancer e cache(se hit, memoria ; se miss hd) - web apps / micro front ends - nginx (load balancer interno - pode cachear respostas) - serviços
+            
+        Containers Web e Framework Spring
+        
+            Conteudo orientado a objeto dinamico em java - logica complexa
+            containers hetty e tomcat - servlet engine open source
+            servidores de aplicação - wildfly,jboss,weblogic,websphere
+            spring boot - container embarcado, tomcat e jetty
+            arquitetura MVC - servlets com logica, jsp para view
+            containers spring - rodam dentro de um container web e provem 
+                inversão de controle e inversão de dependencia - logica de negocios
+                model view controller - front ends
+                jdbc templates - db
+                connection pools - http, db
+                
+        NodeJs
+        
+            Http server - js para processar requests
+            eficiente para alto numero de conexões que sejam IO bound, não cpu bound
+            thread unica lida com todas conexões - economiza memória, evita mudança de contexto - parecido com nginx
+            formato nativo no server é json - mais fácil de usar com mongo e passar mensagens sem tratamento
+            
+            arquitetura:
+                cliente - request - OS IO queue (non blocking) ou thread pool - Event loop (sync task) - enqueue callback queue and dequeue
+                                                                                    | |
+                                                                            Network and disk access
+                event loop sempre executando, nunca larga cpu e nunca termina. procura callbacks dos processos assincronos e executa
+                todo IO em node deve ser feito de forma assincrona
+                node js
+        
+    Cloud Web
+    
+        Serviços gerenciados - soluções robustas - deploy automatico - escalabilidade e confiabilidade nativa - soluções globais
+        aws cloudfront/ google clou cdn
+        aws s3/google cloud storage
+        aws elastic beanstalk/ google app engine
+        
+    Cloud Storage
+    
+        espaço ilimitado
+        controle de versão e acesso
+        latencia baixa - sem overhead de estrutura de pasta
+        alta rendimento - clientes em paralelo - quebra de arquivos grandes em pedaços (chunks) para leitura paralela
+        alta disponibilidade e confiabilidade - multiplas copias em multiplos locais fisicos
+        criação de sites estáticos
+        
+    Cloud CDN
+    
+        latencia baixa para hits em cache
+        conexões persistentes para miss em cache
+        menor carga no back end
+        
+    Cloud Caching
+    
+        AWS elastic cache - redis e memcached
+        google memorystore - redis e memcached
+        gerenciado, escalavel até 5TB, latencia baixissima, alta disponibilidade
+    
+    Cloud MQ
+    
+        Comunidade: RabbitMq, Kafka
+        Aws: SQS, Kinesis
+        Google Cloud: Pub/Sub
+
+    Memcached   
+       
+       guarda pares chave valor
+       valores podem ser de qqr tamanho (preferir menos de 1mb) - maximo configuravel
+       valores podem ser qualquer blob
+       
+       ttl diferente para cada par
+       expurgo remove dados quando acaba memoria usando TTL e depois least recent used (LRU)
+       
+       cache centralizado - todos nós conectam nele
+       
+       escalavel horizontalmente
+       alto volume - paralelismo de operações
+       
+       hash para resolver nós - biblioteca do cliente ciente do cluster
+       falha de nó é considerado miss no cache - usar numero largo de nós com menos dados
+       dados são perdidos se nó cai ou é reiniciado
+       
+    
+    Redis
+    
+        parecido com memcached - melhor q memcache
+        chave - estrutura (string, list, sortedsets, maps) - se precisa alterar lista por ex, memcached pega lista inteira para cache - alta latencia.
+            redis permite operar direto na estrutura
+        datastore para persistencia - guarda em disco - permite backups - pode iniciar prepopulado com backup
+            exige numero fixo de nós - cache puro pode ser escalado
+        data replication: assincrono e sincrono - distribuição de carga de leitura
+        pode ser usado como mq - pubsub
+        
+        leitura e escrita são escritos em nós mestres, leitura de nós escravos que são alimentados de forma sincrona/assincrona(melhor q sincrono p latencia)
+    
+    
+    Redis Pub/sub
+    
+        para mensagens com vida curta sem persistencia
+        parecido com chamada sincrona
+        fire and forget - sem garantia de entrega
+        milhões de operações por segundo
+        uso para dashboards
+        relativo a kafka: tb sem push, tb escreve para log
+        relativo a rabbitMq: confirmação de entrega, deleção de mensagens entregues
+    
+    Rabbit MQ    
+
+        mensagens entregues pelo menos uma vez - FIFO
+        desacoplamento de inferfaces, de consumidores, e de taxa de mensagem
+        modo consumidor: push, pull
+        casos de uso: integração entre serviços, buffer entre mensagens (stream - carga altissima de mensagens)
+        
+        push para vários destinos: rabbitMq
+        pull de várias fontes: kakfa e rabbit mq
+        
+        proposito generalizado de mensageria - só escala vertical, não escala bem horizontal(mestre-escravo para alta disponibilidade: clientes podem conectar em qqr nó_
+            todo mundo publica mensagens, consumo vai primeiro para mestre
+            
+        mensagens são pushed para consumidores - deletadas depois de confirmadas o recebimento
+        ordenação garantida
+        util para integração assincrona
+        mensagens persistentes(garantir entrega) e transientes(mais rapido, aceita perda) são suportadas
+        componente embutido exchange para routing
+        
+        pode escalar até 50k mensagens por segundo (?) - 2020
+        
+    Kafka
+    
+        tipo arquivo de log distribuido (em partições - operações paralelas - performatico)
+    
+        performance
+            milhões de mensagem por segundo
+            leituras e escritas sequenciais  em arquivos de log - performatico
+            cache de pagina para leituras rápidas - performatico
+        escalavel horizontalmente - topicos particionados - consumidores podem ser escalados horizontalmente
+        ordenação garantida na mesma partição - produtor de mensagens decide qual partição q vai escrever
+        mensagens não são apagadas, podem ser lidas novamente
+        consumidores só conseguem pull de dados - não feito para integração entre serviços - zookeeper pode ajudar
+        stream de dados onde alta performance é exigida - segurança, log, stream de cliques, visualização de páginas
+        kafka não faz push de mensagens, só permite ser consumido - outro serviço pode consumir e fazer push
+        
+        offset - posição de leitura no tópico - consumidores sabem onde estão e podem estar em posições diferentes    
+        
+    RDBMS
+    
+        proposito geral (1 - 5 TB de dados (mais q isso problemas de escalabilidade), 10k conexões)
+        
+        transações ACID                                           x possivelmente em um nó unico ou exige 2pc/3pc
+            update de multiplos registros ou tabelas 
+            
+        consistencia de dados                                     x leva a baixa disponibilidade
+            dados iguais para todos leitores em um dado instante
+
+        schema bem definido - permite queries                     x dificulta evolução de aplicação - acoplamento entre schema e app
+            select, filtros, joins
+        queries podem mudar ou evoluir                            x joins impactam performance
+            qqr coluna pode ser indexada sempre que precisar            
+            
+        dados normalizados                                        x só uma versão dos dados
+            escrita e leitura eficientes
+            
+        sobrescrita para updates                                  x design obsoleto para espaço em disco muitas vezes caro
+        
+        escalabilidade: só vertical por partição
+            replicação para disponibilidade/confiabilidade
+            caro no geral
+            
+    NoSql e desvantagens
+    
+        Objetivo - Escolha Arquitetural - desvantagem
+        escalabilidade - partição horizontal com hardware comum - transações ACID e joins
+        disponibilidade - replicação de dados, consistencia eventual - consistencia de dados a custa de performance
+        schema flexivel - chave/valor. orientado a documento - SQL, indices secundarios (não baseados em chaves primarias), limitação de integridade
+        performance - schema aggregate, leitura e escrita em memória - normalização, query para atributos "não chave"
+    
+    Amazon DynamoDB
+    
+        chave/valor
+        usado para alta escalabilidade e disponibilidade
+        tabela é um hashmap - persistido e distribuido
+        API - put get update delete query
+        index key - duas partes
+            chave de partição: só um atributo, chave é hasheada para obter partição
+            chave de ordenação: determina ordem de elemento dentro de uma partição, pode ser usada em query de intervalo (<, >, like)
+        leitura e escrita para uma chave são atômicas
+        schema "solto"
+        
+        bom para guardar pequenos chunks de dados (menos de 1mb)
+        p2p - sem master, cada nó cuida de um conjunto de chaves, hash consistente de nós virtuais para alocação de chave
+        altamente escalavel - para qqr numero de nós, petabytes de dados, 10 milhões de operações de requisições de leitura/escrita por segundo
+        altamente disponivel - updates não rejeitados mesmo em caso de falha de servidores ou de partições de redes - clocks de vetor e regras de negocio para resolver conflitos de merge
+        garantia de consistencia é ajustavel - R+W > N para alta consistencia
+        
+        nós assumem forma de "anel" - protocolo gossip conecta com nós fora da adjacencia
+    
+    Google BigTable
+    
+        base do apache HBase
+        armazenamento de colunas-familia
+        tabelas como tree-map - esparsos, ordenados, persistentes, distribuidas
+        colunas-familia limitada (menos de 100) - comprimidas, com colunas ilimitadas.
+        leitura escrita são atomicas para uma chave
+        versionamento com timestamp
+        
+        ex: chave-coluna | documento | lingua | referrer
+        
+        schemaless coluna-familia estruturada, dados ordenados - indice para cada coluna
+        gfs para armazenamento persistente confiavel - replicas para arquivos grandes
+        servidores de tabelas em memória - alta leitura e escrita com baixa latencia
+        copia unica de dados para escrita e leitura - sem conflitos de escrita
+        escalabilidade horizontal - peta/hexabytes de dados - carga do cliente é distribuida
+        fortemente consistente
+        cliente: cacheia metadata tablet - trabalha diretamente com serrvidores tablet
+        mestre: ve se tablet server está atual - atribui tablet para tablet server
+        
+    
+    HBase
+    
+        implementação open source de google bigtable
+        armazenamento em hadoop hdfs
+        escalavel, alto volume, baixa latencia, consistente, altamente disponivel        
+    
+    Cassandra
+    
+        muitas features de dynamo e bigtable
+        
+        tabela é chamada column family - escalabilidade horizontal (partição em nós) - clusters em anel do dynamo DB - p2p
+        tambem tem partition key e sort key (juntas são PK)
+        estrutua: pk, nome de coluna, valor de coluna
+        milhões de colunas - colunas são linhas ? - cada productId (partitionKey) vai para uma partição diferente
+        
+        fluxo: 1 - operação escrita - 2 log / memtable - 3 ack operação - 4 memtable -> sstable
+        
+        estrutura schemaless, column family - esparso, persistente, distribuido
+        escalabilidade horizontal - petabytes de dados
+        alta disponibilidade - mesmo entre partições de rede
+        alto volume processado em leitura e escrita - resolve conflitos de merge por vector clock, timestamp, regra de negócios
+        custo: consistencia eventual - aumenta latencia com queries para consistencia
+    
+    MongoDB
+    
+        chave documento (formato json binario - bson)
+        cria colunas dinamicamente - colunas podem ser indexadas - documentos podem ser pesquisados por id ou valor de colunas
+        operação em um documento unico é atomica - para vários precisa de 2pc
+        
+        indexing para busca - porem tem write overhead - afeta performance
+        sharding para escalabilidade - intervalo, hash
+        replicação
+            master slave - sem conflito de escrita
+            assincrono (default) - consistencia eventual
+            sincrono - sob demanda
+        funciona muito bem com node.js - javascript > nodejs > mongo (json puro sem transformação)
+        
+        client --- mongo router -(cache config)-- config server
+                   /       \
+       (shards) primario   secundario
+                  |--(assinc)   ^
+                  --------------|
+    
+    Analytics
+    
+        não participa em transações - não tem usuarios conectados - pos DB
+        
+        Logstash
+        
+            lida com logs - plugins IO - coleta e move eventos de logs/stream
+            plugins de filtro - filtra, transforma, agrega
+            fila - movimento confiavel de dados, entrega pelo menos uma vez, segue acks, aplica backpressure
+            
+            stream de logs para analytics de tempo real - escalabilidade horizontal e alta disponibilidade (quaisquer numero de nós)
+            tolerancia a erro - precisa de solução de HD confiavel (RAID, discos persistentes de nuvem)
+            usar kafka como buffer - para altas cargas que queue do logstash não consegue lidar (apps - kafka/redis - logstash - analytics(elastic search - kibana por exemplo))
+            
+                                  LOGSTASH
+            pull source>----------->input---------------queue--------------filter-----------output>--------------->destino
+            push source>-----|      plugin             (pipeline)          plugin           plugin
+            logs                                    memoria/arquivos       json,csv...                              alerta, analytics, arquivos                     
+        
+        Fluentd
+        
+            mais velho q logstash
+            carga de memoria - logstash: pesado (GB) - Filebeat - peso leve (MB) - Fluentd - peso pena (MB) - FluentBit - super pena(KB)
+            todos recursos de logstash
+            routing por tags
+            consegue operar em log direto de console de container docker            
+        
+        Elasticsearch
+        
+            buscar por dados pequenos em montanha de dados
+        
+            busca por texto (filtro, grupo, agregado)
+            armazena documentos json - documentos obtidos usando id
+            estrututra: index -> db / type -> tabela / document -> row (chaves jsons são achatadas) - suporta tipo de dados
+            usuários podem especificar mapa entre termos e documentos
+            
+            escalabilidade horizontal - petabytes - dados são "shardeados" com chave como document id - put/get vão para shard especifico - busca vão para todos shards
+            alta disponibilidade - replica de shards
+            estrutura de index é baseada em merge sort - index não é atualizado com cada update ou insert - index é mantido em memória e ocasionalmente flush para disco            
+                indices menores ao criar documentos são mergeados em indices maiores
+        
+        Hadoop HDFS
+        
+            data storage de arquivos distribuido - sem estrutura - petabytes - tamanhos grandes > 100mb
+            arquivos distribuidos - arquivos quebrados em chunks - leitura paralela usa map reduce
+            escritas sequenciais com append - blocos grandes de dados, 64 mb
+            replicação para confiabilidade
+            
+            cliente ---- nó mestre (guarda estrutura de pastas - mapeia arquivos para blocos - mapeia blocos para datanodes) --- datanodes distribuem chunks
+        
+        Map-Reduce
+        
+            processamento paralelo no cluster hadoop - codigo de processamento é executado nos datanodes
+            entradas/saidas - HFDS, Hbase, Cassandra
+            Fase Map - filtro e transformações
+            Fase Redução - embaralha saida do mapa pelos nós - agrupa informação relacionada - computa dados agregados
+            
+            arquivo entrada --split-- arquivo texto --extract-- chave valor --embaralha,ordena-- chave valor --agrega-- resultado
+        
+        Apache Spark
+        
+            evolução do map-reduce
+            em memória - 10x a 100x mais rapido
+            DAG de operações - multiplas operações em um DAG - multiplas operações embutidas
+            interativo - shell interativo em R/schala/Python
+            bibliotecas embutidas para SQL, MachineLearning, Processamento de grafos, Streaming
+            
+            dados -iteracao1 leitura-escrita-dados-iteração2 leitura-iteração2 escrita-...
+            
+            dados1 --- mapa \
+            dados2 --- mapa --união --join--groupBy--saida
+                      dados3--reduce-/   dados4-/            
+        
+        Stream Processing
+        
+            baixa latencia - manter dados circulando
+            alto processamento - multiplas fontes
+            problemas orientados a evento - delay de evento - ordenação - evento perdido
+            tolerancia a falha - replay de evento
+            alta disponibilidade
+            motor de processamento - storm, flink, spark (micro-batching)
+            buffer - kafka
+            
+            app -filebeat---kafka---logstash---es/hdfs---analytics ou SQL
+                 log-|
+            app -filebeat---kafka---streamprocessing---kafka---analytics ou SQL ou outra maquina
+                 log-|
+                 
+----------------
+*
+What is a public cache?
+A public, or “shared” cache is used by more than one client. As such, it gives a greater performance gain and a much greater scalability gain, 
+as a user may receive cached copies of representations without ever having obtained a copy directly from the origin server.
+
+What is a private cache?
+A private cache is only used by one client, only for the IP it was created for. Generally this applies only to a cache maintained by that client itself, 
+though if you had a proxy that was only being used by one client it would be possible to configure it to act as a private cache.
+
+ACID
+    Atomicidade
+        each statement in a transaction (to read, write, update or delete data) is treated as a single unit. Either the entire statement is executed, or none of it is executed. 
+        This property prevents data loss and corruption from occurring if, for example, if your streaming data source fails mid-stream.
+    Consistencia
+        ensures that transactions only make changes to tables in predefined, predictable ways. Transactional consistency ensures that corruption or errors 
+        in your data do not create unintended consequences for the integrity of your table.
+    Isolamento
+         when multiple users are reading and writing from the same table all at once, isolation of their transactions ensures that the concurrent transactions don't interfere 
+         with or affect one another. Each request can occur as though they were occurring one by one, even though they're actually occurring simultaneously.
+    Durabilidade
+        ensures that changes to your data made by successfully executed transactions will be saved, even in the event of system failure.
+    
+SOLID
+    single responsability
+    open closed - aberto extensão, fechado mudança
+    substituição - classe base tem q funcionar no lugar da extensão
+    granularidade de interfaces
+    inversão de dependencia - classe não deve depender de classe base, classe e classe base devem depender de abstração
+    
+Idempotencia
+    A idempotência é uma propriedade importante de algumas operações HTTP que garante que a mesma operação pode ser executada várias vezes sem alterar o resultado final ou
+     causar efeitos colaterais indesejados, independente do número de vezes que é chamada, isso é importante em situações em que uma operação pode ser executada várias vezes, 
+     como em caso de falha de rede ou retry automático de uma operação não concluída.
+
+Safe Methods:
+    Os métodos de solicitação são considerados "seguros" se sua semântica definida for essencialmente somente leitura, ou seja, o cliente não solicita e
+     não espera qualquer mudança de estado no servidor de origem como resultado de aplicar um método seguro a um recurso de destino
+     Da mesma forma, razoável não se espera que o uso de um método seguro cause qualquer dano, perda de propriedade ou carga incomum no servidor de origem.
+
+    Exemplos de métodos seguros:
+
+    GET → É usado para obter informações sobre um recurso em um servidor. Quando um cliente faz uma solicitação GET, ele espera receber informações sobre o recurso solicitado, 
+    mas não espera que a solicitação cause qualquer mudança de estado no servidor. Além disso, é razoável esperar que o uso do método GET não cause nenhum dano, 
+    perda de propriedade ou carga incomum no servidor de origem.
+    
+Camadas de transporte da internet OSI
+    Camada 1 - Física
+    Camada 2 - Enlace ou Ligação - controla o fluxo com que os pacotes são enviados.
+        VLans, ou topologias como a Token ring, ou a ponto-a-ponto. Também é nela que dispositivos como os switches funcionam.
+        Esta camada é dividida em duas subcamadas: A camada MAC e a camada LLC.
+            MAC - conexão de diversos computadores em uma rede. Cada máquina conectada na rede tem um endereço físico, conhecido como endereço MAC.
+                interface entre a camada física e a subcamada LLC.
+            LLC - controle de fluxo dos dados - permite vários protocolos da próxima camada na mesma rede
+    Camada 3 - Rede - IP de origem e de destino e priorização e rota - protocolo IP, ICMP...
+    Camada 4 - Transporte - garante o envio e o recebimento dos pacotes vindos da camada 3 - TCP, UDP...
+    Camada 5 - Sessão - estabelecer e encerrar a conexão entre hosts
+    Camada 6 - Apresentação - tradução dos dados para que a próxima camada os use - criptografia
+    Camada 7 - Aplicação - consumir os dados, HTTP, FTP, além de serviços como o DNS.
+    
+Scalability & Ability to Add More Brokers & Partitions
+    By adding more brokers, Kafka achieves horizontal scalability. This means that the overall system capacity increases as more brokers are added, 
+    enabling organizations to handle larger data volumes without compromising performance
+    
+SSN
+    Data Encryption involves converting data or information into a code, making it inaccessible to unauthorized users. This process involves using an algorithm and a key to transform readable data 
+    (plaintext) into an unreadable format (ciphertext). This ensures that even if the data is intercepted or accessed without permission, it remains incomprehensible and secure.
+
+    Types of Encryption:
+        Symmetric encryption relies on a single key for encrypting and decrypting data, requiring strict secrecy and sharing only among authorized individuals. 
+        When applied to SSN security, symmetric encryption proves to be swift and effective for safeguarding extensive data sets like SSN databases. 
+        Public-key cryptography, also called asymmetric encryption, employs a set of keys - a public key for encoding and a private key for decoding. The public key can be distributed openly, 
+        while the private key must remain confidential. When safeguarding SSNs during transmission over networks like the Internet, asymmetric encryption is crucial. 
+        It enables the sender to encode the SSN using the recipient's public key, guaranteeing that only the recipient can decode it with their private key. 
+     
+Prepared Statements
+
+    A prepared statement is a feature used to execute the same (or similar) SQL statements repeatedly with high efficiency.
+
+    Prepared statements basically work like this:
+
+        Prepare: An SQL statement template is created and sent to the database. Certain values are left unspecified, called parameters (labeled "?"). Example: INSERT INTO MyGuests VALUES(?, ?, ?)
+        The database parses, compiles, and performs query optimization on the SQL statement template, and stores the result without executing it
+        Execute: At a later time, the application binds the values to the parameters, and the database executes the statement. The application may execute the statement 
+        as many times as it wants with different values. Compared to executing SQL statements directly, prepared statements have three main advantages:
+
+        Prepared statements reduce parsing time as the preparation on the query is done only once (although the statement is executed multiple times)
+        Bound parameters minimize bandwidth to the server as you need send only the parameters each time, and not the whole query
+        Prepared statements are very useful against SQL injections, because parameter values, which are transmitted later using a different protocol, need not be correctly escaped. 
+        If the original statement template is not derived from external input, SQL injection cannot occur.
+        
+        mysql example: $stmt = $conn->prepare("INSERT INTO MyGuests (firstname, lastname, email) VALUES (?, ?, ?)");
+            $firstname = "John";
+            $lastname = "Doe";
+            $email = "john@example.com";
+            $stmt->execute();
+            
+CDN
+    A content delivery network is a distributed group of servers that caches content near end users. Learn how CDNs improve load times and reduce costs.
+
+IOC    
+    Inversion of Control in Java is a powerful design principle that helps create flexible, maintainable, and scalable applications. 
+    Implementing IoC through Dependency Injection, as shown in the example, helps decouple components and makes it easier to manage dependencies, ultimately leading to better software design.
+    
+Rest - transferencia de estado representacional req response usando metodos tradicionais http (get, post, put, delete) para manipular recursos
+
+Grpc - alta performance, agnostico a linguagem, remote procedure call - comunicação eficiente em sistemas distribuidos. converte mensagens p binario?
+
+SOAP - mensagens estruturadas entre serviços com estruturas rigidas e mensagens em envelopes xml
+
+GraphQL - query q permite q clientes peçam exatamente o q querem, diminuindo dados em excesso e dados em falta
+
+WebSocket -  protocolo q permite uma comunicação em uma conexão bidirecional, tempo real com vida longa entre cliente e servidor. baixa latencia
+
+Webhook - mecanismo para comunicação em tempo real via http post para notificar e disparar ações em outro sistema
+
+DORA    
+    DevOps Research and Assessment (DORA) provides a standard set of DevOps metrics used for evaluating process performance and maturity. 
+    These metrics provide information about how quickly DevOps can respond to changes, the average time to deploy code, the frequency of iterations, and insight into failures.
+    
+----------------
+*
+server = starwars
+pod = port
+load = lord
+oauth2 = otto
+
+
+         

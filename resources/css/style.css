@@ -437,6 +437,12 @@ footer {
     float: left;
 }
 
+.footer-hidden {
+    color: #000000;
+    padding: 0px;
+    font-size: 1%;
+}
+
 .social-links {
     list-style: none;
     float: right;
