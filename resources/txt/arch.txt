@@ -1530,6 +1530,22 @@ DORA
     DevOps Research and Assessment (DORA) provides a standard set of DevOps metrics used for evaluating process performance and maturity. 
     These metrics provide information about how quickly DevOps can respond to changes, the average time to deploy code, the frequency of iterations, and insight into failures.
     
+Big O Cheat Sheet
+    O(1) - constant time - tempo não muda independente de input - ex: ver se pilha tá vazia
+    O(log n) - logarithmic time - complexidade aumenta uma unidade por cada dobro de input - achar item em arvore balanceada
+    O(n) - linear time - tempo aumenta linearmente de acordo com entrada - varredura linear de lista
+    O(n log n) log linear time - tempo aumenta em combinação de linear e logaritimico - merge sort de uma coleção de lista
+    O(n ^ 2) - tempo quadratico - proporcional ao quadrado do numero de elementos - ver todos pares possiveis em array
+    O(n ^ 3) - tempo cubico - proporcional ao cubo de elementos da entrada - multiplicação matricial de matrizes n por n
+    O(2^n) - tempo exponencial - tempo dobra para cada elemento processado - gerar subconjuntos de um determinado conjunto
+    O(n!) - tempo fatorial - tempo aumenta fatorialmente - determinar todas permutações de uma lista
+    
+OLTP 
+    OLTP or Online Transaction Processing is a type of data processing that consists of executing a number of transactions occurring concurrently—online banking, 
+    shopping, order entry, or sending text messages, for example.
+
+
+    
 ----------------
 *
 server = starwars
