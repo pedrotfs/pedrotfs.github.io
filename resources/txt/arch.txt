@@ -1544,7 +1544,8 @@ OLTP
     OLTP or Online Transaction Processing is a type of data processing that consists of executing a number of transactions occurring concurrently—online banking, 
     shopping, order entry, or sending text messages, for example.
 
-
+UUID (GUID) vs ULID
+    é melhor usar ULID pois é menos aleatório, o começo sempre consistindo de uma timestamp encodada e melhor para indexar
     
 ----------------
 *

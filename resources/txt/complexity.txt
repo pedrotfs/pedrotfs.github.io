@@ -1,0 +1,1281 @@
+Algorithmic Complexity Base
+
+    não precisa espaço(memória) e tempo, mas preve comportamento e possibilita comparação para achar o mais eficiente
+    recursos em regra são relacionados com tamanho da entrada - O(f(n))
+    termos de complexidade "menores" são descartados na definição de algoritmo - 2n + 2 despreza o +2 pq é irrelevante com grandes entradas
+    
+    complexidade de tempo: como numero de operações muda de acordo com entrada no algoritmo
+        impossivel prever tempo exato por conta de inumeros fatores (hardware, linguagem, tamanho de input etc) - mais importante q complexidade de espaço em regra
+        
+    complexidade de espaço: visa prever espaço auxiliar necessário para cumprir operações, ao invés de tempo        
+    
+    Notações Big O, Big Omega, Big Theta
+        Big O
+             f(n) = O(g(n)); se existe c, n0 onde qualquer n >= n0 então f(n) <= cg(n)
+             casos que importam são com n tendendo a infinito
+
+             obter limite superior - remover constante e termos "pequenos" ex n^2 + 10n + 6 -> n^2
+             limite superior é usado para comparar complexidade (ordem das complexidades assima é chamada "ordem assintotica)
+             
+             Big O -> complexidade de tempo, f(n) é t(n)
+         
+         Big Omega
+         
+            oposto de Big O, usa limite inferior que é obtido tambem removendo termos pequenos e constantes
+            em regra bate com Big O, podendo diferenciar de acordo com a entrada - 
+            algoritmos podem ter melhor caso, pior caso e caso médio - caso pior é o mais relevante
+            casos tem limite inferior e superior e cada um deles tem complexidade propria
+
+        Big Theta
+            é big theta quando tá na classe assintotica exata (não precisa tirar constante, limite superior e inferior são iguais)
+            funçoes tem uma notação theta ou nenhuma
+            
+    Melhor, Pior e Caso médio
+        melhor caso precisa de menos operações, pior caso de todas possíveis
+        
+        T(n) = recursos necessários para cada input possivel / numero de inputs possivel
+        quicksort com pivos aleatórios: pior caso - O(n^2), caso esperado - O(nlogn)
+    
+    Classes de complexidade
+        P - tempo polinomial - problema decisional - sim ou não - O(n ^ k)
+            problema palindromo - O(n)
+            problema caminho em grafo
+            rápido
+        NP - resposta afirmativa em tempo polinomial, ex verificar se conjunto é contido em outro. se tem caso p avaliar é P, mas senão, é NP
+            grafo com peso onde caminho passa por vertices uma vez só usando determinada "distancia"        
+        NP Complete - redução (se um problema A é redutivel para um problema b, então a solução de B pode ser usada p A) 
+            contem todos os problemas em NP que podem ser reduzidos a NP complete usando redução
+            caminho hamiltoniano - caminho q passa por todo vertice só uma vez
+        NP Hard - um problema é np hard se todos os problemas em NP são redutiveis a ele
+        P vs NP - se tem solução em tempo polinomial, é parte de P. P é igual a NP?
+            
+        ((P) NP ()NP Complete()  Np-hard)
+
+
+Complexity of Algorithms
+    Analise de algoritmos
+        1 - encontrar T(n)
+            conhecimento em estrutura de dados e suas operações
+            nem sempre loops aninhados são o(n²)
+            dividir algoritmo em partese somar complexidades
+            ser especifico sobre o q n significa
+            só remover termos comparaveis (ex, tem M e N vc não sabe relação entre os dois)
+            em complex. de tempo, remover operações unicas, em compl. de espaço, remover variaveis unicas
+            nem sempre operações aritmeticas são O(1) por conta dos bits por tras
+                Numeros grandes
+                adição - O(n)
+                subtra - O(n)
+                multip - O(n²) (naive)
+                divisa - O(n²) (naive)
+            
+        2 - deduzir complexidade
+            usar maior termo, remover constantes
+            
+    Complexidade Amortizada
+        somatoria do limite superior / intervalo de esforço
+        complexidade de adicionar no fim do array - O(n) mas cada vez que acaba capacidade, array é dobrado de tamanho. logo cada aumento do array fica cada vez mais raro
+            acaba tendendo para O(1) quando amortiza
+            caso medio é relacionado a entrada - complexidade amortizada não é relacionada com input
+        
+    Comparar algoritmos
+        levar em conta as constantes omitidas
+        por mais que quicksort seja mais lento no pior caso q outros algoritmos de ordenação, pior caso é muito raro
+        problema achar par que soma resulta em k - complexidades melhor, medio, pior
+            olhar todos os pares - tempo o(1), o(n²),o(n²) - espaço o(1), o (1), o(1)
+            ordenar array e iterar do começo e fim - tempo O(nlogn), O(nlogn), O(nlogn) - espaço O (n), O(n), O(n) por conta de ordenação
+            usando set (operações em set são O(1)) e procurando elementos k - elem - tempo - O(1), O(n), O(n) - espaço O(1), O(n),O(n)
+    
+
+Search Algorithms
+    Algoritmo de Busca Linear assumindo comparação como O(1) (ex integer, se for string vira O(n)
+        melhor caso - O(1), Omega(1), Theta(1)
+        caso medio - O(n), limite inferior Omega(n), sendo tambem Theta(N)
+        pior caso - O(n), limite inferior Omega(n), sendo tambem Theta(N)
+        espaço - Theta(1)
+        
+        recomendado quando PRECISA andar em todos os elementos, lista não ordenada
+        
+    Algoritmo de Busca Binaria
+        lista ordenada - olhar meio e remover metade onde elemento não está - assumindo comparação como O(1)
+        melhor caso - O(1), Omega(1), Theta(1)
+        caso medio - O(logn), limite inferior Omega(logn), sendo tambem Theta(logn)
+        pior caso - O(logn), limite inferior Omega(logn), sendo tambem Theta(logn)
+        espaço - Theta(1)
+        
+        verificar se o array tá ordenado ou ordenar o array antes de usar busca binaria causam complexidades iguais ou maiores q busca linear, logo
+        não compensa fazer isso tudo para achar um elemento então se não sabe se o array tá ordenado, usar busca linear 
+    
+    Algoritmo de Busca Knuth-Morris-Pratt (KMP)
+        busca string dentro de outra string de mesmo tamanho ou maior
+        força bruta começa de cada indice e tenta ver indice a indice a partir dai, se falhar, começa de novo
+        quando achar algo que não bate, evitar começar do começo - preprocessar p criar array com string q é ao mesmo tempo maior sufixo e prefixo da string (longest prefix suffix - LPS)
+        para começar direto do final do maior prefixo quando achar
+        força bruta
+            melhor O(m)
+            medio O(mn)
+            pior O(mn)
+            espaço O(1)
+        kmp
+            melhor O(m)
+            medio O(n)
+            pior O(n)
+            espaço O(m)
+
+Sorting Algorithms
+    baseados em comparação, alguns não são (counting e radix)
+    estaveis (elementos com mesma chave aparecem sempre na mesma ordem apos ordenar)
+    recursivos - mergesort
+    in-place - quando precisa de pouco espaço em memoria p funcionar (O(1) até O(logn))
+    adaptavel - se parcialmente ordenado precisa de menos operações - merge sort não é adaptavel
+    online - precisa apenas dos elementos que vai reordenar, não online precisa do array inteiro
+    chave de comparação - chave pelas quais elementos são ordenados (string, char, int, preço, quantidade, preço*quantidade, etc)
+    
+    Insertion Sort
+        insere ordenado do zero até completar o array - pior caso quando array tá ordenado em ordem reversa
+        pior - O(n²), melhor O(n), espaço O(1)
+        baseado em comparação, estavel, não recursivo, inplace, adaptavel, online
+        
+    Bubble Sort
+        percorre array e troca elementos até estar completamente ordenado. parte ordenada não é percorrida e aumenta a cada iteração
+        no melhor caso não efetua trocas de elementos
+        pior - O(n²), melhor O(n), espaço O(1)
+        baseado em comparação, estavel, não recursivo, inplace, adaptavel, não online
+        
+    Selection Sort
+        percorre elementos e procura o menor e poe no lugar, o segundo menor até ordenar
+        não tira vantagem de elementos preordenados
+        pior - O(n²), melhor O(n²), espaço O(1)
+        baseado em comparação, não estavel, não recursivo, inplace, não adaptavel, não online
+        
+    Merge Sort
+        divide em duas partes/subarray, ordena as partes, e funde eles de novo pegando o menor dentre os dois
+        divide em sub arrays até arrays terem 1 elemento
+        pior - O(nlogn), melhor O(nlogn), espaço O(n)
+        baseado em comparação, estavel, recursivo, não inplace, não adaptavel, não online
+        
+    Heap Sort
+        heap binario é uma arvore binaria onde todo nó é menor ou igual a todos os nós abaixo dela, ao inserir arvore se reordena para manter essa proprieada
+        raiz é sempre menor elemento - trocas são feitas sempre pelo menor elemento - na hora de extrair, remover sempre filho ultimo/mais profundo
+        ideia é inserir elementos do array não ordenado no binary heap e depois ficar extraindo a raiz por conta dela ser o menor elemento até extrair todos os elementos
+        construir heap exige O(n)
+        pior - O(nlogn), melhor O(nlogn), espaço O(1)
+        baseado em comparação, não estavel, não recursivo, inplace, não adaptavel(apesar de ter uma versão adaptavel), não online
+        
+    Quick Sort
+        escolhe elemento pivo e particiona array em duas partições, elementos menores e maiores q pivo
+        recursivamente faz isso com partições obtidas acima - muitas formas de escolher pivo (aleatorio, mediana do primeiro e ultimo*, primeiro)
+        na partição, coloca ponteiros no primeiro e ultimo elemento delas - vai reordenando elementos ao redor do pivo e ao terminar pivo fica na posição final na ordenação
+        ponteiro do menor procura elementos maiores q pivo, ponteiro do maior procura elementos menores q pivo - troca os dois quando acha
+        se ponteiro do maior for menor que ponteiro do maior, troca pivo com ponteiro do maior, se não com menor ?
+        caso base é quando partição tem menos de 2 elementos
+        pior - O(n²), melhor O(nlogn), espaço O(logn)
+        baseado em comparação, não estavel, recursivo, inplace, não adaptavel, não online
+        
+    Counting Sort
+        conta frequencia com q cada elemento aparece em array novo tamanho n+1, ai soma elementos do array de frequencia com elemento da tras
+        determina elementos menores ou iguais, itera input em ordem reversa e array de frequencia dá a posição final ordenada
+        aloca varios indices q não são usados (antes de min), não sabe ordenar negativos tem q adaptar um monte coisa p isso
+        pior - O(n + k), melhor O(n + k), espaço O(n + k)
+        não baseado em comparação, estavel, não recursivo, não inplace,não adaptavel,não online
+        
+    Radix Sort
+        ordena elementos digito a digito começando pelo fim e p cada digito, usa outro algoritmo para ordenar, tipo counting sort
+        d - numero de digitos do numero - ordena os digitos do numero
+        pior - O(d(n+b)), melhor O(d(n+b)), espaço O(n+b)
+        não baseado em comparação, estavel, não recursivo, não inplace, não adaptavel, não online
+        
+    Bucket Sort
+        determina bucket q elemento vai usando um hash, ordena cada bucket usando outro algoritmo (insertion sort é o mais usado)
+        concatena buckets e obtem ordenação - melhor caso quando cada bucket tem 1 elemento
+        pior - O(n²), melhor O(n+k), espaço O(n+k)
+        não baseado em comparação, estavel, não recursivo, não inplace, não adaptavel, não online
+        
+    Shell Sort
+        insertion sort, mas evitando sequencias grandes de mudanças, comparando elementos distantes e diminuindo intervalo
+        intervalo vai diminuindo até ser 0 - quando intervalo for pequeno troca quando for menor e se tiver mais elementos atrás vai trocando até não ser menor
+        melhor caso quando tiver ordenado
+        pior - O(n(logn)²), melhor O(nlogn), espaço O(1)
+        baseado em comparação, não estavel, não recursivo, inplace, adaptavel, não online
+        
+    dados pequenos - insertion
+    quase ordenado - adaptavel
+    pouco esapço - inplace
+    caso médio preocupa - quicksort
+    pequeno intervalo de valores - counting sort
+    distribuido uniforme - bucket
+
+Recursive Functions
+    3 custos principais - dividir em subproblemas, resolver subproblemas, combinar resultados
+    
+    metodo Recursion Tree
+        desenha arvore de recursão - soma custo de dividir em problemas menores e recombinar, somar caso base e deduzir complexidade
+        busca binaria: o(logn)
+        merge sort: o(nlogn)
+        waysToClimb: O(2²)
+
+    metodo Recurrence Relation
+        vai substituindo na formula, obtem constantes em k, custo caso base, ai depois substitui o caso base na constante k e obtem resultado
+
+    metodo Master Theorem
+        ao inves de substituir acima, considera termo geral T(n) = aT(n/b) + f(n) (a e b são positivos, a é não zero, f(n) > 0 p qualquer n
+                aT(n/b) é custo de resolver subproblemas, f(n) é custo de criar subproblemas e combinar resultados
+        
+    Complexidade de espaço em recursões
+        alocação de memoria sempre em nova chamada de função recursiva e criação de variaveis
+        liberação de memoria quando escopo do frame morre (fim da chamada) e variaveis são apagadas
+        chamadas recursivas irmãs reusam espaço
+        logo, espaço é tamanho maximo da arvore de recursão + criação de variaveis
+
+    Memoization
+        toda vez q achar um resultado a uma função recursiva, cacheia ele e se vier a mesma chamada para mesma função, retorna sem precisar chamar toda arvore de recursão
+
+    Programação Dinamica
+        achar relação entre subproblemas e calcular resultado do proximo subproblema a partir dos subproblemas já calculados
+        tem impacto em complexidade de tempo de recursão somente quando subproblemas tem intersecção (ex fibonacci)
+        melhor usando metodo iterativo?
+
+Data Structure
+
+    Arrays
+        dois tipos - estatico e dinamico (muda tamanho durante execução)
+        
+        inserção
+            começo: O(n) - mudar elementos de posição
+            fim: O(1) - quando precisa aumentar o tamanho do array, precisa de O(n) operações, mas é raro
+            meio: O(n) - pior caso no começo
+        deleção
+            começo: O(n) - mudar posições
+            fim: O(1)
+            meio: O(n) - pior caso no começo
+        acessar elemento - só somar indice a posição de memória - O(1) em todos os casos
+        Busca
+            se ordenado - O(logn)
+            não ordenado - O(n)
+        Ordenação - se usar metodo "embutido", em regra O(nlogn)
+        extender array com segundo - O(n+m)
+            
+        lista de python é array dinamico, assim como arraylist, vetor em c++, array de javascript        
+        
+    Lista Ligada, Pilha e Fila
+        
+        Lista ligada
+            nós precisam de referencia p proximo, pois não são continuos em memória e tipo tem link p primeiro, anda com node.next()
+            lista duplamente ligada tem referencia ao anterior e tipo tem referencia ao ultimo
+            
+            inserção
+                começo: O(1) - só muda ponteiro inicial e aponta p antigo primeiro
+                fim: se tem referencia ao ultimo, O(n) se não O(n)
+                meio:  O(n)
+            deleção
+                começo: O(1)
+                fim: O(n) se não tem ponteiro p ultimo, se sim, O(1)
+                meio: O(n)
+            acessar - O(n)
+            busca - O(n)
+            ordenar - O(nlogn)
+        
+        Pilha - LIFO
+            em regra feita usando lista ligada, mas só pode operar no fim
+            inserção - O(1)                
+            deleção - O(1)            
+            acessar só o topo- O(1)
+            is_empty - O(1)
+            acesso - O(n)
+            busca - O(n)
+            ordenar - O(nlogn)
+            
+        Fila - FIFO
+            insere no fim e tira no começo
+            inserção - O(1)                
+            deleção - O(1)            
+            acessar só a frente - O(1)
+            acessar só a trazeira - O(1)
+            is_empty - O(1)
+            acesso - O(n)
+            busca - O(n)
+            ordenar - O(nlogn)
+            
+    Hash Table e Sets
+        HashTable
+            mapa de chaves para valores - lista de indices obtidos por hash q tem uma lista ligada com valores q tem mesma chave (Colisão)
+            hash sempre volta mesmo hash para mesma entrada - evitar colisões - linguagens tem hashtable construida (HashMap em java, Dict em python)
+            computar chave tem custo, pode ter outras implementações usando outras coisas sem ser lista ligada. mesmo no pior caso, pode considerar O(1)
+            chaves são unicas, mas valores não - ver se chave existe tem custo
+            
+            inserção é O(1) em regra exceto quando tem q aumentar hash ou colisão ?
+            busca - O(1)
+            acessar por chave - O(1)
+            deleção - O(1)
+            
+        Sets
+            conjunto distinto, usa hashtable
+            bom quando vc sabe q vai buscar mta coisa nesse array, ai paga o custo de montar isso e ganha um monte de O(1)
+            inserção é O(1) em regra exceto quando tem q aumentar hash ou colisão ?
+            busca - O(1)
+            acessar por chave - O(1)
+            deleção - O(1)
+        
+    Trees
+        nós com valor e referencia a nós considerados filhos. topo é raiz, os sem filho são folhas
+        recursivas, pois cada nó pode referenciar outras arvores
+        
+        Arvore K-aria
+            nós podem ter k filhos e não tem ordem bem definida
+            
+            busca - O(n)
+            inserção - O(1) na raiz, O(n) sem ser raiz
+            deleção - troca por folha e apaga folha - O(n)
+            montar arvore - O(n)
+        
+        Arvore Binaria
+            k ary com k = 2
+
+            busca - O(n)
+            inserção - O(1) na raiz, O(n) sem ser raiz
+            deleção - troca por folha e apaga folha - O(n)
+            montar arvore - O(n)
+        
+        Arvore Binaria de Busca
+            cada nó é maior ou igual a cada filho a esquerda e menor ou igual a cada filho a direita
+            propriedade precisa ser verificada para todos os nós - altura é filho com maior altura -  arvore balanceada é quando a diferença de altura de subarvores é no maximo 1
+            quando arvore é não balanceada altura maxima é numero de nós no pior caso (n) e balanceada o a altura maxima é log2(n) no pior caso
+            
+            busca - O(logh) h é altura - busca não volta nunca ao "andar" anterior
+            inserção - O(h) na raiz, O(n) sem ser raiz
+            deleção - troca por folha e apaga folha - O(h)
+            montar arvore - O(nlong) se não ordenado - O(n) se ordenado e O(n²) se não tiver todos os membros disponiveis no inicio da montagem
+                boa forma de construir é criar um array ordenado e começar pelo meio, parte esquerda vira arvore filha esquerda parte a direita vira filha direita e aplicar recursão nisso até terminar
+        
+        Arvore Binaria de Busca Auto balanceavel
+            se rebalanceia assim q desbalanceia - ex são AVL, red black, etc - altura sempre vai ser c.log2(n)
+            
+            busca - O(logn)
+            inserção - O(logn) na raiz, O(n) sem ser raiz
+            deleção - troca por folha e apaga folha - O(logn)
+            montar arvore - O(n) se ordenado, o(nlogn) se não ordenado, O(nlogn) se não tiver todos os membros disponiveis no inicio da montagem
+            
+        Binary Heap
+            arvore completa - tudo preenchido, com no maximo 1 nivel de diferença, sempre colocando mais p esquerda   
+            se min heap nos tem q ser menors q nó abaixo, se max nós tem q ser maiores q nos abaixo
+            permite representar arvore como array e para elemento na posição i, pai tá em (i-1)/2 e filhos tão em 2i+1 e 2i+2
+            
+            sift(rebalancear) - O(logn)
+            get min/max no tipo apropriado - O(1)
+            tirar min/max - O(logn)
+            busca - O(n)
+            inserção - O(1) na raiz, O(n) sem ser raiz
+            deleção - troca por folha e apaga folha - O(n)
+            montar arvore - O(n)
+        
+    Graphs
+        nos com valor e lista de vizinhos representada com lista de adjacencia(lista de nos q cada no tem lista de vizinhos) e matriz de adjacencia
+        lista de adjacencia
+            checar se vertice existe - O(|V|)
+            adicionar vertice - O(1)
+            apagar vertice - O(|V|)
+            adicionar vertex - O(1)
+            remover vertex - O(|V| + |E|)
+            
+        matriz de adjacencia    
+            checar se vertice existe - O(1)
+            adicionar vertice - O(1)
+            apagar vertice - O(1)
+            adicionar vertex - se pode redimensionar, O(|V|), senão O(|V²|)
+            remover vertex - O(|V|²)
+
+Erros comuns
+    laços aninhados sempre são O(n²) ?
+        nem sempre, quando se tem repetição e usa aninhado com mapa de indices pode ser O(n) pois total de indices sempre vai ser n não importa a distribuição do array de array percorrido
+        solução do problema menor numero depois de remover k digitos - usa uma pilha e remove digito a digito, porem o array de baixo vai ser menor pq o numero diminui então O(n)
+    
+    erros comuns
+        confundir nome de variaveis, tipo array dentro de array com mesmo nome p tamanho sendo q pode ser diferente e mascarar O(n*m) com O(n²)
+        não descartar melhor e pior caso
+        não entender algoritmos
+        não encontrar limites superiores e inferiores (tight bound)
+        achar q metodos embutidos são O(1) sendo que não são. ex count do python é O(n)
+    
+    necessiade de otimização
+        nem sempre precisa por 5 razões
+        1 - não tem necessidade, pois só acontece em inputs muito grandes. se input for pequeno, não preciso
+        2 - tempo - mais facil achar solução bruta q otimizada. muitas vezes não compensa ficar gastando esforço
+        3 - menor assintoticamente não quer dizer mais rapida, levar em conta expoente grande e constantes omitidas
+        4 - complexidade da solução - pode causar mais problemas
+        5 - impossibilidade - tem casos q é matematicamente impossivel melhorar como soma de elementos de array e algoritmos de ordenação baseados em comparação
+
+----------------------------
+Big-O notation:
+    f(n) = O(g(n)) if ∃c,n₀ ∀n≥n₀ f(n)≤cg(n)
+    f(n) is O(g(n)) if there exist two constants c and n₀ such that for every n greater than or equal to n₀, f(n) is smaller than or equal to cg(n)
+
+Big-Omega notation:
+
+    f(n) = Ω(g(n)) if ∃c,n₀ ∀n≥n₀ f(n)≥cg(n)
+    f(n) is Ω(g(n)) if there exist two constants c and n₀ such that for every n greater than or equal to n₀, f(n) is greater than or equal to cg(n)
+
+Big-Theta notation:
+    f(n) = Θ(g(n)) if ∃c₁,c₂,n₀ ∀n≥n₀ c₁g(n)≤f(n)≤c₂g(n)
+    f(n) is Θ(g(n)) if there exist three constants c₁, c₂, and n₀ such that for every n greater than or equal to n₀, f(n) is greater than or equal to c₁g(n) and smaller than or equal to c₂g(n)
+
+little-o notation:
+    f(n) = o(g(n)) if ∀c>0 ∃n₀ ∀n≥n₀ f(n)<cg(n)
+    f(n) is o(g(n)) if, for every c greater than 0, there exists a constant n₀ such that for every n greater than or equal to n₀, f(n) is smaller than cg(n)
+
+little-omega notation:
+    f(n) = ω(g(n)) if ∀c>0 ∃n₀ ∀n≥n₀ f(n)>cg(n)
+    f(n) is ω(g(n)) if, for every c greater than 0, there exists a constant n₀ such that for every n greater than or equal to n₀, f(n) is greater than cg(n)
+    
+O(1) - complexidade constante - input não afeta - ex ver se numero é par, acessar array
+O(logn) - cresce devagar - ex busca binaria
+O(n) - linear - ex maximo elemento de array
+O(nlogn) - liearitimica - ex merge sort ( divide arrays em sub arrays recursivamente, ordena os menores e funde ordenado)
+O(n^k) - polinomial (quadratico, cubico, etc) - selection sort
+O(k^n) - exponencial com expoente linear
+O(n!) - fatorial - ex possiveis permutações de um array
+
+melhor caso - superior - O(1)      (theta(1))
+            - medio      Theta(1)
+            - inferior*- Omega(1)  (theta(1))
+caso médio  - superior*- O(n)
+            - medio      Theta(n)
+            - inferior - Omega(n)
+pior caso   - superior*- O(n)      (theta(n))
+            - medio      Theta(n)
+            - inferior - Omega(n)  (theta(n))
+            
+soma de gauss: n + (n - 1) + (n - 2) + (n - 3) + ... + 1 <=> T(n) = n(n + 1)/2
+
+busca binaria
+    java
+public static int BinarySearchIterative(int[] arr, int num){
+    //Representing the Start and End Index After Division of Array
+    int start = 0;
+    int end = arr.length;
+
+    //Loop to Iterate Through the Array
+    for(int i = 0; iarr[n]){
+            start = n;
+        }
+        //If number to search for is greater than the arr value at index 'n'
+        else{
+            end = n;
+        }
+    }
+    //If number isn't found, return -1
+    return -1;
+}
+
+    pyhton
+def binary_search(arr, x):
+    low = 0
+    high = len(arr) - 1
+
+    while low <= high:
+        mid = low + (high - low) // 2
+
+        if arr[mid] == x:
+            return mid
+        elif arr[mid] < x:
+            low = mid + 1
+        else:
+            high = mid - 1
+
+    return -1
+
+    node
+function binarySearch(arr, target) {
+    let left = 0;
+    let right = arr.length - 1;
+
+    while (left <= right) {
+        let mid = Math.floor((left + right) / 2);
+
+        if (arr[mid] === target) {
+            return mid;
+        } else if (arr[mid] < target) {
+            left = mid + 1;
+        } else {
+            right = mid - 1;
+        }
+    }
+
+    return -1; // Return -1 if the target is not found
+}       
+
+KMP in java
+
+
+    static void searchPattern(String text, String pattern) {
+        int N = text.length();
+        int M = pattern.length();
+
+        // Compute the longest prefix suffix array (lps)
+        int[] lps = new int[M];
+        computeLPSArray(pattern, lps);
+
+        int i = 0; // Index for text
+        int j = 0; // Index for pattern
+
+        while (i < N) {
+            if (pattern.charAt(j) == text.charAt(i)) {
+                i++;
+                j++;
+            }
+
+            if (j == M) {
+                System.out.println("Pattern found at index " + (i - j));
+                j = lps[j - 1];
+            } else if (i < N && pattern.charAt(j) != text.charAt(i)) {
+                if (j != 0) {
+                    j = lps[j - 1];
+                } else {
+                    i++;
+                }
+            }
+        }
+    }
+
+    static void computeLPSArray(String pattern, int[] lps) {
+        int M = pattern.length();
+        int len = 0; // Length of the previous longest prefix suffix
+
+        lps[0] = 0; // lps[0] is always 0
+
+        int i = 1;
+        while (i < M) {
+            if (pattern.charAt(i) == pattern.charAt(len)) {
+                len++;
+                lps[i] = len;
+                i++;
+            } else {
+                if (len != 0) {
+                    len = lps[len - 1];
+                } else {
+                    lps[i] = 0;
+                    i++;
+                }
+            }
+        }
+    }
+
+algoritmos de ordenação
+
+insertion sort
+void insertionSort(int arr[], int n)
+{
+    int i, key, j;
+    for (i = 1; i < n; i++) {
+        key = arr[i];
+        j = i - 1;
+
+        // Move elements of arr[0..i-1],
+        // that are greater than key, 
+        // to one position ahead of their
+        // current position
+        while (j >= 0 && arr[j] > key) {
+            arr[j + 1] = arr[j];
+            j = j - 1;
+        }
+        arr[j + 1] = key;
+    }
+}
+
+bubble sort
+void bubbleSort(int arr[]) 
+{ 
+    int n = arr.length; 
+    for (int i = 0; i < n - 1; i++) 
+        for (int j = 0; j < n - i - 1; j++) 
+            if (arr[j] > arr[j + 1]) { 
+                // swap temp and arr[i] 
+                int temp = arr[j]; 
+                arr[j] = arr[j + 1]; 
+                arr[j + 1] = temp; 
+            } 
+} 
+
+selection sort
+for (int i = 0; i < arr.length - 1; i++)  
+{  
+    int index = i;  
+    for (int j = i + 1; j < arr.length; j++){  
+        if (arr[j] < arr[index]){  
+            index = j;//searching for lowest index  
+        }  
+    }  
+    int smallerNumber = arr[index];   
+    arr[index] = arr[i];  
+    arr[i] = smallerNumber;  
+}
+  
+merge sort
+public static void mergeSort(int[] a, int n) {
+    if (n < 2) {
+        return;
+    }
+    int mid = n / 2;
+    int[] l = new int[mid];
+    int[] r = new int[n - mid];
+
+    for (int i = 0; i < mid; i++) {
+        l[i] = a[i];
+    }
+    for (int i = mid; i < n; i++) {
+        r[i - mid] = a[i];
+    }
+    mergeSort(l, mid);
+    mergeSort(r, n - mid);
+
+    merge(a, l, r, mid, n - mid);
+}
+public static void merge(
+  int[] a, int[] l, int[] r, int left, int right) {
+ 
+    int i = 0, j = 0, k = 0;
+    while (i < left && j < right) {
+        if (l[i] <= r[j]) {
+            a[k++] = l[i++];
+        }
+        else {
+            a[k++] = r[j++];
+        }
+    }
+    while (i < left) {
+        a[k++] = l[i++];
+    }
+    while (j < right) {
+        a[k++] = r[j++];
+    }
+}
+
+heapsort
+public void sort(int arr[])
+{
+    int n = arr.length;
+
+    // Build heap (rearrange array)
+    for (int i = n / 2 - 1; i >= 0; i--)
+        heapify(arr, n, i);
+
+    // One by one extract an element from heap
+    for (int i = n - 1; i >= 0; i--) {
+        // Move current root to end
+        int temp = arr[0];
+        arr[0] = arr[i];
+        arr[i] = temp;
+
+        // call max heapify on the reduced heap
+        heapify(arr, i, 0);
+    }
+}
+
+// To heapify a subtree rooted with node i which is
+// an index in arr[]. n is size of heap
+void heapify(int arr[], int n, int i)
+{
+    int largest = i; // Initialize largest as root
+    int l = 2 * i + 1; // left = 2*i + 1
+    int r = 2 * i + 2; // right = 2*i + 2
+
+    // If left child is larger than root
+    if (l < n && arr[l] > arr[largest])
+        largest = l;
+
+    // If right child is larger than largest so far
+    if (r < n && arr[r] > arr[largest])
+        largest = r;
+
+    // If largest is not root
+    if (largest != i) {
+        int swap = arr[i];
+        arr[i] = arr[largest];
+        arr[largest] = swap;
+
+        // Recursively heapify the affected sub-tree
+        heapify(arr, n, largest);
+    }
+}
+
+quicksort
+public void quickSort(int arr[], int begin, int end) {
+    if (begin < end) {
+        int partitionIndex = partition(arr, begin, end);
+
+        quickSort(arr, begin, partitionIndex-1);
+        quickSort(arr, partitionIndex+1, end);
+    }
+}
+private int partition(int arr[], int begin, int end) {
+    int pivot = arr[end];
+    int i = (begin-1);
+
+    for (int j = begin; j < end; j++) {
+        if (arr[j] <= pivot) {
+            i++;
+
+            int swapTemp = arr[i];
+            arr[i] = arr[j];
+            arr[j] = swapTemp;
+        }
+    }
+
+    int swapTemp = arr[i+1];
+    arr[i+1] = arr[end];
+    arr[end] = swapTemp;
+
+    return i+1;
+}
+
+counting sort
+int[] countElements(int[] input, int k) {
+    int[] c = new int[k + 1];
+    Arrays.fill(c, 0);
+
+    for (int i : input) {
+        c[i] += 1;
+    }
+
+    for (int i = 1; i < c.length; i++) {
+	c[i] += c[i - 1];
+    }
+
+    return c;
+}
+int[] sort(int[] input, int k) {
+    int[] c = countElements(input, k);
+
+    int[] sorted = new int[input.length];
+    for (int i = input.length - 1; i >= 0; i--) {
+        int current = input[i];
+	sorted[c[current] - 1] = current;
+	c[current] -= 1;
+    }
+
+    return sorted;
+}
+
+radix sort
+void sort(int[] numbers) {
+    int maximumNumber = findMaximumNumberIn(numbers);
+    int numberOfDigits = calculateNumberOfDigitsIn(maximumNumber);
+    int placeValue = 1;
+    while (numberOfDigits-- > 0) {
+        applyCountingSortOn(numbers, placeValue);
+        placeValue *= 10;
+    }
+}
+void applyCountingSortOn(int[] numbers, int placeValue) {
+
+    int range = 10 // decimal system, numbers from 0-9
+
+    // ...
+
+    // calculate the frequency of digits
+    for (int i = 0; i < length; i++) {
+        int digit = (numbers[i] / placeValue) % range;
+        frequency[digit]++;
+    }
+
+    for (int i = 1; i < range; i++) {
+        frequency[i] += frequency[i - 1];
+    }
+
+    for (int i = length - 1; i >= 0; i--) {
+        int digit = (numbers[i] / placeValue) % range;
+        sortedValues[frequency[digit] - 1] = numbers[i];
+        frequency[digit]--;
+    }
+
+    System.arraycopy(result, 0, numbers, 0, length); 
+
+}
+
+bucket sort
+private int hash(int i, int max, int numberOfBuckets) {
+    return (int) ((double) i / max * (numberOfBuckets - 1));
+}
+final int numberOfBuckets = (int) Math.sqrt(initialList.size());
+List<List<Integer>> buckets = new ArrayList<>(numberOfBuckets);
+for(int i = 0; i < numberOfBuckets; i++) {
+    buckets.add(new ArrayList<>());
+}
+private int findMax(List<Integer> input) {
+    int m = Integer.MIN_VALUE;
+    for (int i : input) {
+        m = Math.max(i, m);
+    }
+    return m;
+}
+
+int max = findMax(initialList);
+
+for (int i : initialList) {
+    buckets.get(hash(i, max, numberOfBuckets)).add(i);
+}
+Comparator<Integer> comparator = Comparator.naturalOrder();
+
+for(List<Integer> bucket  : buckets){
+    bucket.sort(comparator);
+}
+List<Integer> sortedArray = new LinkedList<>();
+
+for(List<Integer> bucket : buckets) {
+    sortedArray.addAll(bucket);
+} 
+
+return sortedArray;
+
+shell sort
+public void sort(int arrayToSort[]) {
+    int n = arrayToSort.length;
+
+    for (int gap = n / 2; gap > 0; gap /= 2) {
+        for (int i = gap; i < n; i++) {
+            int key = arrayToSort[i];
+            int j = i;
+            while (j >= gap && arrayToSort[j - gap] > key) {
+                arrayToSort[j] = arrayToSort[j - gap];
+                j -= gap;
+            }
+            arrayToSort[j] = key;
+        }
+    }
+}
+
+outros problemas
+
+def first_repeating_character(s):
+    for i in range(len(s)):
+        for j in range(i):
+            if s[i] == s[j]:
+                return s[i]
+    return '\0'
+O(n²), S(1)
+
+def first_repeating_character(s):
+    visited = set()
+    for ch in s:
+        if ch in visited:
+            return ch
+        else:
+            visited.add(ch)
+    return '\0'
+O(n), S(n²)
+
+def maximum_subarray(arr):
+    max_sum = float("-inf")
+    for i in range(len(arr)):
+        for j in range(i, len(arr)):
+            actual_sum = 0
+            for k in range(i, j+1):
+                actual_sum += arr[k]
+            max_sum = max(max_sum, actual_sum)
+    return max_sum
+O(n²),S(1)
+
+def maximum_subarray(arr):
+    max_sum = float("-inf")
+    for i in range(len(arr)):
+        cumulative_sum = 0
+        for j in range(i, len(arr)):
+            cumulative_sum += arr[j]
+            max_sum = max(max_sum, cumulative_sum)
+    return max_sum    
+O(n²),S(1)
+
+def maximum_subarray(arr):
+    global_sum = float("-inf")
+    local_sum = 0
+    for elem in arr:
+        local_sum = max(elem, local_sum+elem)
+        global_sum = max(global_sum, local_sum)
+    return global_sum
+O(n),S(1)
+
+def find_peak(arr):
+    for i in range(len(arr)):
+        if (i == 0 or arr[i] >= arr[i-1]) and (i == len(arr)-1 or arr[i] >= arr[i+1]):
+            return i
+O(n), S(1)
+
+def find_peak(arr):
+    left = 0
+    right = len(arr)-1
+    while left < right:
+        mid = (left + right)//2
+        if arr[mid] < arr[mid+1]:
+            left = mid+1
+        else:
+            right = mid
+    return left
+O(logn), S(1) - divide and conquer
+
+def is_palindrome(llist):
+    n = 0
+    temp = llist.head
+    while temp:
+        n += 1
+        temp = temp.next
+    left = llist.head
+    for i in range(n//2):
+        right = llist.head
+        for j in range(n-i-1):
+            right = right.next
+        if left.data != right.data:
+            return False
+        left = left.next
+    return True
+O(n²), S(1)
+
+def reverse_llist(head):
+    previous = None
+    current = head
+    while current is not None:
+        next = current.next
+        current.next = previous
+        previous = current
+        current = next
+    return previous 
+ 
+def is_palindrome(llist):
+    slow = fast = llist.head
+    while fast and fast.next:
+        slow = slow.next
+        fast = fast.next.next
+    slow = reverse_llist(slow)
+    left = llist.head
+    right = slow
+    while right:
+        if left.data != right.data:
+            return False
+        left = left.next
+        right = right.next
+    return True
+O(n), S(1)
+
+def rec(s, i, subsequence, subsequences):
+    if i == len(s):
+        subsequences.append(''.join(subsequence))
+    else:
+        subsequence.append(s[i])
+        rec(s, i+1, subsequence, output)
+        subsequence.pop()
+        rec(s, i+1, subsequence, output)
+ 
+def get_subsequences(s):
+    subsequences = []
+    rec(s, 0, [], subsequences)
+    return subsequences
+O(n*2^n)
+
+def rec(s, i, subsequence, subsequences):
+    if i == len(s):
+        subsequences.append(''.join(subsequence))
+    else:
+        subsequence.append(s[i])
+        rec(s, i+1, subsequence, output)
+        subsequence.pop()
+        rec(s, i+1, subsequence, output)
+ 
+def get_subsequences(s):
+    subsequences = []
+    rec(s, 0, [], subsequences)
+    return subsequences
+O(n*2^n)
+
+def min_cost_path(matrix, i=0, j=0):
+    n = len(matrix)
+    m = len(matrix[0])
+    if i == n or j == m:
+        return float('inf')
+    if i == n-1 and j == m-1:
+        return matrix[i][j]
+    else:
+        return matrix[i][j] + min(min_cost_path(matrix, i+1, j), min_cost_path(matrix, i, j+1))
+O(2^(n+m)), S(n+m)
+
+def min_cost_path(matrix):
+    n = len(matrix)
+    m = len(matrix[0])
+    dp = [[0] * m for i in range(n)]
+    for i in range(n):
+        for j in range(m):
+            if i == 0 and j == 0:
+                dp[i][j] = matrix[i][j]
+            else:
+                from_top = dp[i-1][j] if i > 0 else float('inf')
+                from_left = dp[i][j-1] if j > 0 else float('inf')
+                dp[i][j] = matrix[i][j] + min(from_top, from_left)
+    return dp[n-1][m-1]
+O(n*m), S(n*m)
+
+def longest_consecutive_sequence(arr):
+    max_len = 0
+    for elem in arr:
+        left = elem
+        while left-1 in arr:
+            left -= 1
+        right = elem
+        while right+1 in arr:
+            right += 1
+        max_len = max(max_len, right-left+1)
+    return max_len
+O(n³), S(1)
+
+def longest_consecutive_sequence(arr):
+    max_len = 0
+    length = 1
+    arr = sorted(arr)
+    for i in range(1, len(arr)):
+        if arr[i] == arr[i-1] + 1:
+            length += 1
+        elif arr[i] == arr[i-1]:
+            continue
+        else:
+            length = 1
+        max_len = max(max_len, length)
+    return max_len
+O(nlogn), S(n)
+
+def longest_consecutive_sequence(arr):
+    max_len = 0
+    values = set(arr)
+    for elem in arr:
+        left = elem
+        while left-1 in values:
+            left -= 1
+        right = elem
+        while right+1 in values:
+            right += 1
+        max_len = max(max_len, right-left+1)
+    return max_len
+O(n²), S(n)
+
+def longest_consecutive_sequence(arr):
+    max_len = 0
+    values = set(arr)
+    for elem in arr:
+        if elem-1 in values:
+            continue
+        else:
+            right = elem
+            while right+1 in values:
+                right += 1
+            max_len = max(max_len, right-elem+1)
+    return max_len
+O(n), S(n)
+
+def longest_consecutive_sequence(arr):
+    max_len = 0
+    values = set(arr)
+    visited = set()
+    for elem in arr:
+        if elem in visited:
+            continue
+        else:
+            visited.add(elem)
+            left = elem
+            while left-1 in values:
+                left -= 1
+                visited.add(left)
+            right = elem
+            while right+1 in values:
+                right += 1
+                visited.add(right)
+            max_len = max(max_len, right-left+1)
+    return max_len
+O(n), S(n)
+
+def is_subsequence(s, p):
+    if len(p) > len(s):
+        return False
+    ptr_p = 0
+    ptr_s = 0
+    while ptr_s < len(s) and ptr_p < len(p):
+        if s[ptr_s] == p[ptr_p]:
+            ptr_p += 1
+        ptr_s += 1
+    return ptr_p == len(p)
+ 
+def rec(s, i, subsequence, subsequences):
+    if i == len(s):
+        subsequences.append(''.join(subsequence))
+    else:
+        subsequence.append(s[i])
+        rec(s, i+1, subsequence, output)
+        subsequence.pop()
+        rec(s, i+1, subsequence, output)
+ 
+def get_subsequences(s):
+    subsequences = []
+    rec(s, 0, [], subsequences)
+    return subsequences
+ 
+def lcs(str1, str2):
+    max_len = 0
+    subsequences = get_subsequences(str1)
+    for subsequence in subsequences:
+        if is_subsequence(str2, subsequence) and len(subsequence) > max_len:
+            max_len = len(subsequence)
+    return max_len
+O((n+m)*2^n), S(n*2^n)
+
+def lcs(str1, str2, i=0, j=0):
+    if i == len(str1) or j == len(str2):
+        return 0
+    elif str1[i] == str2[j]:
+        return 1 + lcs(str1, str2, i+1, j+1)
+    else:
+        return max(lcs(str1, str2, i+1, j), lcs(str1, str2, i, j+1))
+O(2^(m+n)), S(m+n)
+
+def lcs(str1, str2): //lcs = longest common subsequence
+    n = len(str1)
+    m = len(str2)
+    dp = [[0] * (m+1) for i in range(n+1)]
+    for i in range(1, n+1):
+        for j in range(1, m+1):
+            if str1[i-1] == str2[j-1]:
+                dp[i][j] = 1 + dp[i-1][j-1]
+            else:
+                dp[i][j] = max(dp[i-1][j], dp[i][j-1])
+    return dp[n][m]
+O(n*m), S(n+m)
+
+def subsets_k(arr, k, i=0): #que somam resultando k
+    if k == 0:
+        return 1
+    elif k < 0 or i == len(arr):
+        return 0
+    else:
+        return subsets_k(arr, k-arr[i], i+1) + subsets_k(arr, k, i+1)
+O(2^n), S(n)
+
+def _subsets_k(arr, k, i, lookup):
+    key = str(i) + " " + str(k)
+    if key in lookup:
+        return lookup[key]
+    elif k == 0:
+        return 1
+    elif k < 0 or i >= len(arr):
+        return 0
+    else:
+        lookup[key] = _subsets_k(arr, k-arr[i], i+1, lookup) + _subsets_k(arr, k, i+1, lookup)
+        return lookup[key]
+ 
+ 
+def subsets_k(arr, k):
+    lookup = {}
+    return _subsets_k(arr, k, 0, lookup)
+O(nk), S(nk)    
+
+#binary search tree balanced
+def height(root):
+    if root is None:
+        return -1
+    else:
+        lefth = height(root.left)
+        righth = height(root.right)
+        return 1 + max(lefth, righth)
+ 
+def is_balanced(root):
+    if root is None:
+        return True
+    else:
+        lefth = height(root.left)
+        righth = height(root.right)
+        return abs(lefth-righth) <= 1 and is_balanced(root.left) and is_balanced(root.right)
+O(nlogn), S(h)
+
+def _is_balanced(root, output):
+    if root is None:
+        return -1
+    else:
+        lefth = height(root.left)
+        righth = height(root.right)
+        if abs(lefth - righth) > 1:
+            output[0] = False
+        return 1 + max(lefth, righth)
+ 
+def is_balanced(root):
+    output = [True]
+    _is_balanced(root, output)
+    return output[0]
+O(n), S(h)
+
+def get_permutations(arr):
+    if len(arr) == 0:
+        return [arr]
+    else:
+        permutations = []
+        for i in range(len(arr)):
+            if arr[i] not in arr[:i]:
+                remaining = get_permutations(arr[:i]+arr[i+1:])
+                for permutation in remaining:
+                    permutation.append(arr[i])
+                    permutations.append(permutation)
+        return permutations
+O(n*n!), S(n*n!)
+
+#encontrar palavra em matriz
+def out_of_board(board, i, j):
+    n = len(board)
+    m = len(board[0])
+    return i < 0 or i >= n or j < 0 or j >= m
+ 
+def search(board, word, i, j, counter, visited):
+  if counter == len(word):
+    return True
+  elif out_of_board(board, i, j) or (i, j) in visited or board[i][j] != word[counter]:
+    return False
+  else:
+    visited.add((i, j))
+    if search(board, word, i+1, j, counter+1, visited) or search(board, word, i, j+1, counter+1, visited) or search(board, word, i-1, j, counter+1, visited) or search(board, word, i, j-1, counter+1, visited):
+      return True
+    else:
+      visited.remove((i, j))
+      return False
+ 
+def exist(board, word):
+    n = len(board)
+    m = len(board[0])
+    visited = set()
+    for i in range(n):
+        for j in range(m):
+            if board[i][j] == word[0]:
+                if search(board, word, i, j, 0, visited):
+                    return True
+    return False
+O(mn*4^w), S(w)
+
+#9 rainhas
+def is_not_attacked(board, row, col):
+  i = row-1
+  jleft = col-1
+  jright = col+1
+  while i >= 0:
+    if board[i][col] == 'Q' or (jleft >= 0 and board[i][jleft] == 'Q') or (jright < len(board) and board[i][jright] == 'Q'):
+      return False
+    else:
+      i -= 1
+      jleft -= 1
+      jright += 1
+  return True
+ 
+def _n_queens(n, board, row):
+    if row >= n:
+        return 1
+    sum_ways = 0
+    for i in range(n):
+        if is_not_attacked(board, row, i):
+            board[row][i] = 'Q'
+            sum_ways += _n_queens(n, board, row+1)
+            board[row][i] = '.'
+    return sum_ways
+ 
+def n_queens(n):
+    board = [['.']*n for i in range(n)]
+    return _n_queens(n, board, 0)
+O(n²*n!), S(n²)
+
+
