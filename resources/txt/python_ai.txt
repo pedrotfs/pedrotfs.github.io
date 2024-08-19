@@ -1,0 +1,1015 @@
+Anaconda
+    trocar conda install tensorflow por pip install tensorflow
+    se não funcionar,
+        conda create -n tf tensorflow pydotplus jupyter
+        conda activate tf       
+    e ai conda activate tf toda vez que lançar prompt novo
+    
+    ativar conda - eval "$(/home/pedro/anaconda3/bin/conda shell.bash hook)"
+        conda activate / conda deactivate
+        
+    jupyter vem junto com conda
+        rodar jupyter notebook - todos os blocos ficam na memoria. se ficar estranho rodar kernel restart
+
+
+Introdução a biblioteca Pandas
+    Pandas - introduz data frame e series para manipular "linhas" e colunas de informações
+    NumPy - converte dados do panda para Array NumPy
+    Scikit_Learn - usa resultados do numpy para efetuar machine learning
+    
+    processo costuma ser bastante automatizado
+    series é array extraido do DF    
+    
+Estatistica e Probabilidade
+    tipos de dados - numerico, categorico, ordinal
+    
+    numerico - medidas, coisas quantitativas - discreto (inteiro), contagem de evento - continuo, numero infinito de valores possiveis (quanta chuva caiu num dia) (fração)
+    categorico - genero, time, estado de residencia - numeros sem significado matematico
+    ordinal - misto de numerio e categorico ex nota para filmes
+    
+    Mean - avrg - média aritimetica
+    Median - ordena valores e pega o do meio - se for par e não tiver meio, mean dos dois do meio - menos vulneravel a casos extremos (distribuição de renda - bilionarios) q mean
+    Mode - valor mais comum da série
+    
+    Variancia - quão "esticado" os dados são - achar mean, achar diferenças para mean, elevar diferenças ao quadrado, achar mean das diferenças
+    Desvio Padrão - raiz quadrada da variancia - usado para identificar casos atipicos
+
+    população - 
+    amostra - 
+    
+    se usar amostra, usar variancia da amostra ao invés da da população
+        outras funções de densidade de probabilidade (para dados continuos não é probabilidade de valor acontecer e sim probabilidade de intervalo de valores acontecer)
+    distribuição uniforme - praticamente mesma chance do alcance de valor acontecer
+    distribuição gaussiana - concentra no meio
+    distribuição exponencial
+    distribuição binomial de massa
+    poisson
+    
+    usar probability mass quando dados forem discretos ao invés de continuos
+    
+    percentis - ponto onde % dos valores é menos q valor
+    momentos - primeiro momento é mean e segundo é variancia, e terceiro é "skew"(p onde a cauda tá mais longa) - 4 é kurtosis, quanto afiado é o pico em relação a normal
+    
+    plot - matplotlib - é possivel manipular mta coisa como eixos, etiquetas, etc
+    
+    seaborn - usa em cima do matplotlib p ficar mais agradavel visualmente e ter mais opções de graficos
+    
+    covariancia - medida de como 2 variaveis variam em relação uma a outra
+        pensar em conjuntos como vetores - converter p vetores de variancias de mean - pegar coseno do angulo entre as duas (dot product) e dividir pelo tamanho da amostragem
+        tem no numpy
+        dificil de interpretar - se for perto de zero, sem muita correlação, se grande pode ter - grande se ao dividir covariancia pelo desvio padrão das duas variaveis
+            se der -1, relação inversa perfeita, 0 sem relação, 1 correlacionado perfeito
+    correlação - medida de como 2 variaveis variam em relação uma a outra
+        correlação não implica causa, só experimento aleatorio e controlado - usar correlação para decidir quais experimentos fazer
+        
+    Probabilidade Condicional
+        se dois eventos dependem um do outro, qual a probabilidade do outro sendo que o "um" ocorreu?
+        P(B|A) = P(A,B)/P(A)
+        P(B,A) - probabilidade dos dois ocorrerem
+        P(B|A) - probabilidade condicional de B sendo q A ocorreu
+        
+        se probabilidade de um evento condicional for proximo ao evento que está atrelado, são independentes, senão são dependentes
+    
+    Teorema de Bayes
+        P(A|B) = P(A)P(B|A) / P(B)
+        depende das duas probabilidades base. muito ignorado
+    
+
+Modelos Preditivos
+    Regressão Linear - passa uma linha através de pontos para prever valores não observados, seja "passado" ou "futuro"
+        numa função linear, angulo é correlação entre variaveis multiplicado por desvio padrão em y dividido por desvio padrão em x. raiz é mean de y - angulo * mean de x
+        metodo least squares em regra é melhor escolha
+        r squared é meio de medir erro - fração da variação total em Y que modelo captura - 1 - soma de erros ao quadrado / soma de quadrado de variação de mean
+            vai de 0 a 1 (ruim a perfeito) - 
+
+    Regressão Polinomial
+        quando dados não são apropriados para uma linha - mais generico - grau maior produz curvas mais complexas
+        usar grau maior q precisa causa "overdrift" - curva acomodar muitos dados fora do padrão da curva
+        numpy.polyfit()
+        
+    Regressão Multipla
+        mais de uma variavel
+        ainda pode medir erro com r-squared
+        precisa assumir q fatores diferentes não são dependentes entre si
+        OLS - ordinary Least Squares
+        eliminar coeficientes que não importam - pacote statsmodel tem ols        
+        
+    Modelos Multinível
+        coisas acontecem em niveis ex saude depende de saude de orgao q depende de saude de celula q depende de saude genetica da famila q depende de poluição, etc
+        conceito avançadissimo  
+    
+Machine Learning
+    Aprendizado supervisionado vs não supervisionado
+        ML - algoritimos que aprendem com dados observacionais e fazem previsões em cima disso
+
+        aprendizado não supervisionado
+            não dá respostas, modelo tem q tirar sentido dos dados ele mesmo - ex agrupar objetos  em 2 conjuntos diferentes(forma, tamanho, cor etc)
+            usar quando não sabe qual o resultado que quer, variaveis latentes ex comportamento em site de relacionamento
+    
+        supervisionado
+            tem resposta, ensina modelos com resposta para modelos preverem respostas para valores novos e desconhecidos
+            se dados de treino tem valor que tá tentando prever, serve como validação, não tem q avaliar
+            se tem dados o suficiente p treino, pode dividir em 2 partes, treino e teste, ai treina modelo só com os dados de treino e mede (usando r-squared ou outra coisa)
+                a precisão do modelo comparando previsões do conjunto de testes e comparando com valores reais conhecidos
+            conjutos de teste e e treino devem ser grandes o bastante, usar amostras aleatorias dos conjuntos - bom contra overfitting (mudar modelo p aceitar muitos desvios padrão)
+            não é infalivel - usar kfold cross validation - fazer treino e teste muitas vezes
+                dividir em k segmentos criados com dados aleatorios dos conjuntos, reservar 1 segmento p testes e treinar o resto e medir performance contra o de teste
+                usar então media entre os r-squared dos conjuntos testados contra o de teste
+                
+    Metodo Bayesiano
+        aplicação do teorema de bayes: exemplo email ser span se conter palavra free
+        chamado naive (inocente) pois não olha relação entre palavras, só palavras isoladas
+            sickit faz isso com countVectorizer e MultinomialNB - aprendizado supervisionado
+            
+    K-Means Clustering
+        aprendizado não supervisionado - divide dados em k grupos que estão perto de k centroides
+        pode ter agrupamentos interessantes ex onde bilionarios moram, que generos de musica mais consumidos em lugar etc
+        
+        pegar aleatoriamente k centroides (k-means) - distribuir data point para centroid q está mais perto
+            recomputar os centroides baseando na posição média de cada ponto do centroide - iterar até pontos pararem de mudar de centroides
+        p prever cluster para novos pontos, achar o centroide mais proximo dos pontos
+        
+        limitações
+            escolher K corretamente - começar com poucos e ir aumentando até parar de ter reduções grandes no erro squared (distancia de pontos para seus centroides)
+            evitar local minima - escolha inicial de centroides pode dar resultados diferentes, rodar varias vezes para confirmar que resultados não são errados
+            identificar clusters - vc tem q dizer o q cada cluster é
+            
+    Medir entropia
+        medida de desordem de conjunto de dados - se todos os items são iguais, baixa ou nenhuma entropia e vice versa
+        
+    Arvores de decisão
+        fluxograma para decidir a classificação de dado em ML
+        aprendizado supervisionado - passar amostra e classificações e sai uma arvore
+        ex decidir curriculos baseado em dados historicos de contratação
+        
+        a cada passo, achar atributo que usa p particionar o conjunto de dados para minimizar entropia de dados no proximo passo (nome p algoritmo - ID3)
+            é um algoritimo ganancioso, ao descer a arvore, pega a decisão q reduz entropia ao máximo nesse estágio, nem sempre resulta numa arvore ótima, mas funciona
+        
+        tecninca random forest - arvores de decisão são muito suscetiveis a overfitting - p combater isso, contruir arvores alternativas e deixar com q elas "votem" na classificação final
+            fazer o bagging/bootstrap aggregating - reinputar amostras aleatorias para cada arvore - pegar atributos aleatorios q cada passo pode escolher
+            
+    Emsemble learning
+        random forest é um tipo disso - usa modelos ao mesmo tempo p resolver problema e deixa eles votarem na solução
+        boosting - cada modelo seguinte prioriza dados que foram desclassificados pelo modelo anterior
+        bucket of models - treinar modelos diferentes usando mesmo dados treino e usar o q foi melhor com os dados treino
+        stacking - roda modelos multiplos com mesmos dados e combina resultados
+        
+        bayes optimal classifier - melhor mas quase sempre impratico
+        bayesian parameter averaging - tentativa de tornar o acima pratico, mas sucetivel a overfit e perde em performance para aproximação mais simples de bagging/bootstrap aggregating
+        bayesian model calculation - tenta resolver tudo mas é só usar validação cruzada para achar a melhor combinação de modelos
+        
+    XGBoost
+        xtreme gradient boosted trees (tipo de ensemble) - cada arvore impulsiona atributos que levam a misclassificação de arvore anterior
+        sempre vence competições, funciona bem, facil de usar, rapido, boa escolha de algoritmo p começar por
+        
+        regularized boosting, previne overfitting
+        sabe lidar com valores faltantes automaticamente
+        processamento paralelo
+        validação cross em cada iteração - ajuda com numero otimo de iterações
+        treino incremental
+        pode plugar objetivos de otimizações proprias
+        poda de arvore - resultados mais profundos e otimizados
+        
+        pip install xgboost - tem CLI, C++, JVM, etc
+            não é só p sickit_learn, tem interface propria, usa DMatrix para armazenar labels e features - criado facil do numpy array
+            todos parametros são passados por dicionarios
+            train -> predict
+    
+        parametros mais usados        
+            Booster - gbtree ou gblinear
+            objetivo - multi:softmax, mult:softprob
+            ETA - taxa de aprendizado - peso em cada passo
+            max_depth - tamanho da arvora
+            min_child_weight - controla overfitting, valor alto causa underfit
+        
+        
+    Support Vector Machines
+        classificar data de grandes dimensões (muitas features) - acha vetores com alta dimensão q definem hiperplanos - usa kernel trick p representar dados em espaço de muitas dimensões para
+            achar hiper planos não aparentes em baixas dimensões
+        usa matematica avançada para agrupar dados com muitas features - caro, exige mtos recursos, kernel trick q faz isso ser possivel
+        
+        SVC usa SVM e pode escolher kernel. alguns são melhores q outros
+        
+        
+Recommender Systems
+    User Based Collaborative Filter
+        matriz de coisas q usuario ve/avalia/compra - computa pontuação de similaridade entre usuários - encontra usuários similares - recomenda coisas dos outros p vc
+        tem mais pessoas q coisas a recomendar - pessoas as vezes atrapalham o algoritmo (shilling attack) - gosto das pessoas mudam
+    
+    Item Based Collaborative Filter
+        coisas não mudam - menos coisas q pessoas - mais dificil de atrapalhar o algoritmo
+        encontrar pares de filme de mesma pessoa viu - medir similaridade das notas com notas de outros usuarios (ordena por filme, depois por similaridade)
+        se items recomendados forem estranhos, remover os items com numero de avaliações infinitamente menor - ex só pegar filmes com mais de 100 reviews
+        
+
+Data Mining and Machine Learning Techniques
+    K-nearest-neighboors
+        distancia entre data points - achar distancia e achar K vizinhos mais proximo - os mais proximos votam na classificação
+        valor de K é importante para amostra
+        aprendizado supervisionado
+        
+    Redução de Dimensionalidade
+        no exemplo de filme, cada vetor tem sua dimensão - diminuir dimensões tentando preservar o máximo da variancia possível - compressão de dados
+        K means clustering diminui dados para K centroides
+        acha hiper planos usando eigenvectors, projeto dados nos hiperplanos que viram eixos dos dados - util para compressão de imagens e reconhecimento facial
+        tecnica famosa disso é singular value decomposition (SVD)
+        
+    Data Warehouse - ETL e ELT
+        Data Warehouse - base da dados centralizada com infos de muitas fontes - consultado por sql ou ferramentas (ex tableau)
+        manutenção, escalabilidade e normalização são complexos
+        
+        ETL - extract transform and load
+            extrair dado das fontes, transformar nos schemas que precisa e salvar no destino
+            em big data o transform é bem complicado - dificl de escalar
+            
+        ELT - extract load and transform
+            distribuir em cluster ou em nosql que é mais escalavel para transformar depois da carga - hadoop, spark, mapreduce
+            
+    Aprendizado reforçado
+        um agente explora "espaço" e registra valores de mudança de estados em diferentes condições
+        valores então informam comportamento subseguinte do agente (ex pacman)
+        performance online rapida quando espaço já é explorado
+        
+        Q-Learning - implementação de aprendizado reforçado
+            conjunto de estados s, ações possíveis nos estados a, valor de cada estado ação Q
+                drante exploração, se coisas ruins acontecem depois de estado/ação reduz Q e vice versa
+                
+            formas de explorar
+                simples - escolha ação com melhor Q. se empatar escolher aleatório
+                melhor - usar termo epsilon - se aleatorio for menor q epsilon, não seguir maior Q, mas sim escolher aleatório
+                    faz com q exploração nunca pare por completo mas escolher epsilon é dificil
+            Markov decision processes provem framework matematico p modelar processo de decisão. parcialmente aleatorio e parcialmente controlado
+            Programação Dinamica entra nisso (ver complexidade de algoritmos) - guarda resultados e os usa para evitar computações repetidas a custo de armazenagem modesta
+            
+            Pacote Open AI ML - gym - melhor no linux - treinamento grafico
+            
+    Matriz de Confusão
+                        Sim obtido          | não obtido
+        Sim previsto    positivos reais     | falso positivo
+        Não previsto    falso negativos     | negativo real
+        
+        é preferivel que numeros que combinem/reais (sim sim ou não não) sejam muito maiores q os q falsos
+    
+    Medida de classificadores
+        métricas derivadas da matriz de confusão
+        recall - true positives / (true positives + false negatives) - bom p fraudes, conhecido como completness, sensitivity - boa escolha quando falso negativo importa muito
+        precisão - true positives / (true positives + false positives) - percentual de resultados relevantes - teste medico, teste de farmacos/drogas - quando falso positivo importa muito
+        especificidade - true negatives/(true negatives + false positives)
+        f1 score - 2*true positives / (2* true positives + false positives + false negatives)
+        RMSE - root mean squared error - medida de precisão que só importa respostas certas ou erradas
+        Curva ROC - plot de recall / falso positivos em varios pontos limites        
+
+
+Real World Data
+    Bias/Variance
+        Bias é quão errado seus valores obtidos estão da resposta real
+        variancia é quão espalhado seus valores obtidos estão da resposta real
+        muitas vezes precisa escolher entre bias e variancia (overfitting vs underfitting)
+        os dois contribuem com o erro - erro = bias² + variance
+        vc quer minimizar erro, não bias e variancia especificamente - complexidade otima está entre modelos simples (baixa variancia alto bias) e complexo (alta variancia e baixo bias)
+    
+    Limpeza e normalização de dados
+        importantissimo - maior parte do tempo é limpeza(dados muito fora da curva, faltando, maliciosa, errado, irrelevante, inconsistente, mal formatado) e adaptação de dados
+        garbage in, garbage out
+        
+    Normalizando dados numericos
+        reduz bias, e lida com diferentes escalas, removendo pesos errados (ex idade até 100 vs renda até bilhões)
+
+    Feature Enginering & Curse of Dimensionality
+        escolher quais features importam para o q é desejado prever - como transformar, normalizar, lidar com dados incompletos, features derivadas de features, etc
+        cada feature é uma dimensão - muitas features levam a dados esparsos e é problema - usar PCA e K-means para diminuir dimensões
+        
+    Técnicas para dados incompletos e faltantes
+        colunas faltantes - usar mean do resto das colunas
+        mediana pode ser escolha melhor se tiver outliers no resto das colunas - perde informação de correlação - não mto preciso
+            em categorias, usar valor mais frequente
+        outra tecnica é descartar linha porém só serve quando for muito poucas colunas faltando
+        
+        melhor tecnica é usar machine learning
+            KNN - achar mais similares e usar media dos valores
+            deep learning - melhor para categorias, porém complicado
+            regressão - achar relação linear ou não linear entre feature faltando e features - tecnica mais avançada - MICE - Multiple imputation by chained equations
+            
+    Técnicas para dados desbalanceados
+        discrepancia alta entre positivo(o testado aconteceu) e negativo(não aconteceu) - ex fraude é raro logo maioria das linhas e colunas não tem fraude
+        oversampling - duplicar casos da classe menor de forma aleatória
+        undersampling - remover casos da maioria mas jogar dados fora costuma ser errado
+        SMOTE - gera exemplos da minoria usando vizinhos mais proximos (KNN) - gera novas amostras e undersample maioria - em regra melhor q oversampling puro
+        ajustar limites - evitar falso positivo é possivel aumentar limite e pode ter mais falso negativo
+        
+        Binning - categorizar intervalos (por em baldes) - transfora dado numerico em categorico - causa perda de informação
+        Tranforming - dados com tendencia exponencial pode ser transformado de forma logaritmica - aplicar funções a features pode ajudar a treinar modelo
+        Encoding - transforma dados em outra forma de representação (estrutura de dados ? ) ex cria baldes e balde da categoria fica com 1 e o resto zero - utilizado em deep learning/rede neural
+        Scaling/Normalizing - se escalar, lembrar de desescalar depois
+        Shuffling- embaralhar beneficia dados de treino pois elimina residuos de ordenação
+        
+        
+Spark and Big Data
+    motor generalista para processamento de dados de larga escala - distribuido
+    driver -> cluster manager (spark, yarn(hadoop) )-> executor
+    diz q é 100x mais rapido q mapReduce do hadoop em memoria e 10x mais rapido em disco - DAG (directed acyclic graph) engine
+    aceita python java e scala - Resilient distributed dataset (RDD)
+    componentes: spark core, streaming, sql, MLLib, Graphx
+    
+    preferem python pela facilidade mas scala é nativo do spark
+    
+    RDD
+        pode ser criado de arquivo texto, memoria, jdbc, cassandra, hbasem elasticsearch, json, csv, etc
+        é possivel transformar em varios formatos, ocmo mapa, flatmap, distinct, etc,  pode usar lambda (função inline)
+        ações - collect, count, take, top, reduce    
+        
+    MLLib
+        feature extraction por frquencia - util p busca
+        estatisticas base - correlações pearson e spearman, min, max, mean, variance ...
+        linear regression, logistic regression
+        suport vector machines
+        bayes classificator
+        decision trees
+        kmeans clustering
+        principal component analysis, singular value decomposition
+        recomendaçoes usando alternating least squares
+        tipos de dados: vector(denso ou esparso) - labeled point - rating
+        
+    TF/IDF
+        term frequency / inverse document frequency - ve quais termos são mais relevantes para um documento
+        TF - frequencia de palavra em documento
+        DF - frequencia de palavra em conjunto de documentos ex toda wikipedia
+        se palavra acontece mto em documento e não no conjunto de documentos ela pode ser relevante - isso filtra palavras comuns como the, a, this etc
+        usa-se o log de idf já q frequencias de palavras são divididas exponencialmente
+        problemas podem ser capitalização, sinonimos, abreviações, escritas errados - gerar hash - pesado
+        
+        algoritmo simples: computar TF-IDF de todas as palavras, ordenar por isso
+              
+        
+Experimental Design
+    Deploy de modelos para sistemas em tempo real
+        separar treino de predição - treinar modelo periodicamente offline e mandar resultados p web q são chamados p app
+        
+    teste A/B
+        teste controlado variante vs controle - não rodar por pouco tempo por conta de poder achar q variancia é resultado
+        usar metricas que tem menos variancia
+        parar quando achar significancia (positiva ou negativa) - alcança limite superior no tempo estipulado
+        sempre lembrar que correlação não é causa
+        
+        novelty effects - tempo curto causa confusão - manter teste por mais tempo ou interromper e voltar - em regra controle tem performance melhor que novo por ser mudança quando novo vira controle
+        efeito temporada - pode fazer sucesos só no natal
+        selection bias - pode ser que pessoas q caiam em grupos tenham vieses - rodar teste A/A periodicamente p ver se tem viés
+        poluição de dados - robos podem afetar experimento e desvios podem distorcer resultado - evitar robos forçando teste em parte q custa dinheiro
+        erros de atribuição - cuidado com areas cinzentas entre A/B - evitar multiplos experimentos ao mesmo tempo
+    
+    T-tests e P-values
+        T-statistic - medida de diferença entre conjuntos medido em unidade de erro padrão - tamanho da diferençã relativo a variancia dos dados
+            t alto quer dizer diferença real
+        P-value - probabilidade de A e B satisfazer "hipotese nula" - sem diferença entre controle e variancia - p value pequeno implica que mudança é significativa
+        
+        escolher limite de Pvalue - 5%? 10%? se menos foi desvio padrão e rejeita. se é positivo, use, se negativo, descarte
+        
+
+Deep Learning and Neural Networks
+    requisitos - anaconda, tensorflow
+        gradient descent - treino de redes neurais
+        auto diff - usa calculo e derivadas parciais - otimizado para muitos inputs e poucos outputs (assim como neuronio)
+        softmax - classificação - converte pesos da rede neural em probabilidade
+        é em camadas. entrada de uma camada é saída de outra
+        
+        playground.tensorflow.org
+        
+    deep learning details
+        treinar pesos - backpropagation - reverse gradient autodiff - computar erro de saida, quanto cada neuronio da camada oculta anterior colaborou e propagar p traz o erro para ajustar pesos
+        activation functions - pega soma dos resultados do neuronio e torna em um valor - quando num tem gradiente não tem derivada e é inutil - usar alternativas como ReLU (rectified linear unit)
+        função de otimização - adam é popular
+        
+    tensorflow
+        parece spark - consegue distribuir carga entre GPUs - roda em quase td - c++ com apis de python
+        tensor é array ou matriz de valor
+        construi grafo - inicializa variaveis - executa grafo
+        usar dados normalizados
+        
+    Keras
+        integra redes neurais do tensor flow com sickit_learn
+        model = Sequential() e ai add as camadas
+        termo unit está sendo usado no lugar de neuronio artificial
+        
+    CNNs - Convolutial Neural Networks
+        bom p quando precisão é importante
+        para quando dados não se alinham em colunas - ex analise de sentimento, imagens onde quer achar coisas, etc
+        pode achar features que não tem lugar especificado como placa em foto, palavras em frase
+        invariante de local de feature
+        
+        inspirado no cortex visual - neuronios que respondem só a uma parte da visão completa - se sobrepoem p interpretar todo o campo visual
+        "desaguam" em camadas que identificam imagens crescentemente complexas (formas -> objetos) - camadas de cores primarias
+        com Keras, fonte tem q ter dimensão apropriada (width x length x color channels)
+        conv2d layer type faz convolução em imagem 2d (1d e 3d tb existem não precisa ser dados de imagem)
+        maxpooling2d pode ser usado p reduzir camada 2d
+        uso tipico - conv2d - maxpooling2d - dropout - flatten - dense - dropout - softmax
+        
+        caro em termos de recurso - muitos parametros - dados são a parte mais dificil de obter
+        
+        arquiteturas especiailizadas
+            letnet5 - bom para reconhecer escrita
+            alexnet - imagens
+            googlenet - melhor performance q alexnet
+            resnet - skip connections - melhor performance de todas
+        
+    RNN - Recurrent neural network
+        bom p time series - prever futuro baseado no passado - ações, sensores, carros autopilotaveis
+        dados que são sequencias de tamanhos arbitraveis - tradução de maquina, captions de imagens, musica gerada por maquinas
+        diferença desse neuronio é que a saida dele não só vai p proxima camada, mas é volta p mesmo neuronio como entrada - "celula de memoria"
+        comportamentos mais recentes tem mais "peso" que comportamentos mais "passados"
+        input pode ser grupal, sai de todos uma media e ela entra de volta
+        
+        sequencia a sequencia - ações
+        sequencia a vetor - palavras em frase para sentimento
+        vetor a sequencia - criar captions de imagem
+        encoder a decoder - sequencia - vetor - sequencia - tradução de maquina
+        
+        treinar RNN - propagação reversa - é pesado demais, cada passo de retroalimentação "soma" muito rapido - fica muito muito profundo
+        muitos parametros, muito sensivel - muito facil de não convergir e não funcionar
+        
+    Transfer Learning
+        usar modelo já previamente treinado - mesmo que não resolvam o problema, podem ser ponto de partida
+        
+    Ajuste de redes neurais e hiper parametros
+        taxa de aprendizado - treinados por gradient descent ou similar - "distancia" entre dados de entrada é a taxa de aprendizado
+            se muito alto, solução fica errada, se mto pequeno, demora muito para achar solução otima
+            quantas epocas?
+        batch size - quantas amostras usadas por epoca
+            contra intuitivo - pouco batch size ajuda achar saida de loops. alternar batch sizes em epocas é melhor pratica
+            
+    Regularization
+        serve p evitar overfitting - prevenir modelos que são bons com dados de treino e não com dados reais
+        drop out - aleatoriamente tira neuronios em epocas p forçar rede a se normalizar
+        early stopping - se perceber resultados ocilando nos dados de teste, para antes pois está começando a overfit
+
+
+Generative Models - (deep fakes, etc)
+    Variational auto encoder - VAE
+        auto-encoder - reduz input para features usando convolution
+        decoder - recostrui dados a partir de features - como se fosse uma CNN que trabalha com o fluxo invertido
+        
+        sistema é treinado de modo que saida do decoder é o mais próximo possível da entrada do encoder
+        quando treinado por completo, pode descartar o encoder e usar só o decoder p criar dados sinteticos
+        usa  conv2dtranspose layers na convolution - usa pesos p criar dados usando representação dimensional menor - em regra stride of 2
+        usa max unpooling (contrario de max pooling)
+        
+        no VAE, vetores são distribuição de probabilidade usando mean e variancia gaussiana
+        
+        reoaraneterization trick - distribuição de probabilidade não pode ser derivada, então escreve ela como soma de termos e coloca todo o aleatorio numa variavel e deriva o resto
+        kullback-leibler divergence - earthmover distance - distancia entre distribuição original e dados reconstruidos
+        recomenda-se usar gpu
+        
+    Generative Adversarial Networks (GAN's)
+        deep fakes, envelhecimentos, etc - gerar dados de treino p medicos, carros auto dirigidos, etc
+        
+        aprende distribuição de vetores latentes, não usa gaussiano igual VAEs
+        gerador registra ruidos em uma distribuição de probabilidade
+        discriminador aprende a indentificar imagens reais de falsas
+        
+        gerador tenta enganar discriminador, quando consegue treino está completo
+        gerador tenta minimizar perda na criação de imagens, discriminador tenta aumentar abilidade de detectar fakes - complicado e delicado, instavel, 
+        erro de modos para uma coisa especifica e não o geral (ex sandalhas ao invés de calçados)
+
+Generative AI
+    Transformers
+        arquiteturas anteriores de ML tem um ponto de conexão entre encoder e decoder - agora cada passo tem ligação - cria relação entre tokens (palavras, imagens, etc)
+        cada passo é um RNN, logo não é totalmente paralelizavel - substitui RNN por feed forward neural network (FFNN) - 
+        olha o contexto de cada palavra junto com o que foi passado já usando pesos de "atenção"
+        
+    Self Attention
+        cada encoder ou decoder tem lista de vetores para cada outro token - self attention tenta traduzir token em relação a contexto (novel pode ser livro ou original)
+        usa um peso para discernir contexto (i read a book - book tem peso forte | attention is a novel idea - idea tem peso forte)
+        peso é dado por matrizes com propagação p traz - query, chave e valor - todo token tem uma matriz dessa
+        score é calculcado multiplicando query com chave ( em regra normaliza com softmax)
+        mascara é aplicada p prevenir tokens de ver tokens futuros - soma vetores - forma matrizes com somas que podem ser processadas em paralelo
+        
+    GPT
+        GPT como consegue paralelizar tudo, só tem decoder - tokens processados em paralelo - divide query em tokens
+        token -> token embedding -> positional encoding -> decoder blocks(masked self attention -> FFNN) -> token embeding -> token probabilities -> resultado
+        trilhões de parametros
+        
+        tokeinization - algumas palavras são vários tokems , pontuações são tokens - as vezes agrupa tokens que sempre estão juntos (ex 123)
+            token embedding - captura relação semantica entre tokens, similaridades
+            positional encoding - captura posição dos tokens no input relativo a outros tokens proximos - usa função seno/coseno para repetição e funcionar em qqr tamanho
+        
+        saida - um vetor no fim dos decoders - multiplica com o tokem embedding - resulta em probabilidades de cada token ser o proximo token correto da sequencia
+            pode usar temperatura ao inves de probabilidade
+
+           
+Open AI API
+    chat completition
+        from openai import OpenAI - client = OpenAI() e passa lista de mensagens com role, content
+        serie de mensagens
+        modelo - ex gpt-4
+        temperatura - fator aleatorio
+        N - quantas escolhas - cobrado por token qto mais escolhas mais caro
+        stop sequence, max_token, presence_penalty(evitar repetição)
+        
+        ir em API, criar chave e secret(q nunca mais vai ver) e  colocar o secret num lugar seguro e numa variavel de ambiente
+        tools integram llm com outros serviços
+    
+    fine tune
+        adaptar modelos para caos de uso - treino adicional depois usando dados de treino proprios - economiza tokens
+        pode usar modelo afinado como qqr outro - pode afinar modelo afinado    
+
+        fine-tunes - legado - json - prompt precisa ter separador unico e completions comecem com espaço em branco e terminando com simbolo de parada
+            usado pelo CLI
+            
+    fine-tuning - similar ao anterior, mas usa formato do chat completion
+    
+    Moderation - passa texto ele volta qual ofensa o texto tem se tem
+
+        
+Retrieval Augmented Generation (RAG), LLM agents
+    RAG
+        "cheat to win" - exame com consulta para LLMs - resposta vem de dados externos e não dos dados e ai é inserido como prompt para LLM
+        LLMs costuma ser treinadas até uma certa data, nunca atual
+        
+        pros: mais rapido e mais barato que fine tuning - atualizar é só atualizar banco de dados - previne alucinações (quando modelo não é treinado e tenta responder) - busca com AI
+        cons: motor de busca complicado - sensivel a templates (perde flexibilidade de AI) - não deterministico - pode alucinar ainda - sensivel a relevancia da informação
+        
+        promtpt - (query encoder - db - documents) retriever - generator - response
+        
+        usar DB apropriado
+            texto - elasticsearch
+            recomendações - grafos
+            API de funções e ferramentas podem dar queries estruturadas e extrair informações de query original - "RAG with graph" database é exemplo base da open AI
+        
+        vector dbs:
+            armazena dados com vetores de embedding computado - usa os vetores q vc ja tem p ML
+            consulta vetor embedding para termo, consulta no banco para items ao topo do vetor mais proximo do vetor - obtem N mais similares (K-nearest_
+            elasticsearch, SQL, neptune, redis, mongo, cassandra podem funcionar com vector
+            pinecone, weaviate (comerciais), chroma, marqo, vespa, qdrant, lancedb, milvus, vectordb (opensources) s~çao dedicados a vetores
+    
+    Avaliar RAGs
+        pacote python RAGAS faz isso tudo
+        query - resposta
+            contexto
+            
+        contexto - extrair relevancia do contexto e "verdade" - divide criterio no contexto por total de frases no criterio - tb tem precisão e verdade e similaridade com query em termos semanticos
+        
+    RAG avançado
+        quebrar retrieval em vários componentes, com indices, chunks, granularidade, reescrita de queries
+        chunking é para não afogar LLM - manter limite de tokens de acordo com o contexto - tecnologia tem aumentado a possibilidade disso
+            pode ser por semantica - mais caro
+        reescrita de query - queries com mistura de significados semanticos não tem bons resultados em vector db
+            step back - usar LLMs para gerar questões mais abstratas - pode ser treinado para isso
+        prompt compression - lidar com tamanho de contextos - controlar custos - tenta manter info importante e pode reordenar resultados
+            remover palavras não importantes, não mudar palavras originais, não reordenar palavras originais, não usar abreviações ou emojis, não adicionar palavras ou simbolos
+        desafios comuns - info suficiente no db? qual K do KNN p escolher resultado no vectorDB ? quanta consolidação precisa no pós retrieval ? quanto mais complexo, mais coisa pode dar errado
+        
+    LLM agents e swarms
+        Agents
+            ferramentas para LLM - open AI api é um exemplo - LLM tem discrição de escolher com quais ferramentas alcança quais propositos
+            agent tem memoria, habilidade de planejar como responder request e ferramentas para qual
+            memoria só é o historico do chjat e comunicação com dados externos e planejamento é como quebrar perguntas em subperguntas
+            
+        Swarms
+            multiplos agentes especializados em tarefas diferentes que podem ser combinados para executar tarefas maiores
+            agentes hierarquicamente maiores podem quebrar tatefas para outros agentes executarem
+    
+------------------ex
+    *panda01
+%matplotlib inline
+import numpy as np
+import pandas as pd
+
+df = pd.read_csv("PastHires.csv")
+df.head() # mostra primeiras linhas com cabeçalho aceita integer p mostrar numero desejado
+df.shape # dimensões do dataframe
+df.size # numero de celulas
+len(df) # numero de linhas
+df.columns # array com nome dos cabeçalhos
+df['hired'] # pega só os valores dessa coluna do dataframe
+df['hired'][:3] # range
+df['hired']['years'] # traz duas colunas
+df.sort_values(['Years Experience']) $ ordena por coluna
+
+degree_counts = df['Level of Education'].value_counts() # quantos de cada
+
+    *mean mode median
+%matploblib inline é necessario para plotar e até importar a lib
+
+import numpy as np
+
+incomes = np.random.normal(27000, 15000, 10000)
+np.mean(incomes)
+np.var(vals)
+
+%matplotlib inline
+import matplotlib.pyplot as plt
+plt.hist(incomes, 50)
+plt.show()
+np.median(incomes)
+
+ages = np.random.randint(18, high=90, size=500)
+ages
+from scipy import stats
+stats.mode(ages)
+
+import scipy.stats as sp
+sp.skew(vals)
+sp.kurtosis(vals)
+
+     ***matplotlib
+%matplotlib inline
+from scipy.stats import norm
+import matplotlib.pyplot as plt
+import numpy as np
+
+x = np.arange(-3, 3, 0.01)
+
+plt.plot(x, norm.pdf(x))
+plt.show()
+
+plt.plot(x, norm.pdf(x))
+plt.plot(x, norm.pdf(x, 1.0, 0.5))
+plt.show()
+
+plt.plot(x, norm.pdf(x))
+plt.plot(x, norm.pdf(x, 1.0, 0.5))
+plt.savefig('MyPlot.png', format='png')
+
+#adjust axes
+axes = plt.axes()
+axes.set_xlim([-5, 5])
+axes.set_ylim([0, 1.0])
+axes.set_xticks([-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5])
+axes.set_yticks([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0])
+plt.plot(x, norm.pdf(x))
+plt.plot(x, norm.pdf(x, 1.0, 0.5))
+plt.show()
+
+#add grid
+axes = plt.axes()
+axes.set_xlim([-5, 5])
+axes.set_ylim([0, 1.0])
+axes.set_xticks([-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5])
+axes.set_yticks([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0])
+axes.grid()
+plt.plot(x, norm.pdf(x))
+plt.plot(x, norm.pdf(x, 1.0, 0.5))
+plt.show()
+
+#lines and colors
+axes = plt.axes()
+axes.set_xlim([-5, 5])
+axes.set_ylim([0, 1.0])
+axes.set_xticks([-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5])
+axes.set_yticks([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0])
+axes.grid()
+plt.plot(x, norm.pdf(x), 'b-')
+plt.plot(x, norm.pdf(x, 1.0, 0.5), 'r:')
+plt.show()
+
+#label and legend
+axes = plt.axes()
+axes.set_xlim([-5, 5])
+axes.set_ylim([0, 1.0])
+axes.set_xticks([-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5])
+axes.set_yticks([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0])
+axes.grid()
+plt.xlabel('Greebles')
+plt.ylabel('Probability')
+plt.plot(x, norm.pdf(x), 'b-')
+plt.plot(x, norm.pdf(x, 1.0, 0.5), 'r:')
+plt.legend(['Sneetches', 'Gacks'], loc=4)
+plt.show()
+
+#estilo xkcd
+plt.xkcd()
+
+fig = plt.figure()
+ax = fig.add_subplot(1, 1, 1)
+ax.spines['right'].set_color('none')
+ax.spines['top'].set_color('none')
+plt.xticks([])
+plt.yticks([])
+ax.set_ylim([-30, 10])
+
+data = np.ones(100)
+data[70:] -= np.arange(30)
+
+plt.annotate(
+    'THE DAY I REALIZED\nI COULD COOK BACON\nWHENEVER I WANTED',
+    xy=(70, 1), arrowprops=dict(arrowstyle='->'), xytext=(15, -10))
+
+plt.plot(data)
+
+plt.xlabel('time')
+plt.ylabel('my overall health')
+
+# pie chart
+# Remove XKCD mode:
+plt.rcdefaults()
+
+values = [12, 55, 4, 32, 14]
+colors = ['r', 'g', 'b', 'c', 'm']
+explode = [0, 0, 0.2, 0, 0]
+labels = ['India', 'United States', 'Russia', 'China', 'Europe']
+plt.pie(values, colors= colors, labels=labels, explode = explode)
+plt.title('Student Locations')
+plt.show()
+
+#bar chart
+values = [12, 55, 4, 32, 14]
+colors = ['r', 'g', 'b', 'c', 'm']
+plt.bar(range(0,5), values, color= colors)
+plt.show()
+
+#scatter
+from pylab import randn
+
+X = randn(500)
+Y = randn(500)
+plt.scatter(X,Y)
+plt.show()
+
+#histogram
+incomes = np.random.normal(27000, 15000, 10000)
+plt.hist(incomes, 50)
+plt.show()
+
+#box & whisker
+uniformSkewed = np.random.rand(100) * 100 - 40
+high_outliers = np.random.rand(10) * 50 + 100
+low_outliers = np.random.rand(10) * -50 - 100
+data = np.concatenate((uniformSkewed, high_outliers, low_outliers))
+plt.boxplot(data)
+plt.show()
+
+            **
+            **covariance e correlation
+            
+            
+OPEN AI API
+
+import os
+from openai import OpenAI
+
+client = OpenAI()
+
+prompt = input("Enter your prompt: ")
+
+completion = client.chat.completions.create(
+  model="gpt-3.5-turbo",
+  messages=[
+    {"role": "system", "content": "You are a helpful assistant."},
+    {"role": "user", "content": prompt}
+  ]
+)
+
+print("\n" + completion.choices[0].message.content)
+
+print("\nComplete response message:\n")
+print(completion)
+
+prompt = input("\nEnter a string for sentiment analysis: ")
+
+completion = client.chat.completions.create(
+  model="gpt-3.5-turbo",
+  messages=[
+    {"role": "system", "content": "Classify user messages as positive or negative sentiment."},
+    {"role": "user", "content": prompt}
+  ]
+)
+
+print("\n" + completion.choices[0].message.content)
+
+print("\nComplete response message:\n")
+print(completion)
+
+print("\nTell me a joke (with low temperature)")
+completion = client.chat.completions.create(
+  model="gpt-3.5-turbo",
+  temperature = 0.2,
+  messages=[
+    {"role": "system", "content": "You are a helpful assistant."},
+    {"role": "user", "content": "Tell me a joke."}
+  ]
+)
+
+print("\n" + completion.choices[0].message.content)
+
+***
+
+
+# Based on https://platform.openai.com/docs/guides/gpt/function-calling
+
+from openai import OpenAI
+import json
+
+client = OpenAI()
+
+# Example dummy function hard coded to return the same weather
+# In production, this could be your backend API or an external API
+def get_current_weather(location, unit="fahrenheit"):
+    """Get the current weather in a given location"""
+    weather_info = {
+        "location": location,
+        "temperature": "72",
+        "unit": unit,
+        "forecast": ["sunny", "windy"],
+    }
+    return json.dumps(weather_info)
+
+
+def run_conversation(prompt):
+    # Step 1: send the conversation and available functions to GPT
+    messages = [{"role": "user", "content": prompt}]
+    tools = [
+        {
+            "type": "function",
+            "function": {
+                "name": "get_current_weather",
+                "description": "Get the current weather in a given location",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "location": {
+                            "type": "string",
+                            "description": "The city and state, e.g. San Francisco, CA",
+                        },
+                        "unit": {"type": "string", "enum": ["celsius", "fahrenheit"]},
+                    },
+                    "required": ["location"],
+                },
+            }
+        }
+    ]
+    response = client.chat.completions.create(
+        model="gpt-3.5-turbo-0613",
+        messages=messages,
+        tools=tools,
+        tool_choice=None
+    )
+    response_message = response.choices[0].message
+    
+    print ("First response:\n")
+    print(response_message)
+
+    # Step 2: check if GPT wanted to call a function
+    if response_message.tool_calls:
+        # Step 3: call the function
+        # Note: the JSON response may not always be valid; be sure to handle errors
+        available_functions = {
+            "get_current_weather": get_current_weather,
+        }  # only one function in this example, but you can have multiple
+        function_name = response_message.tool_calls[0].function.name
+        function_to_call = available_functions[function_name]
+        function_args = json.loads(response_message.tool_calls[0].function.arguments)
+        function_response = function_to_call(
+            location=function_args.get("location"),
+            unit=function_args.get("unit"),
+        )
+        
+        print("Appending function response to conversation:\n")
+        print(function_response)
+
+        # Step 4: send the info on the function call and function response to GPT
+        messages.append(response_message)  # extend conversation with assistant's reply
+        messages.append(
+            {
+                "role": "tool",
+                "tool_call_id": response_message.tool_calls[0].id,
+                "name": function_name,
+                "content": function_response,
+            }
+        )  # extend conversation with function response
+        
+        print (messages)
+        second_response = client.chat.completions.create(
+            model="gpt-3.5-turbo-0613",
+            messages=messages,
+        )  # get a new response from GPT where it can see the function response
+        
+        print("Final response:\n")
+        return second_response
+
+
+prompt = input("Ask me about the weather somewhere. You know you want to: ")
+print(run_conversation(prompt))
+
+***
+
+import os
+import re
+
+character_lines = []
+
+def strip_parentheses(s):
+    return re.sub(r'\(.*?\)', '', s)
+    
+def is_single_word_all_caps(s):
+    # First, we split the string into words
+    words = s.split()
+
+    # Check if the string contains only a single word
+    if len(words) != 1:
+        return False
+
+    # Check if the single word is in all caps
+    return words[0].isupper()
+    
+def process_directory(directory_path, character_name):
+    for filename in os.listdir(directory_path):
+        file_path = os.path.join(directory_path, filename)
+        if os.path.isfile(file_path):  # Ignore directories
+            extract_character_lines(file_path, character_name)
+            
+    with open(f'./{character_name}_lines.jsonl', 'w', newline='') as outfile:
+        prevLine = ''
+        for s in character_lines:
+            if (s.startswith('DATA:')):
+                outfile.write("{\"prompt\": \"" + prevLine + "###\", \"completion\": \" " + s + "END\"}\n")
+            prevLine = s
+
+def extract_character_lines(file_path, character_name):
+    with open(file_path, 'r') as script_file:
+        lines = script_file.readlines()
+
+    is_character_line = False
+    current_line = ''
+    current_character = ''
+    for line in lines:
+        strippedLine = line.strip()
+        if (is_single_word_all_caps(strippedLine)):
+            is_character_line = True
+            current_character = strippedLine
+        elif (line.strip() == '') and is_character_line:
+            is_character_line = False
+            dialog_line = strip_parentheses(current_line).strip()
+            dialog_line = dialog_line.replace('"', "'")
+            character_lines.append(current_character + ": " + dialog_line)
+            current_line = ''
+        elif is_character_line:
+            current_line += line.strip() + ' '
+
+process_directory('e:/Downloads23/scripts_tng', 'DATA')
+
+****
+
+import numpy as np
+from openai import OpenAI
+
+client = OpenAI()
+
+prompt = input("Enter a string to create an embedding vector for: ")
+response = client.embeddings.create(
+	input = prompt,
+	model = "text-embedding-ada-002")
+
+print("\n")	
+print(response)
+
+print("\nLet's find the similarity score between 'potato' and 'rhubarb'.")
+
+response = client.embeddings.create(
+	input=["potato", "rhubarb"],
+	model="text-embedding-ada-002")
+	
+potato = response.data[0].embedding
+rhubarb = response.data[1].embedding
+
+simScore = np.dot(potato, rhubarb)
+
+print("\nScore is " + str(simScore) + "\n")
+
+print("How about 'potato' and 'The starship Enterprise'")
+
+response = client.embeddings.create(
+	input=["potato", "The starship Enterprise"],
+	model="text-embedding-ada-002")
+	
+potato = response.data[0].embedding
+enterprise = response.data[1].embedding
+
+simScore = np.dot(potato, enterprise)
+
+print("\nScore is " + str(simScore) + "\n")
+
+
+****
+
+
+import os
+from openai import OpenAI
+
+client = OpenAI()
+
+
+audio_file = open("hi.mp3", "rb")
+transcript = client.audio.transcriptions.create(model="whisper-1", file=audio_file)
+
+print("Transcribing hi.mp3:\n")
+print(transcript)
+
+print("\nTranslating french.mp3:\n")
+
+audio_file = open("french.mp3", "rb")
+transcript = client.audio.translations.create(model="whisper-1", file=audio_file)
+
+#Will it actually work?
+print(transcript)
+
+
+            
